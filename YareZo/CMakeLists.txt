@@ -1,9 +1,13 @@
+
 add_library(YareZo
         src/EntryPoint.h
         src/Core.h
         YareZo.h
+        src/Application.h
+        Utilities/YzLogger.h
+
         src/Application.cpp
-        src/Application.h)
+        Utilities/YzLogger.cpp)
 
 include_directories(${CMAKE_SOURCE_DIR}/YareZo/src)
 
@@ -18,6 +22,7 @@ if(WIN32)
             PUBLIC
             ${CMAKE_SOURCE_DIR}/libs/glm
             ${CMAKE_SOURCE_DIR}/libs/glfw-3.3.bin.WIN64/include
+            ${CMAKE_SOURCE_DIR}/libs/spdlog
             )
 
     target_link_libraries(YareZo
