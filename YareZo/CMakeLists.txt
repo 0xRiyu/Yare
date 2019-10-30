@@ -1,15 +1,18 @@
 
 add_library(YareZo
-        src/EntryPoint.h
-        src/Core.h
         YareZo.h
+        src/Core.h
+        src/EntryPoint.h
         src/Application.h
-        Utilities/YzLogger.h
-
         src/Application.cpp
-        Utilities/YzLogger.cpp)
+        src/Window.h
+        Utilities/YzLogger.h
+        Utilities/YzLogger.cpp
+        Windows/GlfwWindow.cpp
+        Windows/GlfwWindow.h)
 
-include_directories(${CMAKE_SOURCE_DIR}/YareZo/src)
+include_directories(${CMAKE_SOURCE_DIR}/YareZo/src
+                    ${CMAKE_SOURCE_DIR}/YareZo/Utilities)
 
 find_package(Vulkan REQUIRED)
 
@@ -22,7 +25,7 @@ if(WIN32)
             PUBLIC
             ${CMAKE_SOURCE_DIR}/libs/glm
             ${CMAKE_SOURCE_DIR}/libs/glfw-3.3.bin.WIN64/include
-            ${CMAKE_SOURCE_DIR}/libs/spdlog
+            ${CMAKE_SOURCE_DIR}/libs/spdlog/include
             )
 
     target_link_libraries(YareZo

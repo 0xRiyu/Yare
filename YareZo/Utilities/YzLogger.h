@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "../src/core.h"
+#include "../src/Core.h"
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/basic_file_sink.h"
 
