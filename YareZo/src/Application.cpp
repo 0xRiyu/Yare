@@ -3,6 +3,7 @@
 //
 
 #include "Window.h"
+#include "Vulkan.h"
 #include "Application.h"
 
 namespace Yarezo {
@@ -16,6 +17,7 @@ namespace Yarezo {
 
     void Application::Run() {
         auto window = Window::CreateWindow(800, 600);
+        auto vulkaninstance = Vulkan::InitVulkan();
         window->OnUpdate();
     }
 }

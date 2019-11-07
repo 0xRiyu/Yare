@@ -2,12 +2,6 @@
 // Created by Drew on 2019-10-29.
 //
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-#include <iostream>
-
 #include "GlfwWindow.h"
 
 namespace Yarezo {
@@ -30,16 +24,6 @@ namespace Yarezo {
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_Window = glfwCreateWindow(width, height, "Vulkan window", nullptr, nullptr);
-
-        uint32_t extensionCount = 0;
-        vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-        std::cout << extensionCount << " extensions supported" << std::endl;
-
-        glm::mat4 matrix;
-        glm::vec4 vec;
-        auto test = matrix * vec;
-
     }
     
     void GlfwWindow::OnUpdate() {
