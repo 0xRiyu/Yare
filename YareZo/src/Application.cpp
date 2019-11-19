@@ -17,7 +17,7 @@ namespace Yarezo {
 
     void Application::Run() {
         auto window = Window::CreateWindow(800, 600);
-        auto vulkaninstance = Vulkan::InitVulkan();
+        GraphicsDevice_Vulkan vulkanDevice;
         window->OnUpdate();
     }
 }

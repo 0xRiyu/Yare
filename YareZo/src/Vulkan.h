@@ -13,16 +13,32 @@
 
 namespace Yarezo {
 
-    class Vulkan {
+    struct QueueFamilyIndices {
+        int graphicsFamily = -1;
+
+        bool isComplete() {
+            return graphicsFamily >= 0;
+        }
+    };
+
+
+    class GraphicsDevice_Vulkan {
     public:
-        static std::unique_ptr<VkInstance> InitVulkan();
-        static bool checkValidationLayerSupport();
+        GraphicsDevice_Vulkan();
+
+        ~GraphicsDevice_Vulkan();
+
+        void InitVulkan();
+        bool checkValidationLayerSupport();
 
     private:
-        static VkInstance createInstance();
-        static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-        static std::vector<const char*> getRequiredExtensions();
-    };
+        VkInstance createInstance();
+        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+        std::vector<const char*> getRequiredExtensions();
+        void pickPhysicalDevice();
+        bool isDeviceSuitable(VkPhysicalDevice device);
+        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+
 
         const std::vector<const char*> validationLayers = {
                 "VK_LAYER_KHRONOS_validation"
@@ -34,6 +50,10 @@ namespace Yarezo {
             const bool enableValidationLayers = true;
         #endif
 
+        VkInstance m_instance;
+        VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+
+    };
 }
 
 

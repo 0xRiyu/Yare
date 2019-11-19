@@ -8,14 +8,20 @@
 
 namespace Yarezo {
 
-    std::unique_ptr<VkInstance> Vulkan::InitVulkan() {
-
-        auto instance = createInstance();
-
-        return std::make_unique<VkInstance>(instance);
+    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan() {
+        InitVulkan();
     }
 
-    bool Vulkan::checkValidationLayerSupport() {
+    GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
+
+    }
+
+    void GraphicsDevice_Vulkan::InitVulkan() {
+        m_instance = createInstance();
+        pickPhysicalDevice();
+    }
+
+    bool GraphicsDevice_Vulkan::checkValidationLayerSupport() {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -40,7 +46,7 @@ namespace Yarezo {
         return true;
     }
 
-    VkInstance Vulkan::createInstance() {
+    VkInstance GraphicsDevice_Vulkan::createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             YZ_ERROR("VK Instance was unable to be created, no validation layers available");
             throw std::runtime_error("validation layers requested, but not available!");
@@ -95,7 +101,7 @@ namespace Yarezo {
     }
 
 
-    void Vulkan::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+    void GraphicsDevice_Vulkan::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
@@ -103,7 +109,7 @@ namespace Yarezo {
         createInfo.pfnUserCallback = debugCallback;
     }
 
-    std::vector<const char*> Vulkan::getRequiredExtensions() {
+    std::vector<const char*> GraphicsDevice_Vulkan::getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -115,6 +121,59 @@ namespace Yarezo {
         }
 
         return extensions;
+    }
+
+    void GraphicsDevice_Vulkan::pickPhysicalDevice() {
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
+
+        if (deviceCount == 0) {
+            YZ_ERROR("Failed to find GPUs with Vulkan Support!");
+            throw std::runtime_error("Failed to find GPUs with Vulkan support!");
+        }
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data());
+
+        for (const auto& device: devices){
+            if (isDeviceSuitable(device)){
+                m_PhysicalDevice = device;
+                break;
+            }
+        }
+        if (m_PhysicalDevice == VK_NULL_HANDLE) {
+            YZ_ERROR("Failed to find a suitable GPU");
+            throw std::runtime_error("Failed to find a suitable GPU");
+        }
+
+
+    }
+
+    bool GraphicsDevice_Vulkan::isDeviceSuitable(VkPhysicalDevice device) {
+        QueueFamilyIndices indices = findQueueFamilies(device);
+        return indices.isComplete();
+
+    }
+
+    QueueFamilyIndices GraphicsDevice_Vulkan::findQueueFamilies(VkPhysicalDevice device) {
+        QueueFamilyIndices indices;
+        uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+
+        std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
+
+        int i = 0;
+        for (const auto& queueFamily: queueFamilies){
+            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.graphicsFamily = i;
+                YZ_INFO("Graphics Family Found!");
+                break;
+            }
+            i++;
+        }
+
+        return indices;
     }
 
 }
