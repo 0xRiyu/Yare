@@ -15,9 +15,10 @@ namespace Yarezo {
 
     struct QueueFamilyIndices {
         int graphicsFamily = -1;
+        int presentFamily = -1;
 
         bool isComplete() {
-            return graphicsFamily >= 0;
+            return graphicsFamily >= 0 && presentFamily >= 0;
         }
     };
 
@@ -28,7 +29,7 @@ namespace Yarezo {
 
         ~GraphicsDevice_Vulkan();
 
-        void InitVulkan();
+        void InitVulkan(GLFWwindow* nativeWindow);
         bool checkValidationLayerSupport();
 
     private:
@@ -36,6 +37,9 @@ namespace Yarezo {
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         std::vector<const char*> getRequiredExtensions();
         void pickPhysicalDevice();
+        void createLogicalDevice();
+        void createSurface(GLFWwindow* nativeWindow);
+
         bool isDeviceSuitable(VkPhysicalDevice device);
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
@@ -44,15 +48,20 @@ namespace Yarezo {
                 "VK_LAYER_KHRONOS_validation"
         };
 
-        #ifdef NDEBUG
-            const bool enableValidationLayers = false;
-        #else
-            const bool enableValidationLayers = true;
-        #endif
 
-        VkInstance m_instance;
+
+        VkInstance m_Instance;
+        VkSurfaceKHR m_Surface;
         VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+        VkDevice m_Device;
+        VkQueue m_GraphicsQueue;
+        VkQueue m_PresentQueue;
 
+    #ifdef NDEBUG
+            const bool enableValidationLayers = false;
+    #else
+            const bool enableValidationLayers = true;
+    #endif
     };
 }
 

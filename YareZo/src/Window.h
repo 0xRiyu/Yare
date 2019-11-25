@@ -5,8 +5,6 @@
 #ifndef YAREZO_WINDOW
 #define YAREZO_WINDOW
 
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <memory>
 #include "Core.h"
 
@@ -19,6 +17,8 @@ namespace Yarezo{
         virtual void OnUpdate() = 0;
         
         static std::shared_ptr<Window> CreateWindow(unsigned short width, unsigned short height);
+        virtual void* getNativeWindow() const = 0;
+
         
     };
 }

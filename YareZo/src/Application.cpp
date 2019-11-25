@@ -16,8 +16,12 @@ namespace Yarezo {
     }
 
     void Application::Run() {
+        //Create a window
         auto window = Window::CreateWindow(800, 600);
+        GLFWwindow* windowInstance = static_cast<GLFWwindow*>(window->getNativeWindow());
+
         GraphicsDevice_Vulkan vulkanDevice;
+        vulkanDevice.InitVulkan(windowInstance);
         window->OnUpdate();
     }
 }

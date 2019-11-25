@@ -3,22 +3,30 @@
 //
 
 #include <stdexcept>
+#include <set>
+
 #include "Vulkan.h"
 #include "YzLogger.h"
 
 namespace Yarezo {
 
     GraphicsDevice_Vulkan::GraphicsDevice_Vulkan() {
-        InitVulkan();
     }
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
-
+        vkDestroyDevice(m_Device, nullptr);
+        // Destroy the surface before the instance
+        vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+        vkDestroyInstance(m_Instance, nullptr);
     }
 
-    void GraphicsDevice_Vulkan::InitVulkan() {
-        m_instance = createInstance();
+    void GraphicsDevice_Vulkan::InitVulkan(GLFWwindow* window) {
+        m_Instance = createInstance();
+        // Surface must be created before picking a physical device
+        createSurface(window);
         pickPhysicalDevice();
+        createLogicalDevice();
+
     }
 
     bool GraphicsDevice_Vulkan::checkValidationLayerSupport() {
@@ -125,7 +133,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::pickPhysicalDevice() {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(m_instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
 
         if (deviceCount == 0) {
             YZ_ERROR("Failed to find GPUs with Vulkan Support!");
@@ -133,7 +141,7 @@ namespace Yarezo {
         }
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(m_instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
 
         for (const auto& device: devices){
             if (isDeviceSuitable(device)){
@@ -145,8 +153,55 @@ namespace Yarezo {
             YZ_ERROR("Failed to find a suitable GPU");
             throw std::runtime_error("Failed to find a suitable GPU");
         }
+    }
 
+    void GraphicsDevice_Vulkan::createLogicalDevice() {
+        QueueFamilyIndices indices = findQueueFamilies(m_PhysicalDevice);
 
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        std::set<int> uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
+
+        float queuePriority = 1.0f;
+        for (int queueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueCreateInfo = {};
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+            queueCreateInfo.queueFamilyIndex = queueFamily;
+            queueCreateInfo.queueCount = 1;
+            queueCreateInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueCreateInfo);
+        }
+
+        VkPhysicalDeviceFeatures deviceFeatures = {};
+        VkDeviceCreateInfo createInfo = {};
+
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.pEnabledFeatures = &deviceFeatures;
+        createInfo.enabledExtensionCount = 0;
+
+        //To support older implementations of vulkan
+        if (enableValidationLayers) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
+
+        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
+            YZ_ERROR("Failed to create a logical device.");
+            throw std::runtime_error("Failed to create a logical device.");
+        }
+
+        vkGetDeviceQueue(m_Device, indices.graphicsFamily, 0, &m_GraphicsQueue);
+        vkGetDeviceQueue(m_Device, indices.presentFamily, 0 , &m_PresentQueue);
+    }
+
+    void GraphicsDevice_Vulkan::createSurface(GLFWwindow* nativeWindow) {
+        if (glfwCreateWindowSurface(m_Instance, nativeWindow, nullptr, &m_Surface) != VK_SUCCESS) {
+            YZ_ERROR("Could not create a window surface.");
+            throw std::runtime_error("Could not create a window surface.");
+        }
     }
 
     bool GraphicsDevice_Vulkan::isDeviceSuitable(VkPhysicalDevice device) {
@@ -165,10 +220,18 @@ namespace Yarezo {
 
         int i = 0;
         for (const auto& queueFamily: queueFamilies){
-            if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            VkBool32 presentSupport = false;
+
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
+
+            if (indices.presentFamily < 0 && presentSupport) {
+                indices.presentFamily = i;
+                YZ_INFO("present family for surface support found.");
+            }
+
+            if (indices.graphicsFamily < 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
-                YZ_INFO("Graphics Family Found!");
-                break;
+                YZ_INFO("Graphics family found.");
             }
             i++;
         }
