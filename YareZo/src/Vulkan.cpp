@@ -238,5 +238,4 @@ namespace Yarezo {
 
         return indices;
     }
-
 }
