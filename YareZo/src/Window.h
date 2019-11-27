@@ -8,18 +8,25 @@
 #include <memory>
 #include "Core.h"
 
-namespace Yarezo{
+namespace Yarezo {
+    struct WindowProperties {
+        unsigned short width;
+        unsigned short height;
+    };
+
     class YAREZO_API Window {
       
     public:
 
         virtual ~Window() = default;
         virtual void OnUpdate() = 0;
-        
-        static std::shared_ptr<Window> CreateWindow(unsigned short width, unsigned short height);
+        virtual WindowProperties getWindowProperties() = 0;
+
+        static std::shared_ptr<Window> CreateWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
 
-        
+    protected:
+        WindowProperties m_Properties;
     };
 }
 

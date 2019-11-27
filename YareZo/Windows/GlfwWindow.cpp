@@ -6,12 +6,12 @@
 
 namespace Yarezo {
 
-    std::shared_ptr<Window> Window::CreateWindow(unsigned short width, unsigned short height) {
-        return std::make_shared<GlfwWindow>(width, height);
+    std::shared_ptr<Window> Window::CreateWindow(WindowProperties& properties) {
+        return std::make_shared<GlfwWindow>(properties);
     }
     
-    GlfwWindow::GlfwWindow(unsigned short width, unsigned short height) {
-        Init(width, height);
+    GlfwWindow::GlfwWindow(WindowProperties& properties) {
+        Init(properties);
     }
 
     GlfwWindow::~GlfwWindow() {
@@ -19,11 +19,11 @@ namespace Yarezo {
         glfwTerminate();
     }
 
-    void GlfwWindow::Init(unsigned short width, unsigned short height) {
+    void GlfwWindow::Init(WindowProperties& properties) {
         glfwInit();
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        m_Window = glfwCreateWindow(width, height, "Vulkan window", nullptr, nullptr);
+        m_Window = glfwCreateWindow(properties.width, properties.height, "Vulkan window", nullptr, nullptr);
     }
     
     void GlfwWindow::OnUpdate() {

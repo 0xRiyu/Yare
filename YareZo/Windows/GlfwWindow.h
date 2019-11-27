@@ -12,15 +12,16 @@
 namespace Yarezo{
     class GlfwWindow : public Window {
     public:
-        GlfwWindow(unsigned short width, unsigned short height);
+        GlfwWindow(WindowProperties& properties);
         virtual ~GlfwWindow();
         
         void OnUpdate() override;
 
+        inline virtual WindowProperties getWindowProperties() { return m_Properties; }
         inline virtual void* getNativeWindow() const { return m_Window; };
 
     private:
-        void Init(unsigned short width, unsigned short height);
+        void Init(WindowProperties& properties);
         GLFWwindow* m_Window;
     };
 }

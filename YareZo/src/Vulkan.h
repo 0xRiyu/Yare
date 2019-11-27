@@ -11,6 +11,8 @@
 #include <memory>
 #include <iostream>
 
+#include "Window.h"
+
 namespace Yarezo {
 
     struct QueueFamilyIndices {
@@ -22,40 +24,64 @@ namespace Yarezo {
         }
     };
 
+    struct SwapChainSupportDetails {
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> formats;
+        std::vector<VkPresentModeKHR> presentModes;
+    };
 
     class GraphicsDevice_Vulkan {
     public:
-        GraphicsDevice_Vulkan();
+        GraphicsDevice_Vulkan(Window* nativeWindow);
 
         ~GraphicsDevice_Vulkan();
 
-        void InitVulkan(GLFWwindow* nativeWindow);
+        void InitVulkan();
         bool checkValidationLayerSupport();
 
     private:
         VkInstance createInstance();
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         std::vector<const char*> getRequiredExtensions();
+
         void pickPhysicalDevice();
         void createLogicalDevice();
-        void createSurface(GLFWwindow* nativeWindow);
+        void createSurface();
+        void createSwapChain();
 
         bool isDeviceSuitable(VkPhysicalDevice device);
+        bool checkDeviceExtensionSupport(VkPhysicalDevice device);
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
+        // Swap Chain required functions
+        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, WindowProperties& properties);
 
         const std::vector<const char*> validationLayers = {
-                "VK_LAYER_KHRONOS_validation"
+            "VK_LAYER_KHRONOS_validation"
+        };
+
+        const std::vector<const char*> deviceExtensions {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
 
 
-
+        // Class members created by GraphicsDevice_Vulkan class
         VkInstance m_Instance;
         VkSurfaceKHR m_Surface;
         VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
         VkDevice m_Device;
         VkQueue m_GraphicsQueue;
         VkQueue m_PresentQueue;
+        VkSwapchainKHR m_SwapChain;
+        std::vector<VkImage> m_SwapChainImages;
+        VkFormat m_SwapChainImageFormat;
+        VkExtent2D m_SwapChainExtent;
+
+        // Objects from outside this class
+        Window* m_NativeWindow;
 
     #ifdef NDEBUG
             const bool enableValidationLayers = false;
