@@ -44,11 +44,13 @@ namespace Yarezo {
         bool checkValidationLayerSupport();
 
         void createInstance();
+        void setupDebugMessenger();
         void pickPhysicalDevice();
         void createLogicalDevice();
         void createSurface();
         void createSwapChain();
         void createImageViews();
+        void createRenderPass();
         void createGraphicsPipeline();
 
         bool isDeviceSuitable(VkPhysicalDevice device);
@@ -74,6 +76,7 @@ namespace Yarezo {
 
         // Class members created by GraphicsDevice_Vulkan class
         VkInstance m_Instance;
+        VkDebugUtilsMessengerEXT m_DebugMessenger;
         VkSurfaceKHR m_Surface;
         VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
         VkDevice m_Device;
@@ -84,6 +87,9 @@ namespace Yarezo {
         VkFormat m_SwapChainImageFormat;
         VkExtent2D m_SwapChainExtent;
         std::vector<VkImageView> m_SwapChainImageViews;
+        VkRenderPass m_RenderPass;
+        VkPipelineLayout m_PipelineLayout;
+        VkPipeline m_GraphicsPipeline;
 
         // Objects from outside this class
         Window* m_NativeWindow;
