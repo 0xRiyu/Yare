@@ -18,20 +18,24 @@ namespace Yarezo {
     }
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
+        for (auto& imageView: m_SwapChainImageViews) {
+            vkDestroyImageView(m_Device, imageView, nullptr);
+        }
         vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
         vkDestroyDevice(m_Device, nullptr);
-        // Destroy the surface before the instance
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyInstance(m_Instance, nullptr);
     }
 
     void GraphicsDevice_Vulkan::InitVulkan() {
-        m_Instance = createInstance();
+        createInstance();
         // Surface must be created before picking a physical device
         createSurface();
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
+        createImageViews();
+        createGraphicsPipeline();
     }
 
     bool GraphicsDevice_Vulkan::checkValidationLayerSupport() {
@@ -59,7 +63,7 @@ namespace Yarezo {
         return true;
     }
 
-    VkInstance GraphicsDevice_Vulkan::createInstance() {
+    void GraphicsDevice_Vulkan::createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             YZ_ERROR("VK Instance was unable to be created, no validation layers available");
             throw std::runtime_error("validation layers requested, but not available!");
@@ -105,7 +109,7 @@ namespace Yarezo {
         }
         YZ_INFO("VK Instance WAS able to be created");
 
-        return instance;
+        m_Instance = instance;
     }
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
@@ -272,6 +276,39 @@ namespace Yarezo {
         m_SwapChainExtent = extent;
     }
 
+
+    void GraphicsDevice_Vulkan::createImageViews() {
+        m_SwapChainImageViews.resize(m_SwapChainImages.size());
+
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+            VkImageViewCreateInfo createInfo = {};
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            createInfo.image = m_SwapChainImages[i];
+            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            createInfo.format = m_SwapChainImageFormat;
+
+            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            createInfo.subresourceRange.baseMipLevel = 0;
+            createInfo.subresourceRange.levelCount = 1;
+            createInfo.subresourceRange.baseArrayLayer = 0;
+            createInfo.subresourceRange.layerCount = 1;
+
+            if (vkCreateImageView(m_Device, &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) {
+                YZ_ERROR("Failed to create image views.");
+                throw std::runtime_error("Failed to create image views.");
+            }
+        }
+    }
+
+    void GraphicsDevice_Vulkan::createGraphicsPipeline() {
+
+    }
+
     bool GraphicsDevice_Vulkan::isDeviceSuitable(VkPhysicalDevice device) {
         QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -391,4 +428,6 @@ namespace Yarezo {
             return actualExtent;
         }
     }
+
+
 }

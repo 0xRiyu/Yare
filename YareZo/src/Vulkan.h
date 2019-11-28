@@ -40,14 +40,16 @@ namespace Yarezo {
         bool checkValidationLayerSupport();
 
     private:
-        VkInstance createInstance();
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         std::vector<const char*> getRequiredExtensions();
 
+        void createInstance();
         void pickPhysicalDevice();
         void createLogicalDevice();
         void createSurface();
         void createSwapChain();
+        void createImageViews();
+        void createGraphicsPipeline();
 
         bool isDeviceSuitable(VkPhysicalDevice device);
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -79,6 +81,7 @@ namespace Yarezo {
         std::vector<VkImage> m_SwapChainImages;
         VkFormat m_SwapChainImageFormat;
         VkExtent2D m_SwapChainExtent;
+        std::vector<VkImageView> m_SwapChainImageViews;
 
         // Objects from outside this class
         Window* m_NativeWindow;
