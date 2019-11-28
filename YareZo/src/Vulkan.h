@@ -37,11 +37,11 @@ namespace Yarezo {
         ~GraphicsDevice_Vulkan();
 
         void InitVulkan();
-        bool checkValidationLayerSupport();
 
     private:
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         std::vector<const char*> getRequiredExtensions();
+        bool checkValidationLayerSupport();
 
         void createInstance();
         void pickPhysicalDevice();
@@ -60,6 +60,8 @@ namespace Yarezo {
         VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, WindowProperties& properties);
+        VkShaderModule createShaderModule(const std::vector<char>& shader_code);
+
 
         const std::vector<const char*> validationLayers = {
             "VK_LAYER_KHRONOS_validation"

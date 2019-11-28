@@ -6,10 +6,14 @@ add_library(YareZo
         src/Application.h
         src/Application.cpp
         src/Window.h
+        src/Vulkan.cpp
+        src/Vulkan.h
         Utilities/YzLogger.h
         Utilities/YzLogger.cpp
+        Utilities/IOHelper.h
+        Utilities/IOHelper.cpp
         Windows/GlfwWindow.cpp
-        Windows/GlfwWindow.h src/Vulkan.cpp src/Vulkan.h)
+        Windows/GlfwWindow.h)
 
 include_directories(${CMAKE_SOURCE_DIR}/YareZo/src
                     ${CMAKE_SOURCE_DIR}/YareZo/Utilities)
