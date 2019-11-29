@@ -130,8 +130,6 @@ namespace Yarezo {
             createInfo.pNext = nullptr;
         }
 
-        createInfo.enabledLayerCount = 0;
-
         if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
             YZ_ERROR("VK Instance was unable to be created");
             throw std::runtime_error("failed to create instance!");
@@ -214,7 +212,7 @@ namespace Yarezo {
         float queuePriority = 1.0f;
         for (int queueFamily : uniqueQueueFamilies) {
             VkDeviceQueueCreateInfo queueCreateInfo = {};
-            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+            queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueCreateInfo.queueFamilyIndex = queueFamily;
             queueCreateInfo.queueCount = 1;
             queueCreateInfo.pQueuePriorities = &queuePriority;
@@ -293,8 +291,6 @@ namespace Yarezo {
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
         } else {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            createInfo.queueFamilyIndexCount = 0; // Optional
-            createInfo.pQueueFamilyIndices = nullptr; // Optional
         }
 
         createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
@@ -323,7 +319,7 @@ namespace Yarezo {
 
         for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
             VkImageViewCreateInfo createInfo = {};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.image = m_SwapChainImages[i];
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
             createInfo.format = m_SwapChainImageFormat;
@@ -382,7 +378,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
         auto vertShaderCode = Utilities::readFile("../../YareZo/Shaders/basictrianglevert.spv");
-        auto fragShaderCode = Utilities::readFile("../../YareZo/Shaders/basictrianglevert.spv");
+        auto fragShaderCode = Utilities::readFile("../../YareZo/Shaders/basictrianglefrag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -500,10 +496,10 @@ namespace Yarezo {
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        //if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
-        //    YZ_ERROR("Vulkan failed to create the graphics pipeline.");
-        //    throw std::runtime_error("Vulkan failed to create the graphics pipeline.");
-        //}
+        if (vkCreateGraphicsPipelines(m_Device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan failed to create the graphics pipeline.");
+            throw std::runtime_error("Vulkan failed to create the graphics pipeline.");
+        }
 
         vkDestroyShaderModule(m_Device, fragShaderModule, nullptr);
         vkDestroyShaderModule(m_Device, vertShaderModule, nullptr);
@@ -546,6 +542,9 @@ namespace Yarezo {
                 indices.graphicsFamily = i;
                 YZ_INFO("Graphics family found.");
             }
+
+            if (indices.isComplete()) break;
+
             i++;
         }
 
@@ -629,7 +628,7 @@ namespace Yarezo {
         }
     }
 
-    VkShaderModule GraphicsDevice_Vulkan::createShaderModule(const std::vector<char> &shader_code) {
+    VkShaderModule GraphicsDevice_Vulkan::createShaderModule(const std::vector<char>& shader_code) {
 
         VkShaderModuleCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -638,8 +637,8 @@ namespace Yarezo {
 
         VkShaderModule shaderModule;
         if (vkCreateShaderModule(m_Device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan was unabole to create a shaderModule with provided shader code.");
-            throw std::runtime_error("Vulkan was unabole to create a shaderModule with provided shader code.");
+            YZ_ERROR("Vulkan was unable to create a shaderModule with provided shader code.");
+            throw std::runtime_error("Vulkan was unable to create a shaderModule with provided shader code.");
         }
 
         return shaderModule;

@@ -11,6 +11,7 @@ namespace Yarezo {
     }
     
     GlfwWindow::GlfwWindow(WindowProperties& properties) {
+        m_Properties = properties;
         Init(properties);
     }
 
@@ -21,7 +22,6 @@ namespace Yarezo {
 
     void GlfwWindow::Init(WindowProperties& properties) {
         glfwInit();
-
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_Window = glfwCreateWindow(properties.width, properties.height, "Vulkan window", nullptr, nullptr);
     }
