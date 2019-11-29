@@ -23,13 +23,11 @@ namespace Yarezo {
     void GlfwWindow::Init(WindowProperties& properties) {
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        m_Window = glfwCreateWindow(properties.width, properties.height, "Vulkan window", nullptr, nullptr);
+        m_Window = glfwCreateWindow(properties.width, properties.height, "YareZo!", nullptr, nullptr);
     }
     
     void GlfwWindow::OnUpdate() {
-        while (!glfwWindowShouldClose(m_Window)) {
-            glfwPollEvents();
-        }
+        glfwPollEvents();
     }
 
 

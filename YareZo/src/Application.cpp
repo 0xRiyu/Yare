@@ -22,6 +22,13 @@ namespace Yarezo {
         auto window = Window::CreateWindow(props);
 
         GraphicsDevice_Vulkan vulkanDevice(window.get());
-        window->OnUpdate();
+
+        while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(window->getNativeWindow()))) {
+            window->OnUpdate();
+            vulkanDevice.drawFrame();
+        }
+
+        vulkanDevice.waitIdle();
+
     }
 }

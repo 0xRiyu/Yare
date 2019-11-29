@@ -36,7 +36,9 @@ namespace Yarezo {
 
         ~GraphicsDevice_Vulkan();
 
-        void InitVulkan();
+        void initVulkan();
+        void drawFrame();
+        void waitIdle();
 
     private:
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
@@ -52,6 +54,10 @@ namespace Yarezo {
         void createImageViews();
         void createRenderPass();
         void createGraphicsPipeline();
+        void createFramebuffers();
+        void createCommandPool();
+        void createCommandBuffers();
+        void createSemaphores();
 
         bool isDeviceSuitable(VkPhysicalDevice device);
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -90,6 +96,11 @@ namespace Yarezo {
         VkRenderPass m_RenderPass;
         VkPipelineLayout m_PipelineLayout;
         VkPipeline m_GraphicsPipeline;
+        std::vector<VkFramebuffer> m_SwapChainFramebuffers;
+        VkCommandPool m_CommandPool;
+        std::vector<VkCommandBuffer> m_CommandBuffers;
+        VkSemaphore m_ImageAvailableSemaphore;
+        VkSemaphore m_RenderFinishedSemaphore;
 
         // Objects from outside this class
         Window* m_NativeWindow;
