@@ -57,7 +57,7 @@ namespace Yarezo {
         void createFramebuffers();
         void createCommandPool();
         void createCommandBuffers();
-        void createSemaphores();
+        void createSyncObjects();
 
         bool isDeviceSuitable(VkPhysicalDevice device);
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -79,6 +79,8 @@ namespace Yarezo {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
 
+        const int MAX_FRAMES_IN_FLIGHT = 2;
+
 
         // Class members created by GraphicsDevice_Vulkan class
         VkInstance m_Instance;
@@ -99,8 +101,11 @@ namespace Yarezo {
         std::vector<VkFramebuffer> m_SwapChainFramebuffers;
         VkCommandPool m_CommandPool;
         std::vector<VkCommandBuffer> m_CommandBuffers;
-        VkSemaphore m_ImageAvailableSemaphore;
-        VkSemaphore m_RenderFinishedSemaphore;
+        std::vector<VkSemaphore> m_ImageAvailableSemaphore;
+        std::vector<VkSemaphore> m_RenderFinishedSemaphore;
+        std::vector<VkFence> m_InFlightFences;
+        std::vector<VkFence> m_ImagesInFlight;
+        size_t m_CurrentFrame = 0;
 
         // Objects from outside this class
         Window* m_NativeWindow;
