@@ -459,8 +459,8 @@ namespace Yarezo {
 
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
-        auto vertShaderCode = Utilities::readFile("../../YareZo/Shaders/basictrianglevert.spv");
-        auto fragShaderCode = Utilities::readFile("../../YareZo/Shaders/basictrianglefrag.spv");
+        auto vertShaderCode = Utilities::readFile("C:\\dev\\Yarezo\\YareZo\\YareZo\\Shaders\\basictrianglevert.spv");
+        auto fragShaderCode = Utilities::readFile("C:\\dev\\Yarezo\\YareZo\\YareZo\\Shaders\\basictrianglefrag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);

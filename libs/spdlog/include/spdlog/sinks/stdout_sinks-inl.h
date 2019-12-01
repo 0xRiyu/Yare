@@ -4,11 +4,11 @@
 #pragma once
 
 #ifndef SPDLOG_HEADER_ONLY
-#include "spdlog/sinks/stdout_sinks.h"
+#include <spdlog/sinks/stdout_sinks.h>
 #endif
 
-#include "spdlog/details/console_globals.h"
-#include "spdlog/details/pattern_formatter.h"
+#include <spdlog/details/console_globals.h>
+#include <spdlog/details/pattern_formatter.h>
 #include <memory>
 
 namespace spdlog {
@@ -26,7 +26,7 @@ template<typename ConsoleMutex>
 SPDLOG_INLINE void stdout_sink_base<ConsoleMutex>::log(const details::log_msg &msg)
 {
     std::lock_guard<mutex_t> lock(mutex_);
-    fmt::memory_buffer formatted;
+    memory_buf_t formatted;
     formatter_->format(msg, formatted);
     fwrite(formatted.data(), sizeof(char), formatted.size(), file_);
     fflush(file_); // flush every line to terminal

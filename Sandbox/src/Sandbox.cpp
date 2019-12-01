@@ -3,7 +3,7 @@
 // Sandbox is responsible for creating an Application,
 // the public interfaces can be accessed and used here
 //
-#include <../YareZo.h>
+#include <YareZo.h>
 
 class Sandbox : public Yarezo::Application {
 public:

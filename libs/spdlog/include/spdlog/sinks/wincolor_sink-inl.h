@@ -4,11 +4,11 @@
 #pragma once
 
 #ifndef SPDLOG_HEADER_ONLY
-#include "spdlog/sinks/wincolor_sink.h"
+#include <spdlog/sinks/wincolor_sink.h>
 #endif
 
-#include "spdlog/common.h"
-#include "spdlog/details/pattern_formatter.h"
+#include <spdlog/common.h>
+#include <spdlog/details/pattern_formatter.h>
 
 namespace spdlog {
 namespace sinks {
@@ -52,7 +52,7 @@ template<typename ConsoleMutex>
 void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::log(const details::log_msg &msg)
 {
     std::lock_guard<mutex_t> lock(mutex_);
-    fmt::memory_buffer formatted;
+    memory_buf_t formatted;
     formatter_->format(msg, formatted);
     if (!in_console_)
     {
@@ -131,15 +131,19 @@ WORD SPDLOG_INLINE wincolor_sink<ConsoleMutex>::set_foreground_color_(WORD attri
 
 // print a range of formatted message to console
 template<typename ConsoleMutex>
-void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::print_range_(const fmt::memory_buffer &formatted, size_t start, size_t end)
+void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::print_range_(const memory_buf_t &formatted, size_t start, size_t end)
 {
     auto size = static_cast<DWORD>(end - start);
     ::WriteConsoleA(out_handle_, formatted.data() + start, size, nullptr, nullptr);
 }
 
 template<typename ConsoleMutex>
-void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::write_to_file_(const fmt::memory_buffer &formatted)
+void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::write_to_file_(const memory_buf_t &formatted)
 {
+    if (out_handle_ == nullptr) // no console and no file redirect
+    {
+        return;
+    }
     auto size = static_cast<DWORD>(formatted.size());
     if (size == 0)
     {
@@ -153,7 +157,7 @@ void SPDLOG_INLINE wincolor_sink<ConsoleMutex>::write_to_file_(const fmt::memory
         bool ok = ::WriteFile(out_handle_, formatted.data() + total_written, size - total_written, &bytes_written, nullptr) != 0;
         if (!ok || bytes_written == 0)
         {
-            throw spdlog_ex("wincolor_sink: write_to_file_ failed. GetLastError(): " + std::to_string(::GetLastError()));
+            SPDLOG_THROW(spdlog_ex("wincolor_sink: write_to_file_ failed. GetLastError(): " + std::to_string(::GetLastError())));
         }
         total_written += bytes_written;
     } while (total_written < size);

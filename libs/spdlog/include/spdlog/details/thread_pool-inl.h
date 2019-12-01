@@ -4,10 +4,10 @@
 #pragma once
 
 #ifndef SPDLOG_HEADER_ONLY
-#include "spdlog/details/thread_pool.h"
+#include <spdlog/details/thread_pool.h>
 #endif
 
-#include "spdlog/common.h"
+#include <spdlog/common.h>
 
 namespace spdlog {
 namespace details {
@@ -17,8 +17,8 @@ SPDLOG_INLINE thread_pool::thread_pool(size_t q_max_items, size_t threads_n, std
 {
     if (threads_n == 0 || threads_n > 1000)
     {
-        throw spdlog_ex("spdlog::thread_pool(): invalid threads_n param (valid "
-                        "range is 1-1000)");
+        SPDLOG_THROW(spdlog_ex("spdlog::thread_pool(): invalid threads_n param (valid "
+                               "range is 1-1000)"));
     }
     for (size_t i = 0; i < threads_n; i++)
     {
@@ -36,7 +36,7 @@ SPDLOG_INLINE thread_pool::thread_pool(size_t q_max_items, size_t threads_n)
 // message all threads to terminate gracefully join them
 SPDLOG_INLINE thread_pool::~thread_pool()
 {
-    try
+    SPDLOG_TRY
     {
         for (size_t i = 0; i < threads_.size(); i++)
         {
@@ -48,11 +48,10 @@ SPDLOG_INLINE thread_pool::~thread_pool()
             t.join();
         }
     }
-    catch (...)
-    {}
+    SPDLOG_CATCH_ALL() {}
 }
 
-void SPDLOG_INLINE thread_pool::post_log(async_logger_ptr &&worker_ptr, details::log_msg &msg, async_overflow_policy overflow_policy)
+void SPDLOG_INLINE thread_pool::post_log(async_logger_ptr &&worker_ptr, const details::log_msg &msg, async_overflow_policy overflow_policy)
 {
     async_msg async_m(std::move(worker_ptr), async_msg_type::log, msg);
     post_async_msg_(std::move(async_m), overflow_policy);
@@ -82,7 +81,7 @@ void SPDLOG_INLINE thread_pool::post_async_msg_(async_msg &&new_msg, async_overf
 
 void SPDLOG_INLINE thread_pool::worker_loop_()
 {
-    while (process_next_msg_()) {};
+    while (process_next_msg_()) {}
 }
 
 // process next message in the queue
@@ -99,24 +98,24 @@ bool SPDLOG_INLINE thread_pool::process_next_msg_()
 
     switch (incoming_async_msg.msg_type)
     {
-    case async_msg_type::log:
-    {
-        auto msg = incoming_async_msg.to_log_msg();
-        incoming_async_msg.worker_ptr->backend_log_(msg);
+    case async_msg_type::log: {
+        incoming_async_msg.worker_ptr->backend_sink_it_(incoming_async_msg);
         return true;
     }
-    case async_msg_type::flush:
-    {
+    case async_msg_type::flush: {
         incoming_async_msg.worker_ptr->backend_flush_();
         return true;
     }
 
-    case async_msg_type::terminate:
-    {
+    case async_msg_type::terminate: {
         return false;
     }
+
+    default: {
+        assert(false && "Unexpected async_msg_type");
     }
-    assert(false && "Unexpected async_msg_type");
+    }
+
     return true;
 }
 

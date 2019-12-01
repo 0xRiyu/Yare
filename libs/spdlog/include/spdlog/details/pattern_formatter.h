@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "spdlog/common.h"
-#include "spdlog/details/log_msg.h"
-#include "spdlog/details/os.h"
-#include "spdlog/formatter.h"
+#include <spdlog/common.h>
+#include <spdlog/details/log_msg.h>
+#include <spdlog/details/os.h>
+#include <spdlog/formatter.h>
 
 #include <chrono>
 #include <ctime>
@@ -29,17 +29,21 @@ struct padding_info
     };
 
     padding_info() = default;
-    padding_info(size_t width, padding_info::pad_side side)
+    padding_info(size_t width, padding_info::pad_side side, bool truncate)
         : width_(width)
         , side_(side)
+        , truncate_(truncate)
+        , enabled_(true)
     {}
 
     bool enabled() const
     {
-        return width_ != 0;
+        return enabled_;
     }
     const size_t width_ = 0;
     const pad_side side_ = left;
+    bool truncate_ = false;
+    bool enabled_ = false;
 };
 
 class flag_formatter
@@ -50,7 +54,7 @@ public:
     {}
     flag_formatter() = default;
     virtual ~flag_formatter() = default;
-    virtual void format(const details::log_msg &msg, const std::tm &tm_time, fmt::memory_buffer &dest) = 0;
+    virtual void format(const details::log_msg &msg, const std::tm &tm_time, memory_buf_t &dest) = 0;
 
 protected:
     padding_info padinfo_;
@@ -71,7 +75,7 @@ public:
     pattern_formatter &operator=(const pattern_formatter &other) = delete;
 
     std::unique_ptr<formatter> clone() const override;
-    void format(const details::log_msg &msg, fmt::memory_buffer &dest) override;
+    void format(const details::log_msg &msg, memory_buf_t &dest) override;
 
 private:
     std::string pattern_;

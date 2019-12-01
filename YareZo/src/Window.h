@@ -22,7 +22,7 @@ namespace Yarezo {
         virtual void OnUpdate() = 0;
         virtual WindowProperties getWindowProperties() = 0;
 
-        static std::shared_ptr<Window> CreateWindow(WindowProperties& properties);
+        static std::shared_ptr<Window> CreateNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
 
     protected:

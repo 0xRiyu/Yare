@@ -3,6 +3,9 @@
 //
 
 #include "YzLogger.h"
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
 
 namespace Yarezo {
 
@@ -10,8 +13,7 @@ namespace Yarezo {
     std::string YzLogger::m_FileOutputPath;
 
     void YzLogger::Init() {
-        m_FileOutputPath = "BasicLog.txt";
-        m_Logger = spdlog::basic_logger_mt("basic_logger", m_FileOutputPath, true);
+        m_Logger = spdlog::stdout_color_mt("YareZo");
     }
     void YzLogger::ChangeFilePath(const std::string& path) {
         m_FileOutputPath = path;
@@ -19,6 +21,6 @@ namespace Yarezo {
     }
 
     void YzLogger::Update() {
-        m_Logger = spdlog::basic_logger_mt("basic_logger", m_FileOutputPath, false);
+        m_Logger = spdlog::stdout_color_mt("YareZo");
     }
 }

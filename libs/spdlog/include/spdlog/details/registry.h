@@ -8,7 +8,7 @@
 // If user requests a non existing logger, nullptr will be returned
 // This class is thread safe
 
-#include "spdlog/common.h"
+#include <spdlog/common.h>
 
 #include <chrono>
 #include <functional>
@@ -52,6 +52,10 @@ public:
     // Set global formatter. Each sink in each logger will get a clone of this object
     void set_formatter(std::unique_ptr<formatter> formatter);
 
+    void enable_backtrace(size_t n_messages);
+
+    void disable_backtrace();
+
     void set_level(level::level_enum log_level);
 
     void flush_on(level::level_enum log_level);
@@ -73,7 +77,7 @@ public:
 
     std::recursive_mutex &tp_mutex();
 
-    void set_automatic_registration(bool automatic_regsistration);
+    void set_automatic_registration(bool automatic_registration);
 
     static registry &instance();
 
@@ -94,6 +98,7 @@ private:
     std::unique_ptr<periodic_worker> periodic_flusher_;
     std::shared_ptr<logger> default_logger_;
     bool automatic_registration_ = true;
+    size_t backtrace_n_messages_ = 0;
 };
 
 } // namespace details

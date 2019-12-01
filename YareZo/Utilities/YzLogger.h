@@ -7,8 +7,7 @@
 #include <memory>
 
 #include "../src/Core.h"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/basic_file_sink.h"
+#include <spdlog/spdlog.h>
 
 namespace Yarezo {
     class YAREZO_API YzLogger {
@@ -29,6 +28,5 @@ namespace Yarezo {
 #define YZ_INFO(...)        ::Yarezo::YzLogger::GetEventLogger()->info(__VA_ARGS__)
 #define YZ_WARN(...)        ::Yarezo::YzLogger::GetEventLogger()->warn(__VA_ARGS__)
 #define YZ_ERROR(...)       ::Yarezo::YzLogger::GetEventLogger()->error(__VA_ARGS__)
-#define YZ_FATAL(...)       ::Yarezo::YzLogger::GetEventLogger()->fatal(__VA_ARGS__)
 
 #endif //YAREZO_YZLOGGER

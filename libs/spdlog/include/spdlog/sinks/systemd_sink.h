@@ -3,10 +3,14 @@
 
 #pragma once
 
-#include "spdlog/sinks/base_sink.h"
-#include "spdlog/details/null_mutex.h"
-#include "spdlog/details/synchronous_factory.h"
+#include <spdlog/sinks/base_sink.h>
+#include <spdlog/details/null_mutex.h>
+#include <spdlog/details/synchronous_factory.h>
 
+#include <array>
+#ifndef SD_JOURNAL_SUPPRESS_LOCATION
+#define SD_JOURNAL_SUPPRESS_LOCATION
+#endif
 #include <systemd/sd-journal.h>
 
 namespace spdlog {
@@ -23,13 +27,13 @@ class systemd_sink : public base_sink<Mutex>
 public:
     //
     systemd_sink()
-        : syslog_levels_{/* spdlog::level::trace      */ LOG_DEBUG,
+        : syslog_levels_{{/* spdlog::level::trace      */ LOG_DEBUG,
               /* spdlog::level::debug      */ LOG_DEBUG,
               /* spdlog::level::info       */ LOG_INFO,
               /* spdlog::level::warn       */ LOG_WARNING,
               /* spdlog::level::err        */ LOG_ERR,
               /* spdlog::level::critical   */ LOG_CRIT,
-              /* spdlog::level::off        */ LOG_INFO}
+              /* spdlog::level::off        */ LOG_INFO}}
     {}
 
     ~systemd_sink() override {}
@@ -38,7 +42,8 @@ public:
     systemd_sink &operator=(const systemd_sink &) = delete;
 
 protected:
-    std::array<int, 7> syslog_levels_;
+    using levels_array = std::array<int, 7>;
+    levels_array syslog_levels_;
 
     void sink_it_(const details::log_msg &msg) override
     {
@@ -55,24 +60,25 @@ protected:
         if (msg.source.empty())
         {
             // Note: function call inside '()' to avoid macro expansion
-            err = (sd_journal_send)(
-                "MESSAGE=%.*s", static_cast<int>(length), msg.payload.data(), "PRIORITY=%d", syslog_level(msg.level), nullptr);
+            err = (sd_journal_send)("MESSAGE=%.*s", static_cast<int>(length), msg.payload.data(), "PRIORITY=%d", syslog_level(msg.level),
+                "SYSLOG_IDENTIFIER=%.*s", static_cast<int>(msg.logger_name.size()), msg.logger_name.data(), nullptr);
         }
         else
         {
             err = (sd_journal_send)("MESSAGE=%.*s", static_cast<int>(length), msg.payload.data(), "PRIORITY=%d", syslog_level(msg.level),
-                "SOURCE_FILE=%s", msg.source.filename, "SOURCE_LINE=%d", msg.source.line, "SOURCE_FUNC=%s", msg.source.funcname, nullptr);
+                "SYSLOG_IDENTIFIER=%.*s", static_cast<int>(msg.logger_name.size()), msg.logger_name.data(), "CODE_FILE=%s",
+                msg.source.filename, "CODE_LINE=%d", msg.source.line, "CODE_FUNC=%s", msg.source.funcname, nullptr);
         }
 
         if (err)
         {
-            throw spdlog_ex("Failed writing to systemd", errno);
+            SPDLOG_THROW(spdlog_ex("Failed writing to systemd", errno));
         }
     }
 
     int syslog_level(level::level_enum l)
     {
-        return syslog_levels_.at(static_cast<int>(l));
+        return syslog_levels_.at(static_cast<levels_array::size_type>(l));
     }
 
     void flush_() override {}

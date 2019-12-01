@@ -6,7 +6,7 @@
 
 namespace Yarezo {
 
-    std::shared_ptr<Window> Window::CreateWindow(WindowProperties& properties) {
+    std::shared_ptr<Window> Window::CreateNewWindow(WindowProperties& properties) {
         return std::make_shared<GlfwWindow>(properties);
     }
     

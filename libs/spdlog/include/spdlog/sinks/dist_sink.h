@@ -4,9 +4,9 @@
 #pragma once
 
 #include "base_sink.h"
-#include "spdlog/details/log_msg.h"
-#include "spdlog/details/null_mutex.h"
-#include "spdlog/details/pattern_formatter.h"
+#include <spdlog/details/log_msg.h>
+#include <spdlog/details/null_mutex.h>
+#include <spdlog/details/pattern_formatter.h>
 
 #include <algorithm>
 #include <memory>
@@ -43,6 +43,11 @@ public:
     {
         std::lock_guard<Mutex> lock(base_sink<Mutex>::mutex_);
         sinks_ = std::move(sinks);
+    }
+
+    std::vector<std::shared_ptr<sink>> &sinks()
+    {
+        return sinks_;
     }
 
 protected:

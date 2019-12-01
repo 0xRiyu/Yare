@@ -1,9 +1,11 @@
 
 add_executable(Sandbox
-               src/Sandbox.cpp)
+        src/Sandbox.cpp)
 
-include_directories(${CMAKE_SOURCE_DIR}/YareZo/src)
+include_directories(
+        ${CMAKE_SOURCE_DIR}/YareZo)
 
-target_link_libraries(Sandbox YareZo)
-
-install(TARGETS Sandbox RUNTIME DESTINATION bin)
+target_link_libraries(Sandbox
+        PUBLIC
+        YareZo
+        )

@@ -16,13 +16,18 @@ add_library(YareZo
         Windows/GlfwWindow.h)
 
 include_directories(${CMAKE_SOURCE_DIR}/YareZo/src
-                    ${CMAKE_SOURCE_DIR}/YareZo/Utilities)
+                    ${CMAKE_SOURCE_DIR}/YareZo/Utilities
+                    ${CMAKE_SOURCE_DIR}/YareZo/Windows)
+
 
 find_package(Vulkan REQUIRED)
 
-install(TARGETS YareZo
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib)
+if(NOT TARGET spdlog)
+    # Stand-alone build
+    set(spdlog_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libs/spdlog/lib/cmake/spdlog")
+    find_package(spdlog REQUIRED)
+endif()
+
 
 if(WIN32)
     target_include_directories(YareZo
@@ -32,9 +37,17 @@ if(WIN32)
             ${CMAKE_SOURCE_DIR}/libs/spdlog/include
             )
 
+
     target_link_libraries(YareZo
             PUBLIC
             Vulkan::Vulkan
-            ${CMAKE_SOURCE_DIR}/libs/glfw-3.3.bin.WIN64/lib-mingw-w64/libglfw3.a
+            ${CMAKE_SOURCE_DIR}/libs/glfw-3.3.bin.WIN64/lib-vc2019/glfw3.lib
             )
+    target_link_libraries(YareZo
+            PRIVATE
+            spdlog::spdlog)
+
+
 endif()
+
+

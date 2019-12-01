@@ -4,11 +4,11 @@
 #pragma once
 
 #ifndef SPDLOG_HEADER_ONLY
-#include "spdlog/sinks/basic_file_sink.h"
+#include <spdlog/sinks/basic_file_sink.h>
 #endif
 
-#include "spdlog/common.h"
-#include "spdlog/details/os.h"
+#include <spdlog/common.h>
+#include <spdlog/details/os.h>
 
 namespace spdlog {
 namespace sinks {
@@ -28,7 +28,7 @@ SPDLOG_INLINE const filename_t &basic_file_sink<Mutex>::filename() const
 template<typename Mutex>
 SPDLOG_INLINE void basic_file_sink<Mutex>::sink_it_(const details::log_msg &msg)
 {
-    fmt::memory_buffer formatted;
+    memory_buf_t formatted;
     base_sink<Mutex>::formatter_->format(msg, formatted);
     file_helper_.write(formatted);
 }
