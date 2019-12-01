@@ -5,9 +5,11 @@
 #ifndef YAREZO_GLFWWINDOW_H
 #define YAREZO_GLFWWINDOW_H
 
+
+#include "src/Window.h"
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include "Window.h"
 
 namespace Yarezo{
     class GlfwWindow : public Window {

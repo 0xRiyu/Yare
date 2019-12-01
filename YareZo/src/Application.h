@@ -5,7 +5,7 @@
 #ifndef YAREZO_APPLICATION
 #define YAREZO_APPLICATION
 
-#include "Core.h"
+#include "src/Core.h"
 
 namespace Yarezo {
 

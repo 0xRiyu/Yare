@@ -2,7 +2,7 @@
 // Created by Drew on 2019-10-29.
 //
 
-#include "GlfwWindow.h"
+#include "Windows/GlfwWindow.h"
 
 namespace Yarezo {
 

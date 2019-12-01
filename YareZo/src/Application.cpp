@@ -2,11 +2,10 @@
 // Created by Drew on 2019-08-15.
 //
 
-#include "Window.h"
-#include "Vulkan.h"
-#include "Application.h"
-
-#include "YzLogger.h"
+#include "src/Window.h"
+#include "src/Application.h"
+#include "Utilities/YzLogger.h"
+#include "src/Vulkan.h"
 
 namespace Yarezo {
 

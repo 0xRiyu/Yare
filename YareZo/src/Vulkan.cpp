@@ -8,9 +8,10 @@
 #include <cstdint>
 #include <algorithm>
 
-#include "Vulkan.h"
-#include "YzLogger.h"
-#include "IOHelper.h"
+#include "Utilities/YzLogger.h"
+#include "Utilities/IOHelper.h"
+
+#include "src/Vulkan.h"
 
 namespace Yarezo {
 

@@ -5,21 +5,21 @@
 #define YAREZO_YZLOGGER
 
 #include <memory>
-
-#include "../src/Core.h"
 #include <spdlog/spdlog.h>
 
+#include "src/Core.h"
+
 namespace Yarezo {
-    class YAREZO_API YzLogger {
+    class YzLogger {
     public:
         static void Init();
         static void ChangeFilePath(const std::string& path);
         static void Update();
 
-        inline static std::shared_ptr<spdlog::logger>& GetEventLogger() { return m_Logger; }
+        inline static std::shared_ptr<spdlog::logger>& GetEventLogger() { return m_EngineLogger; }
 
     private:
-        static std::shared_ptr<spdlog::logger> m_Logger;
+        static std::shared_ptr<spdlog::logger> m_EngineLogger;
         static std::string m_FileOutputPath;
     };
 }

@@ -4,14 +4,11 @@
 #ifndef YAREZO_VULKAN_H
 #define YAREZO_VULKAN_H
 
-
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
 #include <vector>
 #include <memory>
 #include <iostream>
 
-#include "Window.h"
+#include "Windows/GlfwWindow.h"
 
 namespace Yarezo {
 

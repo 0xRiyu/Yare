@@ -6,7 +6,8 @@
 #define YAREZO_WINDOW
 
 #include <memory>
-#include "Core.h"
+
+#include "src/Core.h"
 
 namespace Yarezo {
     struct WindowProperties {
@@ -14,7 +15,7 @@ namespace Yarezo {
         unsigned short height;
     };
 
-    class YAREZO_API Window {
+    class Window {
       
     public:
 

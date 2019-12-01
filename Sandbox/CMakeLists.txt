@@ -1,11 +1,27 @@
+cmake_minimum_required(VERSION 3.14)
+project(Sandbox)
 
-add_executable(Sandbox
-        src/Sandbox.cpp)
+#--------------------------------------------------------------------
+# Set sources
+#--------------------------------------------------------------------
+set (SANDBOX_SOURCES
+        src/Sandbox.cpp
+)
 
-include_directories(
-        ${CMAKE_SOURCE_DIR}/YareZo)
+set (SANDBOX_HEADERS
+)
 
-target_link_libraries(Sandbox
-        PUBLIC
-        YareZo
-        )
+#--------------------------------------------------------------------
+# Create executable project
+#--------------------------------------------------------------------
+add_executable(${PROJECT_NAME} ${SANDBOX_SOURCES} ${SANDBOX_HEADERS})
+
+#--------------------------------------------------------------------
+# Include directories from the Engine - Soon to restrict to just the interface
+#--------------------------------------------------------------------
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/YareZo)
+
+#--------------------------------------------------------------------
+# Link to the Engine
+#--------------------------------------------------------------------
+target_link_libraries(${PROJECT_NAME} YareZo::Engine)

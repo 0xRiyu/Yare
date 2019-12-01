@@ -1,53 +1,96 @@
+#--------------------------------------------------------------------
+# Set Engine Source Files
+#--------------------------------------------------------------------
+set (YAREZOENGINE_SOURCES
+        # Source
+        src/Application.cpp
+        src/Vulkan.cpp
 
-add_library(YareZo
+        # Utilities
+        Utilities/YzLogger.cpp
+        Utilities/IOHelper.cpp
+
+        # Windows Platform Specific
+        Windows/GlfwWindow.cpp
+)
+
+#--------------------------------------------------------------------
+# Set Engine Header Files
+#--------------------------------------------------------------------
+set (YAREZOENGINE_HEADERS
+        # API
         YareZo.h
+
+        # Source
         src/Core.h
         src/EntryPoint.h
         src/Application.h
-        src/Application.cpp
         src/Window.h
-        src/Vulkan.cpp
         src/Vulkan.h
+
+        # Utilities
         Utilities/YzLogger.h
-        Utilities/YzLogger.cpp
         Utilities/IOHelper.h
-        Utilities/IOHelper.cpp
-        Windows/GlfwWindow.cpp
-        Windows/GlfwWindow.h)
 
-include_directories(${CMAKE_SOURCE_DIR}/YareZo/src
-                    ${CMAKE_SOURCE_DIR}/YareZo/Utilities
-                    ${CMAKE_SOURCE_DIR}/YareZo/Windows)
+        # Windows Platform Specific
+        Windows/GlfwWindow.h
+)
 
+#--------------------------------------------------------------------
+# Define the library & create an alias
+#--------------------------------------------------------------------
+add_library(${PROJECT_NAME} STATIC ${YAREZOENGINE_SOURCES} ${YAREZOENGINE_HEADERS})
+add_library(YareZo::Engine ALIAS ${PROJECT_NAME})
 
+#--------------------------------------------------------------------
+# Set include directories for all build configurations
+#--------------------------------------------------------------------
+target_include_directories(${PROJECT_NAME}
+        PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+        PUBLIC ${CMAKE_SOURCE_DIR}/libs/spdlog/include
+        PRIVATE ${CMAKE_SOURCE_DIR}/libs/glm)
+
+#--------------------------------------------------------------------
+# Find static libraries that are required
+#--------------------------------------------------------------------
 find_package(Vulkan REQUIRED)
 
 if(NOT TARGET spdlog)
-    # Stand-alone build
-    set(spdlog_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libs/spdlog/lib/cmake/spdlog")
+    # Pre-Compiled Library
+    set(spdlog_DIR "${CMAKE_SOURCE_DIR}/libs/spdlog/lib/cmake/spdlog")
     find_package(spdlog REQUIRED)
 endif()
 
+#--------------------------------------------------------------------
+# Link the static libraries
+#--------------------------------------------------------------------
+target_link_libraries(${PROJECT_NAME}
+        PUBLIC Vulkan::Vulkan
+        PRIVATE spdlog::spdlog)
 
+#--------------------------------------------------------------------
+# Windows Specific configurations
+#--------------------------------------------------------------------
 if(WIN32)
-    target_include_directories(YareZo
-            PUBLIC
-            ${CMAKE_SOURCE_DIR}/libs/glm
-            ${CMAKE_SOURCE_DIR}/libs/glfw-3.3.bin.WIN64/include
-            ${CMAKE_SOURCE_DIR}/libs/spdlog/include
-            )
 
 
-    target_link_libraries(YareZo
-            PUBLIC
-            Vulkan::Vulkan
-            ${CMAKE_SOURCE_DIR}/libs/glfw-3.3.bin.WIN64/lib-vc2019/glfw3.lib
-            )
-    target_link_libraries(YareZo
-            PRIVATE
-            spdlog::spdlog)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
+        target_include_directories(${PROJECT_NAME}
+            PUBLIC  ${CMAKE_SOURCE_DIR}/libs/glfw-vc2019/include)
 
+        target_link_libraries(${PROJECT_NAME}
+            PUBLIC ${CMAKE_SOURCE_DIR}/libs/glfw-vc2019/lib/glfw3.lib)
+
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MinGW")
+
+        target_include_directories(${PROJECT_NAME}
+            PUBLIC  ${CMAKE_SOURCE_DIR}/libs/glfw-mingw/include)
+
+        target_link_libraries(${PROJECT_NAME}
+            PUBLIC ${CMAKE_SOURCE_DIR}/libs/glfw-mingw/lib/glfw3.lib)
+
+    endif()
 endif()
 
 
