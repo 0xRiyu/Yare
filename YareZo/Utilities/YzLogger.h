@@ -28,5 +28,7 @@ namespace Yarezo {
 #define YZ_INFO(...)        ::Yarezo::YzLogger::GetEventLogger()->info(__VA_ARGS__)
 #define YZ_WARN(...)        ::Yarezo::YzLogger::GetEventLogger()->warn(__VA_ARGS__)
 #define YZ_ERROR(...)       ::Yarezo::YzLogger::GetEventLogger()->error(__VA_ARGS__)
+#define YZ_CRITICAL(...)    ::Yarezo::YzLogger::GetEventLogger()->critical(__VA_ARGS__)
+
 
 #endif //YAREZO_YZLOGGER

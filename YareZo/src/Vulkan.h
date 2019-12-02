@@ -38,6 +38,9 @@ namespace Yarezo {
         void waitIdle();
 
     private:
+
+        void cleanupSwapChain();
+
         void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
         std::vector<const char*> getRequiredExtensions();
         bool checkValidationLayerSupport();
@@ -55,6 +58,7 @@ namespace Yarezo {
         void createCommandPool();
         void createCommandBuffers();
         void createSyncObjects();
+        void recreateSwapChain();
 
         bool isDeviceSuitable(VkPhysicalDevice device);
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
@@ -64,7 +68,7 @@ namespace Yarezo {
         SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
         VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, WindowProperties& properties);
+        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
         VkShaderModule createShaderModule(const std::vector<char>& shader_code);
 
 
@@ -103,6 +107,8 @@ namespace Yarezo {
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
+
+        bool framebufferResized = false;
 
         // Objects from outside this class
         Window* m_NativeWindow;

@@ -37,33 +37,43 @@ namespace Yarezo {
     }
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
+        cleanupSwapChain();
+
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore[i], nullptr);
             vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore[i], nullptr);
             vkDestroyFence(m_Device, m_InFlightFences[i], nullptr);
         }
+
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
-
-        for (auto& framebuffer : m_SwapChainFramebuffers) {
-            vkDestroyFramebuffer(m_Device, framebuffer, nullptr);
-        }
-
-        vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
-        vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
-
-        for (auto& imageView: m_SwapChainImageViews) {
-            vkDestroyImageView(m_Device, imageView, nullptr);
-        }
 
         if (enableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
         }
 
-        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+       
         vkDestroyDevice(m_Device, nullptr);
         vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
         vkDestroyInstance(m_Instance, nullptr);
+    }
+
+    void GraphicsDevice_Vulkan::cleanupSwapChain() {
+
+        for (auto& framebuffer : m_SwapChainFramebuffers) {
+            vkDestroyFramebuffer(m_Device, framebuffer, nullptr);
+        }
+
+        vkFreeCommandBuffers(m_Device, m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
+
+        vkDestroyPipeline(m_Device, m_GraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(m_Device, m_PipelineLayout, nullptr);
+        vkDestroyRenderPass(m_Device, m_RenderPass, nullptr);
+
+        for (auto& imageView : m_SwapChainImageViews) {
+            vkDestroyImageView(m_Device, imageView, nullptr);
+        }
+
+        vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
     }
 
 
@@ -88,7 +98,19 @@ namespace Yarezo {
         vkWaitForFences(m_Device, 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult result = vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
+
+        // Todo: This is pretty bad, need to think of a better way of handling vulkans access to the GlfwWindow class
+        GlfwWindow* window = static_cast<GlfwWindow*>(m_NativeWindow);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->windowResized) {
+            recreateSwapChain();
+            return;
+        }
+        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+            YZ_ERROR("Vulkan failed to aquire a swapchain image.");
+            throw std::runtime_error("failed to acquire swap chain image!");
+        }
 
         if (m_ImagesInFlight[imageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(m_Device, 1, &m_ImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -128,7 +150,15 @@ namespace Yarezo {
         presentInfo.pSwapchains = swapChains;
         presentInfo.pImageIndices = &imageIndex;
         presentInfo.pResults = nullptr; // Optional
-        vkQueuePresentKHR(m_PresentQueue, &presentInfo);
+        result = vkQueuePresentKHR(m_PresentQueue, &presentInfo);
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+            recreateSwapChain();
+        }
+        else if (result != VK_SUCCESS) {
+            YZ_ERROR("Vulkan failed to present a swap chain image.");
+            throw std::runtime_error("failed to present swap chain image!");
+        }
 
         vkQueueWaitIdle(m_PresentQueue);
 
@@ -335,8 +365,7 @@ namespace Yarezo {
 
         auto surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
         auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        auto windowProps = m_NativeWindow->getWindowProperties();
-        auto extent = chooseSwapExtent(swapChainSupport.capabilities, windowProps);
+        auto extent = chooseSwapExtent(swapChainSupport.capabilities);
 
         // Request one more image to render to than the minimum so we dont wait for driver operations
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
@@ -698,6 +727,36 @@ namespace Yarezo {
         }
     }
 
+    void GraphicsDevice_Vulkan::recreateSwapChain() {
+        int width = 0;
+        int height = 0;
+        GLFWwindow* window = static_cast<GLFWwindow*>(m_NativeWindow->getNativeWindow());
+
+        glfwGetFramebufferSize(window, &width, &height);
+
+        if (width == 0 || height == 0) {
+            YZ_INFO("Application was minimized.");
+            while (width == 0 || height == 0) {
+                glfwGetFramebufferSize(window, &width, &height);
+                glfwWaitEvents();
+            }
+            YZ_INFO("Application is no longer minimized.");
+        }
+        YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: " + std::to_string(width) + ", " + std::to_string(height));
+
+
+        vkDeviceWaitIdle(m_Device);
+        cleanupSwapChain();
+
+        createSwapChain();
+        createImageViews();
+        createRenderPass();
+        createGraphicsPipeline();
+        createFramebuffers();
+        createCommandBuffers();
+
+    }
+
     bool GraphicsDevice_Vulkan::isDeviceSuitable(VkPhysicalDevice device) {
         QueueFamilyIndices indices = findQueueFamilies(device);
 
@@ -728,12 +787,10 @@ namespace Yarezo {
 
             if (indices.presentFamily < 0 && presentSupport) {
                 indices.presentFamily = i;
-                YZ_INFO("present family for surface support found.");
             }
 
             if (indices.graphicsFamily < 0 && queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
                 indices.graphicsFamily = i;
-                YZ_INFO("Graphics family found.");
             }
 
             if (indices.isComplete()) break;
@@ -806,11 +863,15 @@ namespace Yarezo {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D GraphicsDevice_Vulkan::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, WindowProperties& properties) {
+    VkExtent2D GraphicsDevice_Vulkan::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
         } else {
-            VkExtent2D actualExtent = {properties.width, properties.height};
+            int width, height;
+            glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_NativeWindow->getNativeWindow()), &width, &height);
+
+            
+            VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
             actualExtent.width = std::max(capabilities.minImageExtent.width,
                                           std::min(capabilities.maxImageExtent.width, actualExtent.width));

@@ -27,8 +27,8 @@ namespace Yarezo {
         GraphicsDevice_Vulkan vulkanDevice(window.get());
 
         while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(window->getNativeWindow()))) {
-            window->OnUpdate();
             vulkanDevice.drawFrame();
+            window->OnUpdate();
         }
 
         vulkanDevice.waitIdle();
