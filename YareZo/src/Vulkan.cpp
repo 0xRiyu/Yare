@@ -39,6 +39,9 @@ namespace Yarezo {
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
 
+        vkDestroyBuffer(m_Device, m_VertexBuffer, nullptr);
+        vkFreeMemory(m_Device, m_VertexBufferMemory, nullptr);
+
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(m_Device, m_RenderFinishedSemaphore[i], nullptr);
             vkDestroySemaphore(m_Device, m_ImageAvailableSemaphore[i], nullptr);
@@ -90,6 +93,7 @@ namespace Yarezo {
         createGraphicsPipeline();
         createFramebuffers();
         createCommandPool();
+        createVertexBuffer();
         createCommandBuffers();
         createSyncObjects();
     }
@@ -509,12 +513,16 @@ namespace Yarezo {
 
         VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
 
+        auto bindingDescription = Vertex::getBindingDescription();
+        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 0;
-        vertexInputInfo.pVertexBindingDescriptions = nullptr; // Optional param
-        vertexInputInfo.vertexAttributeDescriptionCount = 0;
-        vertexInputInfo.pVertexAttributeDescriptions = nullptr; // Optional param
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -655,6 +663,39 @@ namespace Yarezo {
         }
     }
 
+    void GraphicsDevice_Vulkan::createVertexBuffer() {
+        VkBufferCreateInfo bufferInfo = {};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &m_VertexBuffer) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan was unable to create a vertex buffer.");
+            throw std::runtime_error("failed to create vertex buffer");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(m_Device, m_VertexBuffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &m_VertexBufferMemory) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan failed to allocate vertex buffer memory!");
+            throw std::runtime_error("Vulkan failed to allocate vertex buffer memory!");
+        }
+
+        vkBindBufferMemory(m_Device, m_VertexBuffer, m_VertexBufferMemory, 0);
+
+        void* data;
+        vkMapMemory(m_Device, m_VertexBufferMemory, 0, bufferInfo.size, 0, &data);
+        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
+        vkUnmapMemory(m_Device, m_VertexBufferMemory);
+    }
+
 
     void GraphicsDevice_Vulkan::createCommandBuffers() {
         m_CommandBuffers.resize(m_SwapChainFramebuffers.size());
@@ -693,7 +734,12 @@ namespace Yarezo {
             vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             vkCmdBindPipeline(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
-            vkCmdDraw(m_CommandBuffers[i], 3, 1, 0, 0);
+
+            VkBuffer vertexBuffers[] = { m_VertexBuffer };
+            VkDeviceSize offsets[] = { 0 };
+            vkCmdBindVertexBuffers(m_CommandBuffers[i], 0, 1, vertexBuffers, offsets);
+
+            vkCmdDraw(m_CommandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
             vkCmdEndRenderPass(m_CommandBuffers[i]);
 
@@ -706,25 +752,25 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createSyncObjects() {
         m_ImageAvailableSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
-        m_RenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
-        m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        m_ImagesInFlight.resize(m_SwapChainImages.size(), VK_NULL_HANDLE);
+m_RenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
+m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+m_ImagesInFlight.resize(m_SwapChainImages.size(), VK_NULL_HANDLE);
 
-        VkSemaphoreCreateInfo semaphoreInfo = {};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+VkSemaphoreCreateInfo semaphoreInfo = {};
+semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        VkFenceCreateInfo fenceInfo = {};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+VkFenceCreateInfo fenceInfo = {};
+fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
-                vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan failed to create sync objects. (Semaphores or Fence)");
-                throw std::runtime_error("Vulkan failed to create sync objects. (Semaphores or Fence)");
-            }
-        }
+for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+    if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
+        vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
+        vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
+        YZ_ERROR("Vulkan failed to create sync objects. (Semaphores or Fence)");
+        throw std::runtime_error("Vulkan failed to create sync objects. (Semaphores or Fence)");
+    }
+}
     }
 
     void GraphicsDevice_Vulkan::recreateSwapChain() {
@@ -780,7 +826,7 @@ namespace Yarezo {
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
         int i = 0;
-        for (const auto& queueFamily: queueFamilies){
+        for (const auto& queueFamily : queueFamilies) {
             VkBool32 presentSupport = false;
 
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
@@ -799,6 +845,20 @@ namespace Yarezo {
         }
 
         return indices;
+    }
+
+    uint32_t GraphicsDevice_Vulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
+        VkPhysicalDeviceMemoryProperties memProperties;
+        vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &memProperties);
+
+        for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
+            if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+   
+        YZ_ERROR("Vulkan failed to find a suitable memory type.");
+        throw std::runtime_error("Vulkan failed to find a suitable memory type.");
     }
 
     bool GraphicsDevice_Vulkan::checkDeviceExtensionSupport(VkPhysicalDevice device) {

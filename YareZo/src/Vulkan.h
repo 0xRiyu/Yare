@@ -7,10 +7,40 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <glm.hpp>
+#include <array>
 
 #include "Windows/GlfwWindow.h"
 
 namespace Yarezo {
+
+    struct Vertex {
+        glm::vec2 pos;
+        glm::vec3 color;
+
+        static VkVertexInputBindingDescription getBindingDescription() {
+            VkVertexInputBindingDescription bindingDescription = {};
+            bindingDescription.binding = 0;
+            bindingDescription.stride = sizeof(Vertex);
+            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+            return bindingDescription;
+        }
+
+        static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
+            std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
+            attributeDescriptions[0].binding = 0;
+            attributeDescriptions[0].location = 0;
+            attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+            attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+            attributeDescriptions[1].binding = 0;
+            attributeDescriptions[1].location = 1;
+            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+            attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+            return attributeDescriptions;
+        }
+    };
 
     struct QueueFamilyIndices {
         int graphicsFamily = -1;
@@ -56,6 +86,7 @@ namespace Yarezo {
         void createGraphicsPipeline();
         void createFramebuffers();
         void createCommandPool();
+        void createVertexBuffer();
         void createCommandBuffers();
         void createSyncObjects();
         void recreateSwapChain();
@@ -63,6 +94,7 @@ namespace Yarezo {
         bool isDeviceSuitable(VkPhysicalDevice device);
         bool checkDeviceExtensionSupport(VkPhysicalDevice device);
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
+        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
         // Swap Chain required functions
         SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
@@ -81,6 +113,13 @@ namespace Yarezo {
         };
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
+
+        // Demo Triangle
+        const std::vector<Vertex> vertices = {
+            {{0.0f, -0.5f}, {0.556f, 0.164f, 0.321f}},
+            {{0.5f, 0.5f}, {0.0f, 0.203f, 0.584f}},
+            {{-0.5f, 0.5f}, {0.521f, 0.490f, 0.215f}}
+        };
 
 
         // Class members created by GraphicsDevice_Vulkan class
@@ -107,8 +146,8 @@ namespace Yarezo {
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
-
-        bool framebufferResized = false;
+        VkBuffer m_VertexBuffer;
+        VkDeviceMemory m_VertexBufferMemory;
 
         // Objects from outside this class
         Window* m_NativeWindow;
