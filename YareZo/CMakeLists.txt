@@ -47,7 +47,6 @@ add_library(YareZo::Engine ALIAS ${PROJECT_NAME})
 #--------------------------------------------------------------------
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-        PUBLIC ${CMAKE_SOURCE_DIR}/libs/spdlog/include
         PRIVATE ${CMAKE_SOURCE_DIR}/libs/glm)
 
 #--------------------------------------------------------------------
@@ -55,10 +54,22 @@ target_include_directories(${PROJECT_NAME}
 #--------------------------------------------------------------------
 find_package(Vulkan REQUIRED)
 
+
 if(NOT TARGET spdlog)
-    # Pre-Compiled Library
-    set(spdlog_DIR "${CMAKE_SOURCE_DIR}/libs/spdlog/lib/cmake/spdlog")
-    find_package(spdlog REQUIRED)
+
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+        target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/spdlog/x64-Debug/include)
+
+        set(spdlog_DIR "${CMAKE_SOURCE_DIR}/libs/spdlog/x64-Debug/lib/cmake/spdlog")
+        find_package(spdlog REQUIRED)
+    endif()
+
+    if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/spdlog/x64-Release/include)
+        set(spdlog_DIR "${CMAKE_SOURCE_DIR}/libs/spdlog/x64-Release/lib/cmake/spdlog")
+        find_package(spdlog REQUIRED)
+    endif()
+
 endif()
 
 #--------------------------------------------------------------------
@@ -72,8 +83,6 @@ target_link_libraries(${PROJECT_NAME}
 # Windows Specific configurations
 #--------------------------------------------------------------------
 if(WIN32)
-
-
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
         target_include_directories(${PROJECT_NAME}
@@ -89,7 +98,6 @@ if(WIN32)
 
         target_link_libraries(${PROJECT_NAME}
             PUBLIC ${CMAKE_SOURCE_DIR}/libs/glfw-mingw/lib/glfw3.lib)
-
     endif()
 endif()
 
