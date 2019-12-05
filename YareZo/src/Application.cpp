@@ -29,6 +29,7 @@ namespace Yarezo {
         // Output some fps info to detemine if we nuke performace
         double previousTime = glfwGetTime();
         int frameCount = 0;
+      
 
         while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(window->getNativeWindow()))) {
 

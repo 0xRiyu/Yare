@@ -81,20 +81,38 @@ namespace Yarezo {
 
 
     void GraphicsDevice_Vulkan::initVulkan() {
+        // create our link between our APP and the vulkan library
         createInstance();
+        // Setup some validation layers such that if theres an issue with us
+        // Interacting with the library, then it may catch our faults.
         setupDebugMessenger();
         // Surface must be created before picking a physical device
         createSurface();
+        // Pick a Gpu that is suitable for rendering
         pickPhysicalDevice();
+        // Create a logical device, such that we can interface with the physical device we selected
         createLogicalDevice();
+        // Create a swapchain, a swapchain is responsible for maintaining the images
+        // that will be presented to the user. 
         createSwapChain();
+        // Create and image-view, which will represent a 'view' of an image,
+        // this way we can interface with images without modifying the underlying image
         createImageViews();
+        // Create the Renderpass, the render pass is responsible for the draw calls.
+        // It creates a description/map of a graphics job.
         createRenderPass();
+        // Create the graphics Pipeline - A comment cant suffice what this is
         createGraphicsPipeline();
+        // Create frame buffers for the swapchain.
         createFramebuffers();
+        // Create a command pool which will manage the memory to store command buffers.
         createCommandPool();
+        // Create a vertex buffer, which will store our arbitrary data read by the GPU.
+        // Our triangle will be loaded into this buffer to be rendered.
         createVertexBuffer();
+        // Create a command buffer which will record commands that are submitted for execution on the GPU
         createCommandBuffers();
+        // Create some semophores/fences to manage workloads in flight to the gpu
         createSyncObjects();
     }
 
@@ -113,7 +131,7 @@ namespace Yarezo {
         }
         else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             YZ_ERROR("Vulkan failed to aquire a swapchain image.");
-            throw std::runtime_error("failed to acquire swap chain image!");
+            throw std::runtime_error("Vulkan failed to acquire swap chain image!");
         }
 
         if (m_ImagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -140,7 +158,7 @@ namespace Yarezo {
         vkResetFences(m_Device, 1, &m_InFlightFences[m_CurrentFrame]);
         if (vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to submit draw command buffer.");
-            throw std::runtime_error("failed to submit draw command buffer!");
+            throw std::runtime_error("Vulkan failed to submit draw command buffer!");
         }
 
         VkPresentInfoKHR presentInfo = {};
@@ -161,7 +179,7 @@ namespace Yarezo {
         }
         else if (result != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to present a swap chain image.");
-            throw std::runtime_error("failed to present swap chain image!");
+            throw std::runtime_error("Vulkan failed to present swap chain image!");
         }
 
         vkQueueWaitIdle(m_PresentQueue);
@@ -467,7 +485,7 @@ namespace Yarezo {
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
-
+        
         VkSubpassDependency dependency = {};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.dstSubpass = 0;
@@ -664,36 +682,27 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createVertexBuffer() {
-        VkBufferCreateInfo bufferInfo = {};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = sizeof(vertices[0]) * vertices.size();
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        
+        VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-        if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &m_VertexBuffer) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan was unable to create a vertex buffer.");
-            throw std::runtime_error("failed to create vertex buffer");
-        }
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(m_Device, m_VertexBuffer, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &m_VertexBufferMemory) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan failed to allocate vertex buffer memory!");
-            throw std::runtime_error("Vulkan failed to allocate vertex buffer memory!");
-        }
-
-        vkBindBufferMemory(m_Device, m_VertexBuffer, m_VertexBufferMemory, 0);
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(m_Device, m_VertexBufferMemory, 0, bufferInfo.size, 0, &data);
-        memcpy(data, vertices.data(), (size_t)bufferInfo.size);
-        vkUnmapMemory(m_Device, m_VertexBufferMemory);
+        vkMapMemory(m_Device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, vertices.data(), (size_t)bufferSize);
+        vkUnmapMemory(m_Device, stagingBufferMemory);
+
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
+
+        copyBuffer(stagingBuffer, m_VertexBuffer, bufferSize);
+
+        vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
+        vkFreeMemory(m_Device, stagingBufferMemory, nullptr);
     }
 
 
@@ -752,25 +761,25 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createSyncObjects() {
         m_ImageAvailableSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
-m_RenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
-m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-m_ImagesInFlight.resize(m_SwapChainImages.size(), VK_NULL_HANDLE);
+        m_RenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
+        m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+        m_ImagesInFlight.resize(m_SwapChainImages.size(), VK_NULL_HANDLE);
 
-VkSemaphoreCreateInfo semaphoreInfo = {};
-semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        VkSemaphoreCreateInfo semaphoreInfo = {};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-VkFenceCreateInfo fenceInfo = {};
-fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        VkFenceCreateInfo fenceInfo = {};
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-    if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
-        vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
-        vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
-        YZ_ERROR("Vulkan failed to create sync objects. (Semaphores or Fence)");
-        throw std::runtime_error("Vulkan failed to create sync objects. (Semaphores or Fence)");
-    }
-}
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
+                vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
+                YZ_ERROR("Vulkan failed to create sync objects. (Semaphores or Fence)");
+                throw std::runtime_error("Vulkan failed to create sync objects. (Semaphores or Fence)");
+            }
+        }
     }
 
     void GraphicsDevice_Vulkan::recreateSwapChain() {
@@ -801,6 +810,69 @@ for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         createFramebuffers();
         createCommandBuffers();
 
+    }
+
+    void GraphicsDevice_Vulkan::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+        VkBufferCreateInfo bufferInfo = {};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateBuffer(m_Device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan was unable to create a buffer.");
+            throw std::runtime_error("failed to create a buffer");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(m_Device, buffer, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+        if (vkAllocateMemory(m_Device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan failed to allocate buffer memory!");
+            throw std::runtime_error("Vulkan failed to allocate buffer memory!");
+        }
+
+        vkBindBufferMemory(m_Device, buffer, bufferMemory, 0);
+    }
+
+    void GraphicsDevice_Vulkan::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+        VkCommandBufferAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandPool = m_CommandPool;
+        allocInfo.commandBufferCount = 1;
+
+        VkCommandBuffer commandBuffer;
+        vkAllocateCommandBuffers(m_Device, &allocInfo, &commandBuffer);
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+        VkBufferCopy copyRegion = {};
+        copyRegion.srcOffset = 0; // Optional
+        copyRegion.dstOffset = 0; // Optional
+        copyRegion.size = size;
+        vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+        vkEndCommandBuffer(commandBuffer);
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &commandBuffer;
+
+        vkQueueSubmit(m_GraphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_GraphicsQueue);
+
+        vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
     }
 
     bool GraphicsDevice_Vulkan::isDeviceSuitable(VkPhysicalDevice device) {
