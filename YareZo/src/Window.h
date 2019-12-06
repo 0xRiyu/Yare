@@ -20,10 +20,10 @@ namespace Yarezo {
     public:
 
         virtual ~Window() = default;
-        virtual void OnUpdate() = 0;
+        virtual void onUpdate() = 0;
         virtual WindowProperties getWindowProperties() = 0;
 
-        static std::shared_ptr<Window> CreateNewWindow(WindowProperties& properties);
+        static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
 
     protected:

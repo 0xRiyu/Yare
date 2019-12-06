@@ -11,13 +11,13 @@ namespace Yarezo {
         app->windowResized = true;
     }
 
-    std::shared_ptr<Window> Window::CreateNewWindow(WindowProperties& properties) {
+    std::shared_ptr<Window> Window::createNewWindow(WindowProperties& properties) {
         return std::make_shared<GlfwWindow>(properties);
     }
     
     GlfwWindow::GlfwWindow(WindowProperties& properties) {
         m_Properties = properties;
-        Init(properties);
+        init(properties);
     }
 
     GlfwWindow::~GlfwWindow() {
@@ -25,7 +25,7 @@ namespace Yarezo {
         glfwTerminate();
     }
 
-    void GlfwWindow::Init(WindowProperties& properties) {
+    void GlfwWindow::init(WindowProperties& properties) {
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_Window = glfwCreateWindow(properties.width, properties.height, "YareZo!", nullptr, nullptr);
@@ -33,7 +33,7 @@ namespace Yarezo {
         glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
     }
     
-    void GlfwWindow::OnUpdate() {
+    void GlfwWindow::onUpdate() {
         glfwPollEvents();
         windowResized = false;
     }

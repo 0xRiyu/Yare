@@ -7,11 +7,11 @@
 
 #ifdef YZ_PLATFORM_WINDOWS
 
-extern Yarezo::Application* Yarezo::CreateApplication();
+extern Yarezo::Application* Yarezo::createApplication();
 
 int main() {
-    auto app = Yarezo::CreateApplication();
-    app->Run();
+    auto app = Yarezo::createApplication();
+    app->run();
     delete app;
 }
 

@@ -12,6 +12,6 @@ public:
     ~Sandbox() override = default;
 };
 
-Yarezo::Application* Yarezo::CreateApplication() {
+Yarezo::Application* Yarezo::createApplication() {
     return new Sandbox();
 }

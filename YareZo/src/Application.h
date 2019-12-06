@@ -13,10 +13,10 @@ namespace Yarezo {
     public:
         Application();
         virtual ~Application();
-        void Run();
+        void run();
     };
 
-    Application* CreateApplication();
+    Application* createApplication();
 }
 
 

@@ -12,7 +12,7 @@ namespace Yarezo {
     std::shared_ptr<spdlog::logger> YzLogger::m_EngineLogger;
     std::string YzLogger::m_FileOutputPath;
 
-    void YzLogger::Init() {
+    void YzLogger::init() {
 
         std::string logFileName = "YareZo_Engine_Log.txt";
         std::vector<spdlog::sink_ptr> sinks;
@@ -23,12 +23,12 @@ namespace Yarezo {
         m_EngineLogger = std::make_shared<spdlog::logger>("YareZo", begin(sinks), end(sinks));
     }
 
-    void YzLogger::ChangeFilePath(const std::string& path) {
+    void YzLogger::changeFilePath(const std::string& path) {
         m_FileOutputPath = path;
-        Update();
+        update();
     }
 
-    void YzLogger::Update() {
+    void YzLogger::update() {
         // Update the logger
     }
 }

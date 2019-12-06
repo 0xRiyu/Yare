@@ -12,11 +12,11 @@
 namespace Yarezo {
     class YzLogger {
     public:
-        static void Init();
-        static void ChangeFilePath(const std::string& path);
-        static void Update();
+        static void init();
+        static void changeFilePath(const std::string& path);
+        static void update();
 
-        inline static std::shared_ptr<spdlog::logger>& GetEventLogger() { return m_EngineLogger; }
+        inline static std::shared_ptr<spdlog::logger>& getEventLogger() { return m_EngineLogger; }
 
     private:
         static std::shared_ptr<spdlog::logger> m_EngineLogger;
@@ -24,11 +24,11 @@ namespace Yarezo {
     };
 }
 
-#define YZ_TRACE(...)       ::Yarezo::YzLogger::GetEventLogger()->trace(__VA_ARGS__)
-#define YZ_INFO(...)        ::Yarezo::YzLogger::GetEventLogger()->info(__VA_ARGS__)
-#define YZ_WARN(...)        ::Yarezo::YzLogger::GetEventLogger()->warn(__VA_ARGS__)
-#define YZ_ERROR(...)       ::Yarezo::YzLogger::GetEventLogger()->error(__VA_ARGS__)
-#define YZ_CRITICAL(...)    ::Yarezo::YzLogger::GetEventLogger()->critical(__VA_ARGS__)
+#define YZ_TRACE(...)       ::Yarezo::YzLogger::getEventLogger()->trace(__VA_ARGS__)
+#define YZ_INFO(...)        ::Yarezo::YzLogger::getEventLogger()->info(__VA_ARGS__)
+#define YZ_WARN(...)        ::Yarezo::YzLogger::getEventLogger()->warn(__VA_ARGS__)
+#define YZ_ERROR(...)       ::Yarezo::YzLogger::getEventLogger()->error(__VA_ARGS__)
+#define YZ_CRITICAL(...)    ::Yarezo::YzLogger::getEventLogger()->critical(__VA_ARGS__)
 
 
 #endif //YAREZO_YZLOGGER

@@ -16,23 +16,21 @@ namespace Yarezo {
     Application::~Application() {
     }
 
-    void Application::Run() {
+    void Application::run() {
 
-        Yarezo::YzLogger::Init();
+        Yarezo::YzLogger::init();
         YZ_WARN("Logger Init Done");
         //Create a window
         WindowProperties props = {800, 600};
 
-        auto window = Window::CreateNewWindow(props);
+        auto window = Window::createNewWindow(props);
         GraphicsDevice_Vulkan vulkanDevice(window.get());
 
         // Output some fps info to detemine if we nuke performace
         double previousTime = glfwGetTime();
         int frameCount = 0;
-      
 
         while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(window->getNativeWindow()))) {
-
             double currentTime = glfwGetTime();
             frameCount++;
 
@@ -44,7 +42,7 @@ namespace Yarezo {
             }
 
             vulkanDevice.drawFrame();
-            window->OnUpdate();
+            window->onUpdate();
         }
 
         vulkanDevice.waitIdle();

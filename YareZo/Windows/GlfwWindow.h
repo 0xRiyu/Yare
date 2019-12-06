@@ -5,7 +5,6 @@
 #ifndef YAREZO_GLFWWINDOW_H
 #define YAREZO_GLFWWINDOW_H
 
-
 #include "src/Window.h"
 
 #define GLFW_INCLUDE_VULKAN
@@ -17,14 +16,14 @@ namespace Yarezo{
         GlfwWindow(WindowProperties& properties);
         virtual ~GlfwWindow();
         
-        void OnUpdate() override;
+        void onUpdate() override;
 
         inline virtual WindowProperties getWindowProperties() { return m_Properties; }
         inline virtual void* getNativeWindow() const { return m_Window; };
 
         bool windowResized = false;
     private:
-        void Init(WindowProperties& properties);
+        void init(WindowProperties& properties);
         GLFWwindow* m_Window;
     };
 }

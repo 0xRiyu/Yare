@@ -87,6 +87,7 @@ namespace Yarezo {
         void createFramebuffers();
         void createCommandPool();
         void createVertexBuffer();
+        void createIndexBuffer();
         void createCommandBuffers();
         void createSyncObjects();
         void recreateSwapChain();
@@ -116,11 +117,16 @@ namespace Yarezo {
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
-        // Demo Triangle
+        // Demo Rectangle
         const std::vector<Vertex> vertices = {
-            {{0.0f, -0.5f}, {0.556f, 0.164f, 0.321f}},
+            {{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
+            {{0.5f, -0.5f}, {0.556f, 0.164f, 0.321f}},
             {{0.5f, 0.5f}, {0.0f, 0.203f, 0.584f}},
             {{-0.5f, 0.5f}, {0.521f, 0.490f, 0.215f}}
+        };
+
+        const std::vector<uint16_t> indices = {
+            0,1,2,2,3,0
         };
 
 
@@ -150,6 +156,8 @@ namespace Yarezo {
         size_t m_CurrentFrame = 0;
         VkBuffer m_VertexBuffer;
         VkDeviceMemory m_VertexBufferMemory;
+        VkBuffer m_IndexBuffer;
+        VkDeviceMemory m_IndexBufferMemory;
 
         // Objects from outside this class
         Window* m_NativeWindow;

@@ -39,6 +39,9 @@ namespace Yarezo {
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
 
+        vkDestroyBuffer(m_Device, m_IndexBuffer, nullptr);
+        vkFreeMemory(m_Device, m_IndexBufferMemory, nullptr);
+
         vkDestroyBuffer(m_Device, m_VertexBuffer, nullptr);
         vkFreeMemory(m_Device, m_VertexBufferMemory, nullptr);
 
@@ -110,6 +113,9 @@ namespace Yarezo {
         // Create a vertex buffer, which will store our arbitrary data read by the GPU.
         // Our triangle will be loaded into this buffer to be rendered.
         createVertexBuffer();
+        // Create a buffer which will store our vertex indices. This way when we draw triangles
+        // We are able to re-use some vertices instead of re-defining them.
+        createIndexBuffer();
         // Create a command buffer which will record commands that are submitted for execution on the GPU
         createCommandBuffers();
         // Create some semophores/fences to manage workloads in flight to the gpu
@@ -681,8 +687,8 @@ namespace Yarezo {
         }
     }
 
+
     void GraphicsDevice_Vulkan::createVertexBuffer() {
-        
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
         VkBuffer stagingBuffer;
@@ -703,8 +709,32 @@ namespace Yarezo {
 
         vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
         vkFreeMemory(m_Device, stagingBufferMemory, nullptr);
+
     }
 
+    void GraphicsDevice_Vulkan::createIndexBuffer() {
+        
+        VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+        VkBuffer stagingBuffer;
+        VkDeviceMemory stagingBufferMemory;
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+            stagingBuffer, stagingBufferMemory);
+
+        void* data;
+        vkMapMemory(m_Device, stagingBufferMemory, 0, bufferSize, 0, &data);
+        memcpy(data, indices.data(), (size_t)bufferSize);
+        vkUnmapMemory(m_Device, stagingBufferMemory);
+
+        createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
+
+        copyBuffer(stagingBuffer, m_IndexBuffer, bufferSize);
+
+        vkDestroyBuffer(m_Device, stagingBuffer, nullptr);
+        vkFreeMemory(m_Device, stagingBufferMemory, nullptr);
+    }
 
     void GraphicsDevice_Vulkan::createCommandBuffers() {
         m_CommandBuffers.resize(m_SwapChainFramebuffers.size());
@@ -748,7 +778,9 @@ namespace Yarezo {
             VkDeviceSize offsets[] = { 0 };
             vkCmdBindVertexBuffers(m_CommandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-            vkCmdDraw(m_CommandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+            vkCmdBindIndexBuffer(m_CommandBuffers[i], m_IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+            vkCmdDrawIndexed(m_CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
             vkCmdEndRenderPass(m_CommandBuffers[i]);
 
