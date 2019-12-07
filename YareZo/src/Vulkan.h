@@ -3,12 +3,15 @@
 //
 #ifndef YAREZO_VULKAN_H
 #define YAREZO_VULKAN_H
+#define GLM_FORCE_RADIANS
 
 #include <vector>
 #include <memory>
 #include <iostream>
 #include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
 #include <array>
+#include <chrono>
 
 #include "Windows/GlfwWindow.h"
 
@@ -40,6 +43,12 @@ namespace Yarezo {
 
             return attributeDescriptions;
         }
+    };
+
+    struct UniformBufferObject {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
     };
 
     struct QueueFamilyIndices {
@@ -83,14 +92,19 @@ namespace Yarezo {
         void createSwapChain();
         void createImageViews();
         void createRenderPass();
+        void createDescriptorSetLayout();
         void createGraphicsPipeline();
         void createFramebuffers();
         void createCommandPool();
         void createVertexBuffer();
         void createIndexBuffer();
+        void createUniformBuffers();
+        void createDescriptorPool();
+        void createDescriptorSets();
         void createCommandBuffers();
         void createSyncObjects();
         void recreateSwapChain();
+        void updateUniformBuffer(uint32_t currentImage);
 
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
         void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -144,6 +158,7 @@ namespace Yarezo {
         VkExtent2D m_SwapChainExtent;
         std::vector<VkImageView> m_SwapChainImageViews;
         VkRenderPass m_RenderPass;
+        VkDescriptorSetLayout m_DescriptorSetLayout;
         VkPipelineLayout m_PipelineLayout;
         VkPipeline m_GraphicsPipeline;
         std::vector<VkFramebuffer> m_SwapChainFramebuffers;
@@ -154,10 +169,14 @@ namespace Yarezo {
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
-        VkBuffer m_VertexBuffer;
         VkDeviceMemory m_VertexBufferMemory;
-        VkBuffer m_IndexBuffer;
         VkDeviceMemory m_IndexBufferMemory;
+        std::vector<VkDeviceMemory> m_UniformBuffersMemory;
+        VkBuffer m_VertexBuffer;
+        VkBuffer m_IndexBuffer;
+        std::vector<VkBuffer> m_UniformBuffers;
+        VkDescriptorPool m_DescriptorPool;
+        std::vector<VkDescriptorSet> m_DescriptorSets;
 
         // Objects from outside this class
         Window* m_NativeWindow;

@@ -39,6 +39,8 @@ namespace Yarezo {
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
 
+        vkDestroyDescriptorSetLayout(m_Device, m_DescriptorSetLayout, nullptr);
+
         vkDestroyBuffer(m_Device, m_IndexBuffer, nullptr);
         vkFreeMemory(m_Device, m_IndexBufferMemory, nullptr);
 
@@ -80,6 +82,13 @@ namespace Yarezo {
         }
 
         vkDestroySwapchainKHR(m_Device, m_SwapChain, nullptr);
+
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+            vkDestroyBuffer(m_Device, m_UniformBuffers[i], nullptr);
+            vkFreeMemory(m_Device, m_UniformBuffersMemory[i], nullptr);
+        }
+
+        vkDestroyDescriptorPool(m_Device, m_DescriptorPool, nullptr);
     }
 
 
@@ -104,6 +113,10 @@ namespace Yarezo {
         // Create the Renderpass, the render pass is responsible for the draw calls.
         // It creates a description/map of a graphics job.
         createRenderPass();
+        // A descriptor is a special opaque shader variable that shaders use to access buffer and image
+        // resources in an indirect fashion. It can be thought of as a "pointer" to a resource.
+        // The layout is used to describe the content of a list of descriptor sets
+        createDescriptorSetLayout();
         // Create the graphics Pipeline - A comment cant suffice what this is
         createGraphicsPipeline();
         // Create frame buffers for the swapchain.
@@ -116,6 +129,13 @@ namespace Yarezo {
         // Create a buffer which will store our vertex indices. This way when we draw triangles
         // We are able to re-use some vertices instead of re-defining them.
         createIndexBuffer();
+        // Create the buffers for the projection matrices
+        createUniformBuffers();
+        // Descriptor sets can't be created directly, they must be allocated from a pool like command buffers. We create those here.
+        createDescriptorPool();
+        // Create a set of descriptors for the shader to receive,
+        // A descriptor set is called a "set" because it can refer to an array of homogenous resources that can be described with the same layout binding. 
+        createDescriptorSets();
         // Create a command buffer which will record commands that are submitted for execution on the GPU
         createCommandBuffers();
         // Create some semophores/fences to manage workloads in flight to the gpu
@@ -139,6 +159,8 @@ namespace Yarezo {
             YZ_ERROR("Vulkan failed to aquire a swapchain image.");
             throw std::runtime_error("Vulkan failed to acquire swap chain image!");
         }
+
+        updateUniformBuffer(imageIndex);
 
         if (m_ImagesInFlight[imageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(m_Device, 1, &m_ImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
@@ -192,7 +214,6 @@ namespace Yarezo {
 
         m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
-
 
     void GraphicsDevice_Vulkan::waitIdle() {
         vkDeviceWaitIdle(m_Device);
@@ -286,7 +307,6 @@ namespace Yarezo {
         YZ_INFO("validation layer: " + std::string(pCallbackData->pMessage));
         return VK_FALSE;
     }
-
 
     void GraphicsDevice_Vulkan::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
         createInfo = {};
@@ -443,7 +463,6 @@ namespace Yarezo {
         m_SwapChainExtent = extent;
     }
 
-
     void GraphicsDevice_Vulkan::createImageViews() {
         m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
@@ -515,10 +534,30 @@ namespace Yarezo {
         }
     }
 
+    void GraphicsDevice_Vulkan::createDescriptorSetLayout() {
+        VkDescriptorSetLayoutBinding uboLayoutBinding = {};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uboLayoutBinding.descriptorCount = 1;
+        // We are only using this in the vertex shader
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        uboLayoutBinding.pImmutableSamplers = nullptr; // Optional Param
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo = {};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &uboLayoutBinding;
+
+        if (vkCreateDescriptorSetLayout(m_Device, &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan was unable to create a descriptor set layout.");
+            throw std::runtime_error("Vulkan was unable to create a descriptor set layout.");
+        }
+
+    }
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
-        auto vertShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\basictrianglevert.spv");
-        auto fragShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\basictrianglefrag.spv");
+        auto vertShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboVert.spv");
+        auto fragShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboFrag.spv");
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -539,7 +578,6 @@ namespace Yarezo {
 
         auto bindingDescription = Vertex::getBindingDescription();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -583,7 +621,7 @@ namespace Yarezo {
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
         rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
         rasterizer.depthBiasConstantFactor = 0.0f; //optional
         rasterizer.depthBiasClamp = 0.0f; //optional
@@ -615,8 +653,8 @@ namespace Yarezo {
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;
-        pipelineLayoutInfo.pushConstantRangeCount = 0;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
 
         if (vkCreatePipelineLayout(m_Device, &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
             YZ_ERROR("Vulkan Pipeline Layout was unable to be created.");
@@ -644,7 +682,6 @@ namespace Yarezo {
             YZ_ERROR("Vulkan failed to create the graphics pipeline.");
             throw std::runtime_error("Vulkan failed to create the graphics pipeline.");
         }
-
         vkDestroyShaderModule(m_Device, fragShaderModule, nullptr);
         vkDestroyShaderModule(m_Device, vertShaderModule, nullptr);
     }
@@ -686,7 +723,6 @@ namespace Yarezo {
             throw std::runtime_error("Vulkan failed to create a command pool.");
         }
     }
-
 
     void GraphicsDevice_Vulkan::createVertexBuffer() {
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -736,6 +772,74 @@ namespace Yarezo {
         vkFreeMemory(m_Device, stagingBufferMemory, nullptr);
     }
 
+    void GraphicsDevice_Vulkan::createUniformBuffers() {
+        VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+        m_UniformBuffers.resize(m_SwapChainImages.size());
+        m_UniformBuffersMemory.resize(m_SwapChainImages.size());
+
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+            createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                m_UniformBuffers[i], m_UniformBuffersMemory[i]);
+        }
+
+    }
+
+    void GraphicsDevice_Vulkan::createDescriptorPool() {
+        VkDescriptorPoolSize poolSize = {};
+        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.descriptorCount = static_cast<uint32_t>(m_SwapChainImages.size());
+
+        VkDescriptorPoolCreateInfo poolInfo = {};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = &poolSize;
+        poolInfo.maxSets = static_cast<uint32_t>(m_SwapChainImages.size());
+
+        if (vkCreateDescriptorPool(m_Device, &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan creation of descriptor pool failed.");
+            throw std::runtime_error("Vulkan creation of descriptor pool failed.");
+        }
+
+    }
+
+    void GraphicsDevice_Vulkan::createDescriptorSets() {
+        std::vector<VkDescriptorSetLayout> layouts(m_SwapChainImages.size(), m_DescriptorSetLayout);
+        VkDescriptorSetAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = m_DescriptorPool;
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(m_SwapChainImages.size());
+        allocInfo.pSetLayouts = layouts.data();
+
+        m_DescriptorSets.resize(m_SwapChainImages.size());
+
+        //This wont need to be cleaned up because it is auto cleaned up when the pool is destroyed
+        if (vkAllocateDescriptorSets(m_Device, &allocInfo, m_DescriptorSets.data()) != VK_SUCCESS) {
+            YZ_ERROR("Vulkan was unable to allocate descriptor sets.");
+            throw std::runtime_error("Vulkan was unable to allocate descriptor sets.");
+        }
+
+        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+            VkDescriptorBufferInfo bufferInfo = {};
+            bufferInfo.buffer = m_UniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(UniformBufferObject);
+
+            VkWriteDescriptorSet descriptorWrite = {};
+            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrite.dstSet = m_DescriptorSets[i];
+            descriptorWrite.dstBinding = 0;
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrite.descriptorCount = 1;
+            descriptorWrite.pBufferInfo = &bufferInfo;
+            descriptorWrite.pImageInfo = nullptr; // Optional
+            descriptorWrite.pTexelBufferView = nullptr; // Optional
+            vkUpdateDescriptorSets(m_Device, 1, &descriptorWrite, 0, nullptr);
+        }
+    }
+
     void GraphicsDevice_Vulkan::createCommandBuffers() {
         m_CommandBuffers.resize(m_SwapChainFramebuffers.size());
 
@@ -779,6 +883,8 @@ namespace Yarezo {
             vkCmdBindVertexBuffers(m_CommandBuffers[i], 0, 1, vertexBuffers, offsets);
 
             vkCmdBindIndexBuffer(m_CommandBuffers[i], m_IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSets[i], 0, nullptr);
 
             vkCmdDrawIndexed(m_CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
@@ -831,7 +937,6 @@ namespace Yarezo {
         }
         YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: " + std::to_string(width) + ", " + std::to_string(height));
 
-
         vkDeviceWaitIdle(m_Device);
         cleanupSwapChain();
 
@@ -840,8 +945,32 @@ namespace Yarezo {
         createRenderPass();
         createGraphicsPipeline();
         createFramebuffers();
+        createUniformBuffers();
+        createDescriptorPool();
+        createDescriptorSets();
         createCommandBuffers();
 
+    }
+
+    void GraphicsDevice_Vulkan::updateUniformBuffer(uint32_t currentImage) {
+        static auto startTime = std::chrono::high_resolution_clock::now();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        UniformBufferObject ubo = {};
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        ubo.proj = glm::perspective(glm::radians(45.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f, 10.0f);
+
+        ubo.proj[1][1] *= -1;
+
+        void* data;
+        vkMapMemory(m_Device, m_UniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+        memcpy(data, &ubo, sizeof(ubo));
+        vkUnmapMemory(m_Device, m_UniformBuffersMemory[currentImage]);
     }
 
     void GraphicsDevice_Vulkan::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
