@@ -1,12 +1,12 @@
 ![YareZoEngineGraphic](https://i.imgur.com/y3som7P.png)
 
 # YareZo  
-Cross Platform Vulkan Renderer  
+Vulkan Renderer
 Collaborative project between Resoona (Drew Cornfield) & PhaseRush  
 
 This project is a WIP.
 
-### Dependancies
+### Dependencies
 - Vulkan SDK Installed
 - C++17 compatible compiler (MSVC, MinGW)
 
