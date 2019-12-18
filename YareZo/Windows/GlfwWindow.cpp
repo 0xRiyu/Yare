@@ -31,10 +31,12 @@ namespace Yarezo {
         m_Window = glfwCreateWindow(properties.width, properties.height, "YareZo!", nullptr, nullptr);
         glfwSetWindowUserPointer(m_Window, this);
         glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
+        m_InputHandler.setupKeyInputs(m_Window);
     }
     
     void GlfwWindow::onUpdate() {
         glfwPollEvents();
+        m_InputHandler.Handle();
         windowResized = false;
     }
 

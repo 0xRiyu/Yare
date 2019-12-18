@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "src/Core.h"
+#include "src/YzInput.h"
 
 namespace Yarezo {
     struct WindowProperties {
@@ -21,13 +22,15 @@ namespace Yarezo {
 
         virtual ~Window() = default;
         virtual void onUpdate() = 0;
-        virtual WindowProperties getWindowProperties() = 0;
+        inline virtual WindowProperties getWindowProperties() { return m_Properties; }
+        inline virtual InputHandler* getInputHandler() { return &m_InputHandler; }
 
         static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
 
     protected:
         WindowProperties m_Properties;
+        InputHandler m_InputHandler;
     };
 }
 

@@ -7,7 +7,9 @@
 
 #include "src/Window.h"
 
+#ifndef GLFW_INCLUDE_VULKAN
 #define GLFW_INCLUDE_VULKAN
+#endif // !GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 namespace Yarezo{
@@ -18,7 +20,6 @@ namespace Yarezo{
         
         void onUpdate() override;
 
-        inline virtual WindowProperties getWindowProperties() { return m_Properties; }
         inline virtual void* getNativeWindow() const { return m_Window; };
 
         bool windowResized = false;
