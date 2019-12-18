@@ -1,14 +1,19 @@
 ![YareZoEngineGraphic](https://i.imgur.com/y3som7P.png)
 
 # YareZo  
-Cross Platform Vulkan Renderer  
+Vulkan Renderer
 Collaborative project between Resoona (Drew Cornfield) & PhaseRush  
 
 This project is a WIP.
 
-### Dependancies
+### Dependencies
 - Vulkan SDK Installed
 - C++17 compatible compiler (MSVC, MinGW)
+
+### External Libraries
+- GLM
+- GLFW
+- SPDLOG
 
 ### Potential Issues:
 
@@ -19,4 +24,3 @@ This project is a WIP.
   
     Solution: Add `Vulkan_INCLUDE_DIR` as a system environmental variable with the value `<VulkanInstallDir>\x.x.xxx.x\Include\vulkan`,
     or VulkanSDK's include directory.
-  
