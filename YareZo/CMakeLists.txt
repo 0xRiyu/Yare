@@ -6,6 +6,7 @@ set (YAREZOENGINE_SOURCES
         src/Application.cpp
         src/Vulkan.cpp
         src/YzInput.cpp
+        src/YzCamera.cpp
 
         # Utilities
         Utilities/YzLogger.cpp
@@ -29,6 +30,7 @@ set (YAREZOENGINE_HEADERS
         src/Window.h
         src/Vulkan.h
         src/YzInput.h
+        src/YzCamera.h
 
         # Utilities
         Utilities/YzLogger.h

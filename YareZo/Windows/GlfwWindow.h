@@ -24,7 +24,7 @@ namespace Yarezo{
 
         bool windowResized = false;
     private:
-        void init(WindowProperties& properties);
+        void init();
         GLFWwindow* m_Window;
     };
 }

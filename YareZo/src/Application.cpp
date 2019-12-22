@@ -6,6 +6,7 @@
 #include "src/Application.h"
 #include "Utilities/YzLogger.h"
 #include "src/Vulkan.h"
+#include "src/YzCamera.h"
 
 namespace Yarezo {
 
@@ -19,12 +20,13 @@ namespace Yarezo {
     void Application::run() {
 
         Yarezo::YzLogger::init();
-        YZ_WARN("Logger Init Done");
+        YZ_WARN("Logger Initalized");
         //Create a window
         WindowProperties props = {800, 600};
 
         auto window = Window::createNewWindow(props);
-        GraphicsDevice_Vulkan vulkanDevice(window.get());
+
+        GraphicsDevice_Vulkan vulkanDevice(window);
 
         // Output some fps info to detemine if we nuke performace
         double previousTime = glfwGetTime();

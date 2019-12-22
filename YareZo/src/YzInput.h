@@ -6,6 +6,9 @@
 #endif // !GLFW_INCLUDE_VULKAN
 
 #include <GLFW/glfw3.h>
+#include <src/YzCamera.h>
+
+#include <memory>
 
 #define MAX_BUTTONS GLFW_MOUSE_BUTTON_LAST
 #define MAX_KEYS GLFW_KEY_LAST
@@ -22,7 +25,8 @@ namespace Yarezo {
 
         virtual void setupKeyInputs(GLFWwindow* window);
 
-        virtual void Handle();
+        virtual void Handle(std::shared_ptr<Camera> currentCamera);
+
 
         bool m_Keys[MAX_KEYS];
         bool m_Buttons[MAX_BUTTONS];

@@ -31,7 +31,7 @@ namespace Yarezo {
         }
     }
 
-    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan(Window* nativeWindow)
+    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan(std::shared_ptr<Window> nativeWindow)
     :m_NativeWindow(nativeWindow) {
         initVulkan();
     }
@@ -149,7 +149,7 @@ namespace Yarezo {
         VkResult result = vkAcquireNextImageKHR(m_Device, m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
 
         // Todo: This is pretty bad, need to think of a better way of handling vulkans access to the GlfwWindow class
-        GlfwWindow* window = static_cast<GlfwWindow*>(m_NativeWindow);
+        GlfwWindow* window = static_cast<GlfwWindow*>(m_NativeWindow.get());
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->windowResized) {
             recreateSwapChain();
@@ -961,9 +961,9 @@ namespace Yarezo {
         UniformBufferObject ubo = {};
         ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = m_NativeWindow->getCamera()->getViewMatrix();
 
-        ubo.proj = glm::perspective(glm::radians(45.0f), m_SwapChainExtent.width / (float)m_SwapChainExtent.height, 0.1f, 10.0f);
+        ubo.proj = m_NativeWindow->getCamera()->getProjectionMatrix();
 
         ubo.proj[1][1] *= -1;
 
@@ -1163,6 +1163,7 @@ namespace Yarezo {
             int width, height;
             glfwGetFramebufferSize(static_cast<GLFWwindow*>(m_NativeWindow->getNativeWindow()), &width, &height);
 
+            m_NativeWindow->getCamera()->updateDimensions((float)width, (float)height);
             
             VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 

@@ -32,10 +32,33 @@ namespace Yarezo {
 		glfwSetKeyCallback(window, InputHandler::GLFWcallback);
 	}
 
-	void InputHandler::Handle() {
-		if (isKeyDown(GLFW_KEY_A)) {
-			// Do something
+	void InputHandler::Handle(std::shared_ptr<Camera> currentCamera) {
+
+		auto posVec = currentCamera->getPosition();
+		auto upVec = currentCamera->getUpVector();
+		auto lookAtVec = currentCamera->getLookAtVector();
+
+
+		if (isKeyDown(GLFW_KEY_S)) {
+			posVec += (glm::normalize(lookAtVec) * 0.005f);
 		}
+
+		if (isKeyDown(GLFW_KEY_W)) {
+			posVec -= (glm::normalize(lookAtVec) * 0.005f);
+			YZ_INFO(glm::to_string(posVec));
+		}
+
+		if (isKeyDown(GLFW_KEY_A)) {
+			posVec += (glm::normalize(glm::cross(lookAtVec, upVec)) * 0.005f);
+			YZ_INFO(glm::to_string(posVec));
+		}
+
+		if (isKeyDown(GLFW_KEY_D)) {
+			posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * 0.005f);
+			YZ_INFO(glm::to_string(posVec));
+		}
+
+		currentCamera->setPosition(posVec);
 	}
 
 	void InputHandler::GLFWcallback(GLFWwindow* window, int key, int scancode, int action, int mods) {

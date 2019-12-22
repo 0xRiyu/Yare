@@ -9,6 +9,7 @@
 
 #include "src/Core.h"
 #include "src/YzInput.h"
+#include "src/YzCamera.h"
 
 namespace Yarezo {
     struct WindowProperties {
@@ -24,6 +25,7 @@ namespace Yarezo {
         virtual void onUpdate() = 0;
         inline virtual WindowProperties getWindowProperties() { return m_Properties; }
         inline virtual InputHandler* getInputHandler() { return &m_InputHandler; }
+        inline virtual std::shared_ptr<Camera> getCamera() { return m_Camera; }
 
         static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
@@ -31,6 +33,7 @@ namespace Yarezo {
     protected:
         WindowProperties m_Properties;
         InputHandler m_InputHandler;
+        std::shared_ptr<Camera> m_Camera;
     };
 }
 

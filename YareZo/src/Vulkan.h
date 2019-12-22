@@ -14,6 +14,7 @@
 #include <chrono>
 
 #include "Windows/GlfwWindow.h"
+#include "src/YzCamera.h"
 
 namespace Yarezo {
 
@@ -68,7 +69,7 @@ namespace Yarezo {
 
     class GraphicsDevice_Vulkan {
     public:
-        GraphicsDevice_Vulkan(Window* nativeWindow);
+        GraphicsDevice_Vulkan(std::shared_ptr<Window> nativeWindow);
 
         ~GraphicsDevice_Vulkan();
 
@@ -179,7 +180,7 @@ namespace Yarezo {
         std::vector<VkDescriptorSet> m_DescriptorSets;
 
         // Objects from outside this class
-        Window* m_NativeWindow;
+        std::shared_ptr<Window> m_NativeWindow;
 
     #ifdef NDEBUG
             const bool enableValidationLayers = false;
