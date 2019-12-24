@@ -1,0 +1,14 @@
+version: '{build}'
+branches:
+  only:
+  - master
+image: Visual Studio 2019
+configuration: Release
+
+platform:
+  - x64
+
+build_script:
+  - mkdir build && cd build
+  - cmake ..
+  - cmake --build . --config %configuration%
