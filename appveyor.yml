@@ -9,7 +9,7 @@ platform:
   - x64
 
 environment:
-  - VULKAN_SDK: C:/VulkanSDK/1.1.130.0
+  VULKAN_SDK: C:/VulkanSDK/1.1.130.0
 
 cache:
   - VulkanSDK.exe
