@@ -1,8 +1,7 @@
 ![YareZoEngineGraphic](https://i.imgur.com/y3som7P.png)
 
 # YareZo  
-Vulkan Renderer  
-[![Build status](https://ci.appveyor.com/api/projects/status/ibi6um09v5j03068?svg=true)](https://ci.appveyor.com/project/Resoona/yarezo)
+Vulkan Renderer [![Build status](https://ci.appveyor.com/api/projects/status/ibi6um09v5j03068?svg=true)](https://ci.appveyor.com/project/Resoona/yarezo)  
 Collaborative project between Resoona (Drew Cornfield) & PhaseRush  
 
 This project is a WIP.
