@@ -14,6 +14,12 @@ set (YAREZOENGINE_SOURCES
 
         # Windows Platform Specific
         Windows/GlfwWindow.cpp
+
+        # We need to compile imgui files
+        ${CMAKE_SOURCE_DIR}/libs/imgui/imgui.cpp
+        ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
+        ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
+        ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
 )
 
 #--------------------------------------------------------------------
@@ -51,7 +57,8 @@ add_library(YareZo::Engine ALIAS ${PROJECT_NAME})
 #--------------------------------------------------------------------
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-        PRIVATE ${CMAKE_SOURCE_DIR}/libs/glm)
+        PRIVATE ${CMAKE_SOURCE_DIR}/libs/glm
+        PRIVATE ${CMAKE_SOURCE_DIR}/libs/imgui)
 
 #--------------------------------------------------------------------
 # Find static libraries that are required

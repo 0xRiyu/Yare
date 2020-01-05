@@ -8,6 +8,8 @@
 #include "src/Vulkan.h"
 #include "src/YzCamera.h"
 
+#include <imgui.h>
+
 namespace Yarezo {
 
     Application::Application() {
@@ -23,6 +25,8 @@ namespace Yarezo {
         YZ_WARN("Logger Initalized");
         //Create a window
         WindowProperties props = {800, 600};
+
+        YZ_WARN(std::to_string(IMGUI_CHECKVERSION()));
 
         auto window = Window::createNewWindow(props);
 

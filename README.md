@@ -14,6 +14,7 @@ This project is a WIP.
 - GLM
 - GLFW
 - SPDLOG
+- IMGUI
 
 ### Potential Issues:
 

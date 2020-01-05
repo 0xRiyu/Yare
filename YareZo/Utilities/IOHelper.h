@@ -10,9 +10,7 @@
 #include <string>
 
 namespace Yarezo::Utilities {
-
     std::vector<char> readFile(const std::string& filename);
-
 }
 
 #endif //YAREZO_IOHELPER_H
