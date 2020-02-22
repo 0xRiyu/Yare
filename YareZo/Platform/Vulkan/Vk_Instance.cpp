@@ -39,10 +39,6 @@ namespace Yarezo {
             }
         }
 
-        YzVkInstance::YzVkInstance() {
-        }
-
-
         YzVkInstance::~YzVkInstance() {
             if (enableValidationLayers) {
                 DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
@@ -82,18 +78,15 @@ namespace Yarezo {
             createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
             createInfo.ppEnabledExtensionNames = extensions.data();
 
-
             VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
             if (enableValidationLayers) {
                 createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
                 createInfo.ppEnabledLayerNames = validationLayers.data();
-
                 populateDebugMessengerCreateInfo(debugCreateInfo);
                 createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
             }
             else {
                 createInfo.enabledLayerCount = 0;
-
                 createInfo.pNext = nullptr;
             }
 
@@ -101,7 +94,6 @@ namespace Yarezo {
                 YZ_ERROR("VK Instance was unable to be created");
                 throw std::runtime_error("failed to create instance!");
             }
-            YZ_INFO("VK Instance WAS able to be created");
         }
 
         void YzVkInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
@@ -128,27 +120,25 @@ namespace Yarezo {
 
         bool YzVkInstance::checkValidationLayerSupport() {
             uint32_t layerCount;
+            bool layerFound = false;
+
             vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
             std::vector<VkLayerProperties> availableLayers(layerCount);
             vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
             for (const char* layerName : validationLayers) {
-                bool layerFound = false;
-
                 for (const auto& layerProperties : availableLayers) {
                     if (strcmp(layerName, layerProperties.layerName) == 0) {
                         layerFound = true;
                         break;
                     }
                 }
-
                 if (!layerFound) {
                     return false;
                 }
             }
-
-            return true;
+            return layerFound;
         }
     }
 }

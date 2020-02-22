@@ -11,7 +11,7 @@ namespace Yarezo {
 
         class YzVkInstance {
         public:
-            YzVkInstance();
+            YzVkInstance() {};
             ~YzVkInstance();
             void Init();
             inline VkInstance GetVKInstance() const { return m_Instance; }

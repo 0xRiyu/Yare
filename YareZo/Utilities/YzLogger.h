@@ -1,6 +1,3 @@
-//
-// Created by Drew on 2019-08-17.
-//
 #ifndef YAREZO_YZLOGGER
 #define YAREZO_YZLOGGER
 
@@ -15,8 +12,8 @@ namespace Yarezo {
         static void init();
         static void changeFilePath(const std::string& path);
         static void update();
-
         inline static std::shared_ptr<spdlog::logger>& getEventLogger() { return m_EngineLogger; }
+
     private:
         static std::shared_ptr<spdlog::logger> m_EngineLogger;
         static std::string m_FileOutputPath;
@@ -28,6 +25,5 @@ namespace Yarezo {
 #define YZ_WARN(...)        ::Yarezo::YzLogger::getEventLogger()->warn(__VA_ARGS__)
 #define YZ_ERROR(...)       ::Yarezo::YzLogger::getEventLogger()->error(__VA_ARGS__)
 #define YZ_CRITICAL(...)    ::Yarezo::YzLogger::getEventLogger()->critical(__VA_ARGS__)
-
 
 #endif //YAREZO_YZLOGGER

@@ -18,7 +18,6 @@ namespace Yarezo {
     };
 
     class Window {
-      
     public:
         virtual ~Window() = default;
         virtual void onUpdate() = 0;
