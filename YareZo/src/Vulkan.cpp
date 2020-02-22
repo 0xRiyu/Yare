@@ -15,21 +15,6 @@
 
 namespace Yarezo {
 
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pDebugMessenger) {
-        auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-        if (func != nullptr) {
-            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-        } else {
-            return VK_ERROR_EXTENSION_NOT_PRESENT;
-        }
-    }
-
-    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-        if (func != nullptr) {
-            func(instance, debugMessenger, pAllocator);
-        }
-    }
 
     GraphicsDevice_Vulkan::GraphicsDevice_Vulkan(std::shared_ptr<Window> nativeWindow)
     :m_NativeWindow(nativeWindow) {
@@ -54,15 +39,9 @@ namespace Yarezo {
         }
 
         vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
-
-        if (enableValidationLayers) {
-            DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
-        }
-
        
         vkDestroyDevice(m_Device, nullptr);
-        vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
-        vkDestroyInstance(m_Instance, nullptr);
+        vkDestroySurfaceKHR(m_VkInstance.GetVKInstance(), m_Surface, nullptr);
     }
 
     void GraphicsDevice_Vulkan::cleanupSwapChain() {
@@ -93,11 +72,9 @@ namespace Yarezo {
 
 
     void GraphicsDevice_Vulkan::initVulkan() {
-        // create our link between our APP and the vulkan library
-        createInstance();
-        // Setup some validation layers such that if theres an issue with us
-        // Interacting with the library, then it may catch our faults.
-        setupDebugMessenger();
+
+        m_VkInstance.Init();
+
         // Surface must be created before picking a physical device
         createSurface();
         // Pick a Gpu that is suitable for rendering
@@ -219,120 +196,9 @@ namespace Yarezo {
         vkDeviceWaitIdle(m_Device);
     }
 
-    bool GraphicsDevice_Vulkan::checkValidationLayerSupport() {
-        uint32_t layerCount;
-        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
-        std::vector<VkLayerProperties> availableLayers(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-        for (const char* layerName : validationLayers) {
-            bool layerFound = false;
-
-            for (const auto& layerProperties : availableLayers) {
-                if (strcmp(layerName, layerProperties.layerName) == 0) {
-                    layerFound = true;
-                    break;
-                }
-            }
-
-            if (!layerFound) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    void GraphicsDevice_Vulkan::createInstance() {
-        if (enableValidationLayers && !checkValidationLayerSupport()) {
-            YZ_ERROR("VK Instance was unable to be created, no validation layers available");
-            throw std::runtime_error("validation layers requested, but not available!");
-        }
-
-        VkInstance instance;
-
-        VkApplicationInfo appInfo = {};
-        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "Hello Triangle";
-        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "No Engine";
-        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.apiVersion = VK_API_VERSION_1_0;
-
-        VkInstanceCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.pApplicationInfo = &appInfo;
-
-        auto extensions = getRequiredExtensions();
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-        createInfo.ppEnabledExtensionNames = extensions.data();
-
-
-        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-        if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
-
-            populateDebugMessengerCreateInfo(debugCreateInfo);
-            createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
-        } else {
-            createInfo.enabledLayerCount = 0;
-
-            createInfo.pNext = nullptr;
-        }
-
-        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
-            YZ_ERROR("VK Instance was unable to be created");
-            throw std::runtime_error("failed to create instance!");
-        }
-        YZ_INFO("VK Instance WAS able to be created");
-
-        m_Instance = instance;
-    }
-
-    void GraphicsDevice_Vulkan::setupDebugMessenger() {
-        if (!enableValidationLayers) return;
-
-        VkDebugUtilsMessengerCreateInfoEXT createInfo;
-        populateDebugMessengerCreateInfo(createInfo);
-
-        if (CreateDebugUtilsMessengerEXT(m_Instance, &createInfo, nullptr, &m_DebugMessenger) != VK_SUCCESS) {
-            throw std::runtime_error("failed to set up debug messenger!");
-        }
-    }
-
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-        YZ_INFO("validation layer: " + std::string(pCallbackData->pMessage));
-        return VK_FALSE;
-    }
-
-    void GraphicsDevice_Vulkan::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
-        createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        createInfo.pfnUserCallback = debugCallback;
-    }
-
-    std::vector<const char*> GraphicsDevice_Vulkan::getRequiredExtensions() {
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-        if (enableValidationLayers) {
-            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
-
-        return extensions;
-    }
-
     void GraphicsDevice_Vulkan::pickPhysicalDevice() {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(m_VkInstance.GetVKInstance(), &deviceCount, nullptr);
 
         if (deviceCount == 0) {
             YZ_ERROR("Failed to find GPUs with Vulkan Support!");
@@ -340,7 +206,7 @@ namespace Yarezo {
         }
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(m_VkInstance.GetVKInstance(), &deviceCount, devices.data());
 
         for (const auto& device: devices){
             if (isDeviceSuitable(device)){
@@ -380,13 +246,13 @@ namespace Yarezo {
         createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
         createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 
-        //To support older implementations of vulkan
-        if (enableValidationLayers) {
-            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-            createInfo.ppEnabledLayerNames = validationLayers.data();
-        } else {
-            createInfo.enabledLayerCount = 0;
-        }
+        ////To support older implementations of vulkan
+        //if (enableValidationLayers) {
+        //    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        //    createInfo.ppEnabledLayerNames = validationLayers.data();
+        //} else {
+        //    createInfo.enabledLayerCount = 0;
+        //}
 
         if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
             YZ_ERROR("Failed to create a logical device.");
@@ -402,7 +268,7 @@ namespace Yarezo {
         // Todo: Add some logic to properly cast to the correct window type
         GLFWwindow* windowInstance = static_cast<GLFWwindow*>(m_NativeWindow->getNativeWindow());
 
-        if (glfwCreateWindowSurface(m_Instance, windowInstance, nullptr, &m_Surface) != VK_SUCCESS) {
+        if (glfwCreateWindowSurface(m_VkInstance.GetVKInstance(), windowInstance, nullptr, &m_Surface) != VK_SUCCESS) {
             YZ_ERROR("Could not create a window surface.");
             throw std::runtime_error("Could not create a window surface.");
         }

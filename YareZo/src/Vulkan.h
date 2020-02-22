@@ -14,6 +14,7 @@
 #include <chrono>
 
 #include "Windows/GlfwWindow.h"
+#include "Platform/Vulkan/Vk_Instance.h"
 #include "src/YzCamera.h"
 
 namespace Yarezo {
@@ -78,15 +79,7 @@ namespace Yarezo {
         void waitIdle();
 
     private:
-
         void cleanupSwapChain();
-
-        void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-        std::vector<const char*> getRequiredExtensions();
-        bool checkValidationLayerSupport();
-
-        void createInstance();
-        void setupDebugMessenger();
         void pickPhysicalDevice();
         void createLogicalDevice();
         void createSurface();
@@ -146,8 +139,7 @@ namespace Yarezo {
 
 
         // Class members created by GraphicsDevice_Vulkan class
-        VkInstance m_Instance;
-        VkDebugUtilsMessengerEXT m_DebugMessenger;
+        Graphics::YzVkInstance m_VkInstance;
         VkSurfaceKHR m_Surface;
         VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
         VkDevice m_Device;
@@ -182,11 +174,6 @@ namespace Yarezo {
         // Objects from outside this class
         std::shared_ptr<Window> m_NativeWindow;
 
-    #ifdef NDEBUG
-            const bool enableValidationLayers = false;
-    #else
-            const bool enableValidationLayers = true;
-    #endif
     };
 }
 

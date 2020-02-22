@@ -20,6 +20,9 @@ set (YAREZOENGINE_SOURCES
         ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_draw.cpp
         ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_demo.cpp
         ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
+
+        # Vulkan
+        Platform/Vulkan/Vk_Instance.cpp
 )
 
 #--------------------------------------------------------------------
@@ -44,6 +47,10 @@ set (YAREZOENGINE_HEADERS
 
         # Windows Platform Specific
         Windows/GlfwWindow.h
+
+        # Vulkan
+        Platform/Vulkan/Vk.h
+        Platform/Vulkan/Vk_Instance.h
 )
 
 #--------------------------------------------------------------------

@@ -20,7 +20,6 @@ namespace Yarezo {
     class Window {
       
     public:
-
         virtual ~Window() = default;
         virtual void onUpdate() = 0;
         inline virtual WindowProperties getWindowProperties() { return m_Properties; }

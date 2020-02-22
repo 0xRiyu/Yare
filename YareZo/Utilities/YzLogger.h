@@ -17,7 +17,6 @@ namespace Yarezo {
         static void update();
 
         inline static std::shared_ptr<spdlog::logger>& getEventLogger() { return m_EngineLogger; }
-
     private:
         static std::shared_ptr<spdlog::logger> m_EngineLogger;
         static std::string m_FileOutputPath;
