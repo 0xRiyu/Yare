@@ -13,9 +13,8 @@
 #include <array>
 #include <chrono>
 
-#include "Windows/GlfwWindow.h"
 #include "Platform/Vulkan/Vk_Instance.h"
-#include "src/YzCamera.h"
+#include "Platform/Vulkan/Vk_Devices.h"
 
 namespace Yarezo {
 
@@ -53,24 +52,10 @@ namespace Yarezo {
         glm::mat4 proj;
     };
 
-    struct QueueFamilyIndices {
-        int graphicsFamily = -1;
-        int presentFamily = -1;
-
-        bool isComplete() {
-            return graphicsFamily >= 0 && presentFamily >= 0;
-        }
-    };
-
-    struct SwapChainSupportDetails {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> presentModes;
-    };
 
     class GraphicsDevice_Vulkan {
     public:
-        GraphicsDevice_Vulkan(std::shared_ptr<Window> nativeWindow);
+        GraphicsDevice_Vulkan();
 
         ~GraphicsDevice_Vulkan();
 
@@ -80,9 +65,6 @@ namespace Yarezo {
 
     private:
         void cleanupSwapChain();
-        void pickPhysicalDevice();
-        void createLogicalDevice();
-        void createSurface();
         void createSwapChain();
         void createImageViews();
         void createRenderPass();
@@ -102,26 +84,13 @@ namespace Yarezo {
 
         void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
         void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        bool isDeviceSuitable(VkPhysicalDevice device);
-        bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-        QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
         // Swap Chain required functions
-        SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
         VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
         VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
         VkShaderModule createShaderModule(const std::vector<char>& shader_code);
-
-
-        const std::vector<const char*> validationLayers = {
-            "VK_LAYER_KHRONOS_validation"
-        };
-
-        const std::vector<const char*> deviceExtensions {
-            VK_KHR_SWAPCHAIN_EXTENSION_NAME
-        };
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -140,11 +109,8 @@ namespace Yarezo {
 
         // Class members created by GraphicsDevice_Vulkan class
         Graphics::YzVkInstance m_VkInstance;
-        VkSurfaceKHR m_Surface;
-        VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
-        VkDevice m_Device;
-        VkQueue m_GraphicsQueue;
-        VkQueue m_PresentQueue;
+        Graphics::YzVkDevice m_VkDevice;
+
         VkSwapchainKHR m_SwapChain;
         std::vector<VkImage> m_SwapChainImages;
         VkFormat m_SwapChainImageFormat;
@@ -170,9 +136,6 @@ namespace Yarezo {
         std::vector<VkBuffer> m_UniformBuffers;
         VkDescriptorPool m_DescriptorPool;
         std::vector<VkDescriptorSet> m_DescriptorSets;
-
-        // Objects from outside this class
-        std::shared_ptr<Window> m_NativeWindow;
 
     };
 }

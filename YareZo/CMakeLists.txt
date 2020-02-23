@@ -23,6 +23,7 @@ set (YAREZOENGINE_SOURCES
 
         # Vulkan
         Platform/Vulkan/Vk_Instance.cpp
+        Platform/Vulkan/Vk_Devices.cpp
 )
 
 #--------------------------------------------------------------------
@@ -51,6 +52,7 @@ set (YAREZOENGINE_HEADERS
         # Vulkan
         Platform/Vulkan/Vk.h
         Platform/Vulkan/Vk_Instance.h
+        Platform/Vulkan/Vk_Devices.h
 )
 
 #--------------------------------------------------------------------

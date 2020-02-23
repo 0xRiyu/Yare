@@ -5,6 +5,8 @@
 namespace Yarezo {
     namespace Graphics {
 
+        YzVkInstance* YzVkInstance::s_YzVkInstance = nullptr;
+
         static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
             YZ_INFO("validation layer: " + std::string(pCallbackData->pMessage));
             return VK_FALSE;
@@ -39,6 +41,10 @@ namespace Yarezo {
             }
         }
 
+        YzVkInstance::YzVkInstance() {
+            s_YzVkInstance = this;
+        }
+
         YzVkInstance::~YzVkInstance() {
             if (enableValidationLayers) {
                 DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
@@ -48,15 +54,15 @@ namespace Yarezo {
             }
         }
 
-        void YzVkInstance::Init() {
+        void YzVkInstance::init() {
             // Create our link between our APP and the vulkan library
-            CreateInstance();
+            createInstance();
             // Setup some validation layers such that if theres an issue with us
             // Interacting with the library, then it may catch our faults.  
             setupDebugMessenger();
         }
 
-        void YzVkInstance::CreateInstance() {
+        void YzVkInstance::createInstance() {
             if (enableValidationLayers && !checkValidationLayerSupport()) {
                 YZ_ERROR("VK Instance was unable to be created, no validation layers available");
                 throw std::runtime_error("validation layers requested, but not available!");

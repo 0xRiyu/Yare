@@ -12,7 +12,11 @@
 
 namespace Yarezo {
 
+    Application* Application::s_AppInstance = nullptr;
+
     Application::Application() {
+        assert(!s_AppInstance, "Application already exists, Don't be doing that fam");
+        s_AppInstance = this;
     }
 
 
@@ -22,25 +26,23 @@ namespace Yarezo {
     void Application::run() {
 
         Yarezo::YzLogger::init();
-        YZ_WARN("Logger Initalized");
+        YZ_WARN("Logger Initialized");
+
         //Create a window
         WindowProperties props = {800, 600};
+        m_Window = Window::createNewWindow(props);
 
-        YZ_WARN(std::to_string(IMGUI_CHECKVERSION()));
+        // Create the vulkan pipeline
+        GraphicsDevice_Vulkan vulkanDevice;
 
-        auto window = Window::createNewWindow(props);
-
-        GraphicsDevice_Vulkan vulkanDevice(window);
-
-        // Output some fps info to detemine if we nuke performace
         double previousTime = glfwGetTime();
         int frameCount = 0;
 
-        while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(window->getNativeWindow()))) {
+        while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(m_Window->getNativeWindow()))) {
             double currentTime = glfwGetTime();
             frameCount++;
 
-            // Output some fps info every 5s to detemine if we nuke performace
+            // Output some fps info every 5s to determine if we nuke performace
             if (currentTime - previousTime >= 5.0) {
                 YZ_INFO("FPS: " + std::to_string(frameCount / 5));
                 frameCount = 0;
@@ -48,7 +50,7 @@ namespace Yarezo {
             }
 
             vulkanDevice.drawFrame();
-            window->onUpdate();
+            m_Window->onUpdate();
         }
 
         vulkanDevice.waitIdle();

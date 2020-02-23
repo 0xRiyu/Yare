@@ -11,20 +11,21 @@ namespace Yarezo {
 
         class YzVkInstance {
         public:
-            YzVkInstance() {};
+            YzVkInstance();
             ~YzVkInstance();
-            void Init();
-            inline VkInstance GetVKInstance() const { return m_Instance; }
+            void init();
+            inline VkInstance getVKInstance() const { return m_Instance; }
+            static inline YzVkInstance* getYzVkInstancePtr(){ return s_YzVkInstance; }
 
         private:
-            void CreateInstance();
+            void createInstance();
             void setupDebugMessenger();
             void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
             std::vector<const char*> getRequiredExtensions();
             bool checkValidationLayerSupport();
 
         private:
-            VkInstance m_Instance = nullptr;
+            VkInstance m_Instance = VK_NULL_HANDLE;
             VkDebugUtilsMessengerEXT m_DebugMessenger;
 
             const std::vector<const char*> validationLayers = {
@@ -36,6 +37,8 @@ namespace Yarezo {
             #else
                 const bool enableValidationLayers = true;
             #endif
+
+            static YzVkInstance* s_YzVkInstance;
         };
     }
 }

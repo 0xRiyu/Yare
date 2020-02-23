@@ -22,7 +22,6 @@ namespace Yarezo{
 
         inline virtual void* getNativeWindow() const { return m_Window; };
 
-        bool windowResized = false;
     private:
         void init();
         GLFWwindow* m_Window;

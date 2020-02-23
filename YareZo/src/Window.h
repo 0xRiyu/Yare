@@ -28,6 +28,7 @@ namespace Yarezo {
         static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
 
+        bool windowResized = false;
     protected:
         WindowProperties m_Properties;
         InputHandler m_InputHandler;
