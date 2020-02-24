@@ -5,8 +5,6 @@
 #ifndef YAREZO_APPLICATION
 #define YAREZO_APPLICATION
 
-#define APIENTRY
-
 #include <memory>
 
 #include "src/Core.h"

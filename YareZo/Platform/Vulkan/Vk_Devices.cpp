@@ -2,8 +2,8 @@
 
 #include "src/Application.h"
 #include "Utilities/YzLogger.h"
-#include "Windows/GlfwWindow.h"
 
+#include <GLFW/glfw3.h>
 #include <set>
 
 namespace Yarezo {

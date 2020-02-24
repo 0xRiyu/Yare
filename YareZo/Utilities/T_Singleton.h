@@ -52,4 +52,4 @@ namespace Yarezo {
 	}
 }
 
-#endif
+#endif //YAREZO_T_SINGLETON_H
