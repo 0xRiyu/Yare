@@ -13,6 +13,7 @@
 
 #include "Platform/Vulkan/Vk.h"
 #include "src/Vulkan.h"
+#include "Window.h"
 #include "src/Application.h"
 
 namespace Yarezo {
@@ -26,49 +27,49 @@ namespace Yarezo {
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
 
-        vkDestroyDescriptorSetLayout(m_VkDevice.getDevice(), m_DescriptorSetLayout, nullptr);
+        vkDestroyDescriptorSetLayout(m_VkDevice->getDevice(), m_DescriptorSetLayout, nullptr);
 
-        vkDestroyBuffer(m_VkDevice.getDevice(), m_IndexBuffer, nullptr);
-        vkFreeMemory(m_VkDevice.getDevice(), m_IndexBufferMemory, nullptr);
+        vkDestroyBuffer(m_VkDevice->getDevice(), m_IndexBuffer, nullptr);
+        vkFreeMemory(m_VkDevice->getDevice(), m_IndexBufferMemory, nullptr);
 
-        vkDestroyBuffer(m_VkDevice.getDevice(), m_VertexBuffer, nullptr);
-        vkFreeMemory(m_VkDevice.getDevice(), m_VertexBufferMemory, nullptr);
+        vkDestroyBuffer(m_VkDevice->getDevice(), m_VertexBuffer, nullptr);
+        vkFreeMemory(m_VkDevice->getDevice(), m_VertexBufferMemory, nullptr);
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(m_VkDevice.getDevice(), m_RenderFinishedSemaphore[i], nullptr);
-            vkDestroySemaphore(m_VkDevice.getDevice(), m_ImageAvailableSemaphore[i], nullptr);
-            vkDestroyFence(m_VkDevice.getDevice(), m_InFlightFences[i], nullptr);
+            vkDestroySemaphore(m_VkDevice->getDevice(), m_RenderFinishedSemaphore[i], nullptr);
+            vkDestroySemaphore(m_VkDevice->getDevice(), m_ImageAvailableSemaphore[i], nullptr);
+            vkDestroyFence(m_VkDevice->getDevice(), m_InFlightFences[i], nullptr);
         }
 
-        vkDestroyCommandPool(m_VkDevice.getDevice(), m_CommandPool, nullptr);
+        vkDestroyCommandPool(m_VkDevice->getDevice(), m_CommandPool, nullptr);
        
-
+        Graphics::YzVkDevice::release();
     }
 
     void GraphicsDevice_Vulkan::cleanupSwapChain() {
 
         for (auto& framebuffer : m_SwapChainFramebuffers) {
-            vkDestroyFramebuffer(m_VkDevice.getDevice(), framebuffer, nullptr);
+            vkDestroyFramebuffer(m_VkDevice->getDevice(), framebuffer, nullptr);
         }
 
-        vkFreeCommandBuffers(m_VkDevice.getDevice(), m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
+        vkFreeCommandBuffers(m_VkDevice->getDevice(), m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 
-        vkDestroyPipeline(m_VkDevice.getDevice(), m_GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(m_VkDevice.getDevice(), m_PipelineLayout, nullptr);
-        vkDestroyRenderPass(m_VkDevice.getDevice(), m_RenderPass, nullptr);
+        vkDestroyPipeline(m_VkDevice->getDevice(), m_GraphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(m_VkDevice->getDevice(), m_PipelineLayout, nullptr);
+        vkDestroyRenderPass(m_VkDevice->getDevice(), m_RenderPass, nullptr);
 
         for (auto& imageView : m_SwapChainImageViews) {
-            vkDestroyImageView(m_VkDevice.getDevice(), imageView, nullptr);
+            vkDestroyImageView(m_VkDevice->getDevice(), imageView, nullptr);
         }
 
-        vkDestroySwapchainKHR(m_VkDevice.getDevice(), m_SwapChain, nullptr);
+        m_VkSwapchain.cleanUp();
 
-        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
-            vkDestroyBuffer(m_VkDevice.getDevice(), m_UniformBuffers[i], nullptr);
-            vkFreeMemory(m_VkDevice.getDevice(), m_UniformBuffersMemory[i], nullptr);
+        for (size_t i = 0; i < m_VkSwapchain.getImagesSize(); i++) {
+            vkDestroyBuffer(m_VkDevice->getDevice(), m_UniformBuffers[i], nullptr);
+            vkFreeMemory(m_VkDevice->getDevice(), m_UniformBuffersMemory[i], nullptr);
         }
 
-        vkDestroyDescriptorPool(m_VkDevice.getDevice(), m_DescriptorPool, nullptr);
+        vkDestroyDescriptorPool(m_VkDevice->getDevice(), m_DescriptorPool, nullptr);
     }
 
 
@@ -76,10 +77,10 @@ namespace Yarezo {
 
         m_VkInstance.init();
 
-        m_VkDevice.init();
+        m_VkDevice = Graphics::YzVkDevice::instance();
         // Create a swapchain, a swapchain is responsible for maintaining the images
         // that will be presented to the user. 
-        createSwapChain();
+        m_VkSwapchain.init();
         // Create and image-view, which will represent a 'view' of an image,
         // this way we can interface with images without modifying the underlying image
         createImageViews();
@@ -116,10 +117,10 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::drawFrame() {
-        vkWaitForFences(m_VkDevice.getDevice(), 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(m_VkDevice->getDevice(), 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
 
         uint32_t imageIndex;
-        VkResult result = vkAcquireNextImageKHR(m_VkDevice.getDevice(), m_SwapChain, UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult result = vkAcquireNextImageKHR(m_VkDevice->getDevice(), m_VkSwapchain.getSwapchain(), UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
 
         auto window = Application::getAppInstance()->getWindow();
 
@@ -135,7 +136,7 @@ namespace Yarezo {
         updateUniformBuffer(imageIndex);
 
         if (m_ImagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(m_VkDevice.getDevice(), 1, &m_ImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+            vkWaitForFences(m_VkDevice->getDevice(), 1, &m_ImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
         }
 
         m_ImagesInFlight[imageIndex] = m_InFlightFences[m_CurrentFrame];
@@ -155,8 +156,8 @@ namespace Yarezo {
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
-        vkResetFences(m_VkDevice.getDevice(), 1, &m_InFlightFences[m_CurrentFrame]);
-        if (vkQueueSubmit(m_VkDevice.getGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS) {
+        vkResetFences(m_VkDevice->getDevice(), 1, &m_InFlightFences[m_CurrentFrame]);
+        if (vkQueueSubmit(m_VkDevice->getGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to submit draw command buffer.");
             throw std::runtime_error("Vulkan failed to submit draw command buffer!");
         }
@@ -167,12 +168,12 @@ namespace Yarezo {
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
 
-        VkSwapchainKHR swapChains[] = {m_SwapChain};
+        VkSwapchainKHR swapChains[] = { m_VkSwapchain.getSwapchain() };
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = swapChains;
         presentInfo.pImageIndices = &imageIndex;
         presentInfo.pResults = nullptr; // Optional
-        result = vkQueuePresentKHR(m_VkDevice.getPresentQueue(), &presentInfo);
+        result = vkQueuePresentKHR(m_VkDevice->getPresentQueue(), &presentInfo);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             recreateSwapChain();
@@ -182,80 +183,28 @@ namespace Yarezo {
             throw std::runtime_error("Vulkan failed to present swap chain image!");
         }
 
-        vkQueueWaitIdle(m_VkDevice.getPresentQueue());
+        vkQueueWaitIdle(m_VkDevice->getPresentQueue());
 
         m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     void GraphicsDevice_Vulkan::waitIdle() {
-        m_VkDevice.waitIdle();
+        m_VkDevice->waitIdle();
     }
 
-
-    void GraphicsDevice_Vulkan::createSwapChain() {
-        Graphics::SwapChainSupportDetails swapChainSupport = m_VkDevice.getSwapChainSupport();
-
-        auto surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-        auto presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-        auto extent = chooseSwapExtent(swapChainSupport.capabilities);
-
-        // Request one more image to render to than the minimum so we dont wait for driver operations
-        uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
-
-        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
-            imageCount = swapChainSupport.capabilities.maxImageCount;
-        }
-
-        VkSwapchainCreateInfoKHR createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = m_VkDevice.getSurfaceKHR();
-        createInfo.minImageCount = imageCount;
-        createInfo.imageFormat = surfaceFormat.format;
-        createInfo.imageColorSpace = surfaceFormat.colorSpace;
-        createInfo.imageExtent = extent;
-        createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-
-        Graphics::QueueFamilyIndices indices = m_VkDevice.getQueueFamilyIndicies();
-        uint32_t queueFamilyIndices[] = {static_cast<uint32_t>(indices.graphicsFamily), static_cast<uint32_t>(indices.presentFamily)};
-
-        if (indices.graphicsFamily != indices.presentFamily) {
-            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-            createInfo.queueFamilyIndexCount = 2;
-            createInfo.pQueueFamilyIndices = queueFamilyIndices;
-        } else {
-            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        }
-
-        createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
-        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-
-        createInfo.presentMode = presentMode;
-        createInfo.clipped = VK_TRUE;
-        createInfo.oldSwapchain = VK_NULL_HANDLE;
-
-        if (vkCreateSwapchainKHR(m_VkDevice.getDevice(), &createInfo, nullptr, &m_SwapChain) != VK_SUCCESS) {
-            YZ_ERROR("SwapChain failed to create");
-            throw std::runtime_error("SwapChain failed to create.");
-        }
-
-        vkGetSwapchainImagesKHR(m_VkDevice.getDevice(), m_SwapChain, &imageCount, nullptr);
-        m_SwapChainImages.resize(imageCount);
-        vkGetSwapchainImagesKHR(m_VkDevice.getDevice(), m_SwapChain, &imageCount, m_SwapChainImages.data());
-
-        m_SwapChainImageFormat = surfaceFormat.format;
-        m_SwapChainExtent = extent;
-    }
 
     void GraphicsDevice_Vulkan::createImageViews() {
-        m_SwapChainImageViews.resize(m_SwapChainImages.size());
 
-        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+        size_t swapchainImagesSize = m_VkSwapchain.getImagesSize();
+
+        m_SwapChainImageViews.resize(swapchainImagesSize);
+
+        for (size_t i = 0; i < swapchainImagesSize; i++) {
             VkImageViewCreateInfo createInfo = {};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = m_SwapChainImages[i];
+            createInfo.image = m_VkSwapchain.getImage(i);
             createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = m_SwapChainImageFormat;
+            createInfo.format = m_VkSwapchain.getImageFormat();
 
             createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
             createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -268,7 +217,7 @@ namespace Yarezo {
             createInfo.subresourceRange.baseArrayLayer = 0;
             createInfo.subresourceRange.layerCount = 1;
 
-            if (vkCreateImageView(m_VkDevice.getDevice(), &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) {
+            if (vkCreateImageView(m_VkDevice->getDevice(), &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) {
                 YZ_ERROR("Failed to create image views.");
                 throw std::runtime_error("Failed to create image views.");
             }
@@ -277,7 +226,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createRenderPass() {
         VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = m_SwapChainImageFormat;
+        colorAttachment.format = m_VkSwapchain.getImageFormat();
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -312,7 +261,7 @@ namespace Yarezo {
         renderPassInfo.dependencyCount = 1;
         renderPassInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(m_VkDevice.getDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
+        if (vkCreateRenderPass(m_VkDevice->getDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to create a render pass.");
             throw std::runtime_error("failed to create render pass!");
         }
@@ -332,7 +281,7 @@ namespace Yarezo {
         layoutInfo.bindingCount = 1;
         layoutInfo.pBindings = &uboLayoutBinding;
 
-        if (vkCreateDescriptorSetLayout(m_VkDevice.getDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
+        if (vkCreateDescriptorSetLayout(m_VkDevice->getDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
             YZ_ERROR("Vulkan was unable to create a descriptor set layout.");
             throw std::runtime_error("Vulkan was unable to create a descriptor set layout.");
         }
@@ -378,14 +327,14 @@ namespace Yarezo {
         VkViewport viewport = {};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float) m_SwapChainExtent.width;
-        viewport.height = (float) m_SwapChainExtent.height;
+        viewport.width = (float) m_VkSwapchain.getExtent().width;
+        viewport.height = (float)m_VkSwapchain.getExtent().height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
         VkRect2D scissor = {};
         scissor.offset = {0,0};
-        scissor.extent = m_SwapChainExtent;
+        scissor.extent = m_VkSwapchain.getExtent();
 
         VkPipelineViewportStateCreateInfo viewportState = {};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -440,7 +389,7 @@ namespace Yarezo {
         pipelineLayoutInfo.setLayoutCount = 1;
         pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
 
-        if (vkCreatePipelineLayout(m_VkDevice.getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
+        if (vkCreatePipelineLayout(m_VkDevice->getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
             YZ_ERROR("Vulkan Pipeline Layout was unable to be created.");
             throw std::runtime_error("Vulkan Pipeline Layout was unable to be created.");
         }
@@ -462,12 +411,12 @@ namespace Yarezo {
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(m_VkDevice.getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
+        if (vkCreateGraphicsPipelines(m_VkDevice->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to create the graphics pipeline.");
             throw std::runtime_error("Vulkan failed to create the graphics pipeline.");
         }
-        vkDestroyShaderModule(m_VkDevice.getDevice(), fragShaderModule, nullptr);
-        vkDestroyShaderModule(m_VkDevice.getDevice(), vertShaderModule, nullptr);
+        vkDestroyShaderModule(m_VkDevice->getDevice(), fragShaderModule, nullptr);
+        vkDestroyShaderModule(m_VkDevice->getDevice(), vertShaderModule, nullptr);
     }
 
     void GraphicsDevice_Vulkan::createFramebuffers() {
@@ -483,11 +432,11 @@ namespace Yarezo {
             framebufferInfo.renderPass = m_RenderPass;
             framebufferInfo.attachmentCount = 1;
             framebufferInfo.pAttachments = attachments;
-            framebufferInfo.width = m_SwapChainExtent.width;
-            framebufferInfo.height = m_SwapChainExtent.height;
+            framebufferInfo.width = m_VkSwapchain.getExtent().width;
+            framebufferInfo.height = m_VkSwapchain.getExtent().height;
             framebufferInfo.layers = 1;
 
-            if (vkCreateFramebuffer(m_VkDevice.getDevice(), &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
+            if (vkCreateFramebuffer(m_VkDevice->getDevice(), &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
                 YZ_ERROR("Vulkan failed to create a framebuffer");
                 throw std::runtime_error("Vulkan failed to create a framebuffer");
             }
@@ -495,14 +444,14 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createCommandPool() {
-        Graphics::QueueFamilyIndices queueFamilyIndices = m_VkDevice.getQueueFamilyIndicies();
+        Graphics::QueueFamilyIndices queueFamilyIndices = m_VkDevice->getQueueFamilyIndicies();
 
         VkCommandPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
         poolInfo.flags = 0; // Optional
 
-        if (vkCreateCommandPool(m_VkDevice.getDevice(), &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
+        if (vkCreateCommandPool(m_VkDevice->getDevice(), &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to create a command pool.");
             throw std::runtime_error("Vulkan failed to create a command pool.");
         }
@@ -518,17 +467,17 @@ namespace Yarezo {
             stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(m_VkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        vkMapMemory(m_VkDevice->getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, vertices.data(), (size_t)bufferSize);
-        vkUnmapMemory(m_VkDevice.getDevice(), stagingBufferMemory);
+        vkUnmapMemory(m_VkDevice->getDevice(), stagingBufferMemory);
 
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_VertexBuffer, m_VertexBufferMemory);
 
         copyBuffer(stagingBuffer, m_VertexBuffer, bufferSize);
 
-        vkDestroyBuffer(m_VkDevice.getDevice(), stagingBuffer, nullptr);
-        vkFreeMemory(m_VkDevice.getDevice(), stagingBufferMemory, nullptr);
+        vkDestroyBuffer(m_VkDevice->getDevice(), stagingBuffer, nullptr);
+        vkFreeMemory(m_VkDevice->getDevice(), stagingBufferMemory, nullptr);
 
     }
 
@@ -543,26 +492,28 @@ namespace Yarezo {
             stagingBuffer, stagingBufferMemory);
 
         void* data;
-        vkMapMemory(m_VkDevice.getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
+        vkMapMemory(m_VkDevice->getDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
         memcpy(data, indices.data(), (size_t)bufferSize);
-        vkUnmapMemory(m_VkDevice.getDevice(), stagingBufferMemory);
+        vkUnmapMemory(m_VkDevice->getDevice(), stagingBufferMemory);
 
         createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
             VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_IndexBuffer, m_IndexBufferMemory);
 
         copyBuffer(stagingBuffer, m_IndexBuffer, bufferSize);
 
-        vkDestroyBuffer(m_VkDevice.getDevice(), stagingBuffer, nullptr);
-        vkFreeMemory(m_VkDevice.getDevice(), stagingBufferMemory, nullptr);
+        vkDestroyBuffer(m_VkDevice->getDevice(), stagingBuffer, nullptr);
+        vkFreeMemory(m_VkDevice->getDevice(), stagingBufferMemory, nullptr);
     }
 
     void GraphicsDevice_Vulkan::createUniformBuffers() {
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 
-        m_UniformBuffers.resize(m_SwapChainImages.size());
-        m_UniformBuffersMemory.resize(m_SwapChainImages.size());
+        size_t swapchainImagesSize = m_VkSwapchain.getImagesSize();
 
-        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+        m_UniformBuffers.resize(swapchainImagesSize);
+        m_UniformBuffersMemory.resize(swapchainImagesSize);
+
+        for (size_t i = 0; i < swapchainImagesSize; i++) {
             createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
                 VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
                 m_UniformBuffers[i], m_UniformBuffersMemory[i]);
@@ -571,17 +522,19 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createDescriptorPool() {
+        size_t swapchainImagesSize = m_VkSwapchain.getImagesSize();
+
         VkDescriptorPoolSize poolSize = {};
         poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSize.descriptorCount = static_cast<uint32_t>(m_SwapChainImages.size());
+        poolSize.descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
 
         VkDescriptorPoolCreateInfo poolInfo = {};
         poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         poolInfo.poolSizeCount = 1;
         poolInfo.pPoolSizes = &poolSize;
-        poolInfo.maxSets = static_cast<uint32_t>(m_SwapChainImages.size());
+        poolInfo.maxSets = static_cast<uint32_t>(swapchainImagesSize);
 
-        if (vkCreateDescriptorPool(m_VkDevice.getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
+        if (vkCreateDescriptorPool(m_VkDevice->getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
             YZ_ERROR("Vulkan creation of descriptor pool failed.");
             throw std::runtime_error("Vulkan creation of descriptor pool failed.");
         }
@@ -589,22 +542,24 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createDescriptorSets() {
-        std::vector<VkDescriptorSetLayout> layouts(m_SwapChainImages.size(), m_DescriptorSetLayout);
+        size_t swapchainImagesSize = m_VkSwapchain.getImagesSize();
+
+        std::vector<VkDescriptorSetLayout> layouts(swapchainImagesSize, m_DescriptorSetLayout);
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = m_DescriptorPool;
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(m_SwapChainImages.size());
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImagesSize);
         allocInfo.pSetLayouts = layouts.data();
 
-        m_DescriptorSets.resize(m_SwapChainImages.size());
+        m_DescriptorSets.resize(swapchainImagesSize);
 
         //This wont need to be cleaned up because it is auto cleaned up when the pool is destroyed
-        if (vkAllocateDescriptorSets(m_VkDevice.getDevice(), &allocInfo, m_DescriptorSets.data()) != VK_SUCCESS) {
+        if (vkAllocateDescriptorSets(m_VkDevice->getDevice(), &allocInfo, m_DescriptorSets.data()) != VK_SUCCESS) {
             YZ_ERROR("Vulkan was unable to allocate descriptor sets.");
             throw std::runtime_error("Vulkan was unable to allocate descriptor sets.");
         }
 
-        for (size_t i = 0; i < m_SwapChainImages.size(); i++) {
+        for (size_t i = 0; i < swapchainImagesSize; i++) {
             VkDescriptorBufferInfo bufferInfo = {};
             bufferInfo.buffer = m_UniformBuffers[i];
             bufferInfo.offset = 0;
@@ -620,7 +575,7 @@ namespace Yarezo {
             descriptorWrite.pBufferInfo = &bufferInfo;
             descriptorWrite.pImageInfo = nullptr; // Optional
             descriptorWrite.pTexelBufferView = nullptr; // Optional
-            vkUpdateDescriptorSets(m_VkDevice.getDevice(), 1, &descriptorWrite, 0, nullptr);
+            vkUpdateDescriptorSets(m_VkDevice->getDevice(), 1, &descriptorWrite, 0, nullptr);
         }
     }
 
@@ -633,7 +588,7 @@ namespace Yarezo {
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         allocInfo.commandBufferCount = (uint32_t) m_CommandBuffers.size();
 
-        if (vkAllocateCommandBuffers(m_VkDevice.getDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS) {
+        if (vkAllocateCommandBuffers(m_VkDevice->getDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS) {
             YZ_ERROR("Vulkan Failed to allocate command buffers.");
             throw std::runtime_error("Vulkan Failed to allocate command buffers.");
         }
@@ -653,7 +608,7 @@ namespace Yarezo {
             renderPassInfo.renderPass = m_RenderPass;
             renderPassInfo.framebuffer = m_SwapChainFramebuffers[i];
             renderPassInfo.renderArea.offset = {0, 0};
-            renderPassInfo.renderArea.extent = m_SwapChainExtent;
+            renderPassInfo.renderArea.extent = m_VkSwapchain.getExtent();
             VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
@@ -685,7 +640,7 @@ namespace Yarezo {
         m_ImageAvailableSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
         m_RenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
         m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        m_ImagesInFlight.resize(m_SwapChainImages.size(), VK_NULL_HANDLE);
+        m_ImagesInFlight.resize(m_VkSwapchain.getImagesSize(), VK_NULL_HANDLE);
 
         VkSemaphoreCreateInfo semaphoreInfo = {};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -695,9 +650,9 @@ namespace Yarezo {
         fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(m_VkDevice.getDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(m_VkDevice.getDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
-                vkCreateFence(m_VkDevice.getDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
+            if (vkCreateSemaphore(m_VkDevice->getDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(m_VkDevice->getDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
+                vkCreateFence(m_VkDevice->getDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
                 YZ_ERROR("Vulkan failed to create sync objects. (Semaphores or Fence)");
                 throw std::runtime_error("Vulkan failed to create sync objects. (Semaphores or Fence)");
             }
@@ -721,9 +676,9 @@ namespace Yarezo {
         }
         YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: " + std::to_string(width) + ", " + std::to_string(height));
 
-        m_VkDevice.waitIdle();
+        m_VkDevice->waitIdle();
         cleanupSwapChain();
-        createSwapChain();
+        m_VkSwapchain.init();
         createImageViews();
         createRenderPass();
         createGraphicsPipeline();
@@ -751,9 +706,9 @@ namespace Yarezo {
         ubo.proj[1][1] *= -1;
 
         void* data;
-        vkMapMemory(m_VkDevice.getDevice(), m_UniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+        vkMapMemory(m_VkDevice->getDevice(), m_UniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
         memcpy(data, &ubo, sizeof(ubo));
-        vkUnmapMemory(m_VkDevice.getDevice(), m_UniformBuffersMemory[currentImage]);
+        vkUnmapMemory(m_VkDevice->getDevice(), m_UniformBuffersMemory[currentImage]);
     }
 
     void GraphicsDevice_Vulkan::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
@@ -763,25 +718,25 @@ namespace Yarezo {
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateBuffer(m_VkDevice.getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+        if (vkCreateBuffer(m_VkDevice->getDevice(), &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
             YZ_ERROR("Vulkan was unable to create a buffer.");
             throw std::runtime_error("failed to create a buffer");
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(m_VkDevice.getDevice(), buffer, &memRequirements);
+        vkGetBufferMemoryRequirements(m_VkDevice->getDevice(), buffer, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
 
-        if (vkAllocateMemory(m_VkDevice.getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+        if (vkAllocateMemory(m_VkDevice->getDevice(), &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to allocate buffer memory!");
             throw std::runtime_error("Vulkan failed to allocate buffer memory!");
         }
 
-        vkBindBufferMemory(m_VkDevice.getDevice(), buffer, bufferMemory, 0);
+        vkBindBufferMemory(m_VkDevice->getDevice(), buffer, bufferMemory, 0);
     }
 
     void GraphicsDevice_Vulkan::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
@@ -792,7 +747,7 @@ namespace Yarezo {
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(m_VkDevice.getDevice(), &allocInfo, &commandBuffer);
+        vkAllocateCommandBuffers(m_VkDevice->getDevice(), &allocInfo, &commandBuffer);
 
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -813,16 +768,16 @@ namespace Yarezo {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        vkQueueSubmit(m_VkDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(m_VkDevice.getGraphicsQueue());
+        vkQueueSubmit(m_VkDevice->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(m_VkDevice->getGraphicsQueue());
 
-        vkFreeCommandBuffers(m_VkDevice.getDevice(), m_CommandPool, 1, &commandBuffer);
+        vkFreeCommandBuffers(m_VkDevice->getDevice(), m_CommandPool, 1, &commandBuffer);
     }
 
 
     uint32_t GraphicsDevice_Vulkan::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
         VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(m_VkDevice.getGPU(), &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(m_VkDevice->getGPU(), &memProperties);
 
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
             if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -884,7 +839,7 @@ namespace Yarezo {
         createInfo.pCode = reinterpret_cast<const uint32_t*>(shader_code.data());
 
         VkShaderModule shaderModule;
-        if (vkCreateShaderModule(m_VkDevice.getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+        if (vkCreateShaderModule(m_VkDevice->getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
             YZ_ERROR("Vulkan was unable to create a shaderModule with provided shader code.");
             throw std::runtime_error("Vulkan was unable to create a shaderModule with provided shader code.");
         }

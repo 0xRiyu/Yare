@@ -2,8 +2,6 @@
 #define YZ_VK_INSTANCE_HPP
 
 #include "Platform/Vulkan/Vk.h"
-#include "src/Window.h"
-
 #include <vector>
 
 namespace Yarezo {

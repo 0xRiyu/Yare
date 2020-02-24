@@ -2,20 +2,21 @@
 // Created by Drew on 2019-08-15.
 //
 
-#include "src/Window.h"
 #include "src/Application.h"
 #include "Utilities/YzLogger.h"
+#include "src/Window.h"
 #include "src/Vulkan.h"
-#include "src/YzCamera.h"
 
-#include <imgui.h>
+#include <exception>
 
 namespace Yarezo {
 
     Application* Application::s_AppInstance = nullptr;
 
     Application::Application() {
-        assert(!s_AppInstance, "Application already exists, Don't be doing that fam");
+        if (s_AppInstance) {
+            throw std::runtime_error("Application already exists, Don't be doing that fam");
+        }
         s_AppInstance = this;
     }
 

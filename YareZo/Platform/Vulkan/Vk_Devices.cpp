@@ -2,6 +2,7 @@
 
 #include "src/Application.h"
 #include "Utilities/YzLogger.h"
+#include "Windows/GlfwWindow.h"
 
 #include <set>
 
@@ -11,6 +12,7 @@ namespace Yarezo {
 
         YzVkDevice::YzVkDevice() {
             m_YzVkInstance = YzVkInstance::getYzVkInstancePtr();
+            init();
         }
 
         YzVkDevice::~YzVkDevice() {

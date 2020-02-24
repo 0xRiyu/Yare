@@ -5,15 +5,16 @@
 #ifndef YAREZO_APPLICATION
 #define YAREZO_APPLICATION
 
+#define APIENTRY
+
 #include <memory>
 
 #include "src/Core.h"
+#include "src/window.h"
 
 namespace Yarezo {
 
-    class Window;
-
-    class YAREZO_API Application {
+    class Application {
     public:
         Application();
         virtual ~Application();

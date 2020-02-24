@@ -1,6 +1,7 @@
 #ifndef VK_DEVICES_HPP
 #define VK_DEVICES_HPP
 
+#include "Utilities/T_Singleton.h"
 #include "Platform/Vulkan/Vk.h"
 #include "Platform/Vulkan/Vk_Instance.h"
 
@@ -24,7 +25,8 @@ namespace Yarezo {
             std::vector<VkPresentModeKHR> presentModes;
         };
 
-        class YzVkDevice {
+        class YzVkDevice : public Utilities::T_Singleton<YzVkDevice> {
+
         public:
             YzVkDevice();
             ~YzVkDevice();

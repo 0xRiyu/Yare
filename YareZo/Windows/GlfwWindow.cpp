@@ -19,6 +19,7 @@ namespace Yarezo {
     GlfwWindow::GlfwWindow(WindowProperties& properties) {
         m_Properties = properties;
         m_Camera = std::make_shared<Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
+        m_InputHandler = std::make_shared<InputHandler>();
         init();
     }
 
@@ -33,12 +34,12 @@ namespace Yarezo {
         m_Window = glfwCreateWindow(m_Properties.width, m_Properties.height, "YareZo!", nullptr, nullptr);
         glfwSetWindowUserPointer(m_Window, this);
         glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
-        m_InputHandler.setupKeyInputs(m_Window);
+        m_InputHandler->setupKeyInputs(m_Window);
     }
     
     void GlfwWindow::onUpdate() {
         glfwPollEvents();
-        m_InputHandler.Handle(m_Camera);
+        m_InputHandler->Handle(m_Camera);
         windowResized = false;
     }
 

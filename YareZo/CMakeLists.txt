@@ -24,6 +24,7 @@ set (YAREZOENGINE_SOURCES
         # Vulkan
         Platform/Vulkan/Vk_Instance.cpp
         Platform/Vulkan/Vk_Devices.cpp
+        Platform/Vulkan/Vk_Swapchain.cpp
 )
 
 #--------------------------------------------------------------------
@@ -45,6 +46,7 @@ set (YAREZOENGINE_HEADERS
         # Utilities
         Utilities/YzLogger.h
         Utilities/IOHelper.h
+        Utilities/T_Singleton.h
 
         # Windows Platform Specific
         Windows/GlfwWindow.h
@@ -53,6 +55,7 @@ set (YAREZOENGINE_HEADERS
         Platform/Vulkan/Vk.h
         Platform/Vulkan/Vk_Instance.h
         Platform/Vulkan/Vk_Devices.h
+        Platform/Vulkan/Vk_Swapchain.h
 )
 
 #--------------------------------------------------------------------
@@ -66,8 +69,8 @@ add_library(YareZo::Engine ALIAS ${PROJECT_NAME})
 #--------------------------------------------------------------------
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-        PRIVATE ${CMAKE_SOURCE_DIR}/libs/glm
-        PRIVATE ${CMAKE_SOURCE_DIR}/libs/imgui)
+        PUBLIC ${CMAKE_SOURCE_DIR}/libs/glm
+        PUBLIC ${CMAKE_SOURCE_DIR}/libs/imgui)
 
 #--------------------------------------------------------------------
 # Find static libraries that are required
@@ -79,7 +82,6 @@ if(NOT TARGET spdlog)
 
     if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
         target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/libs/spdlog/x64-Debug/include)
-
         set(spdlog_DIR "${CMAKE_SOURCE_DIR}/libs/spdlog/x64-Debug/lib/cmake/spdlog")
         find_package(spdlog REQUIRED)
     endif()

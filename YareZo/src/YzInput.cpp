@@ -1,8 +1,17 @@
-#include "YzInput.h"
-#include "src/Window.h"
+#include "src/YzInput.h"
 #include "Utilities/YzLogger.h"
+#include "src/Application.h"
+
+#ifndef GLM_FORCE_RADIANS
+#define GLM_FORCE_RADIANS
+#endif
+
+#include <glm.hpp>
+#include <ext.hpp>
+#include <gtx/string_cast.hpp>
 
 namespace Yarezo {
+
 
     InputHandler::InputHandler() {
 
@@ -62,9 +71,9 @@ namespace Yarezo {
 	}
 
 	void InputHandler::GLFWcallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-		Window* win = (Window*)glfwGetWindowUserPointer(window);
-		
-		auto inputHandler = win->getInputHandler();
+
+		auto inputHandler = Application::getAppInstance()->getWindow()->getInputHandler();
+
 		inputHandler->m_Keys[key] = action != GLFW_RELEASE;
 		if (action == GLFW_RELEASE) {
 			YZ_INFO("A key has been released");

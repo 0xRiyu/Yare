@@ -6,6 +6,5 @@
 
 #include "src/Application.h"
 #include "src/EntryPoint.h"
-#include "Utilities/YzLogger.h"
 
 #endif //YAREZO_H
