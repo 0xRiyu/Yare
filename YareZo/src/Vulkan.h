@@ -16,6 +16,8 @@
 #include "Platform/Vulkan/Vk_Instance.h"
 #include "Platform/Vulkan/Vk_Devices.h"
 #include "Platform/Vulkan/Vk_Swapchain.h"
+#include "Platform/Vulkan/Vk_RenderPass.h"
+
 
 namespace Yarezo {
 
@@ -66,8 +68,6 @@ namespace Yarezo {
 
     private:
         void cleanupSwapChain();
-        void createImageViews();
-        void createRenderPass();
         void createDescriptorSetLayout();
         void createGraphicsPipeline();
         void createFramebuffers();
@@ -111,8 +111,8 @@ namespace Yarezo {
         Graphics::YzVkInstance m_VkInstance;
         Graphics::YzVkDevice* m_VkDevice;
         Graphics::YzVkSwapchain m_VkSwapchain;
+        Graphics::YzVkRenderPass m_VkRenderPass;
 
-        VkRenderPass m_RenderPass;
         VkDescriptorSetLayout m_DescriptorSetLayout;
         VkPipelineLayout m_PipelineLayout;
         VkPipeline m_GraphicsPipeline;

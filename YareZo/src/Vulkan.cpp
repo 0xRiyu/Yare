@@ -55,8 +55,8 @@ namespace Yarezo {
 
         vkDestroyPipeline(m_VkDevice->getDevice(), m_GraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(m_VkDevice->getDevice(), m_PipelineLayout, nullptr);
-        vkDestroyRenderPass(m_VkDevice->getDevice(), m_RenderPass, nullptr);
 
+        m_VkRenderPass.cleanUp();
         m_VkSwapchain.cleanUp();
 
         for (size_t i = 0; i < m_VkSwapchain.getImagesSize(); i++) {
@@ -78,7 +78,8 @@ namespace Yarezo {
         m_VkSwapchain.init();
         // Create the Renderpass, the render pass is responsible for the draw calls.
         // It creates a description/map of a graphics job.
-        createRenderPass();
+        Graphics::RenderPassInfo renderPassInfo{ m_VkSwapchain.getImageFormat() };
+        m_VkRenderPass.init(renderPassInfo);
         // A descriptor is a special opaque shader variable that shaders use to access buffer and image
         // resources in an indirect fashion. It can be thought of as a "pointer" to a resource.
         // The layout is used to describe the content of a list of descriptor sets
@@ -182,49 +183,6 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::waitIdle() {
         m_VkDevice->waitIdle();
-    }
-
-    void GraphicsDevice_Vulkan::createRenderPass() {
-        VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = m_VkSwapchain.getImageFormat();
-        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-        VkAttachmentReference colorAttachmentRef = {};
-        colorAttachmentRef.attachment = 0;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        VkSubpassDescription subpass = {};
-        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-
-        VkSubpassDependency dependency = {};
-        dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-        dependency.dstSubpass = 0;
-        dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.srcAccessMask = 0;
-        dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-        VkRenderPassCreateInfo renderPassInfo = {};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = 1;
-        renderPassInfo.pAttachments = &colorAttachment;
-        renderPassInfo.subpassCount = 1;
-        renderPassInfo.pSubpasses = &subpass;
-        renderPassInfo.dependencyCount = 1;
-        renderPassInfo.pDependencies = &dependency;
-
-        if (vkCreateRenderPass(m_VkDevice->getDevice(), &renderPassInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan failed to create a render pass.");
-            throw std::runtime_error("failed to create render pass!");
-        }
     }
 
     void GraphicsDevice_Vulkan::createDescriptorSetLayout() {
@@ -367,7 +325,7 @@ namespace Yarezo {
         pipelineInfo.pColorBlendState = &colorBlending;
         pipelineInfo.pDynamicState = nullptr; // Optional
         pipelineInfo.layout = m_PipelineLayout;
-        pipelineInfo.renderPass = m_RenderPass;
+        pipelineInfo.renderPass = m_VkRenderPass.getRenderPass();
         pipelineInfo.subpass = 0;
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
 
@@ -390,7 +348,7 @@ namespace Yarezo {
 
             VkFramebufferCreateInfo framebufferInfo = {};
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = m_RenderPass;
+            framebufferInfo.renderPass = m_VkRenderPass.getRenderPass();
             framebufferInfo.attachmentCount = 1;
             framebufferInfo.pAttachments = attachments;
             framebufferInfo.width = m_VkSwapchain.getExtent().width;
@@ -566,7 +524,7 @@ namespace Yarezo {
 
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = m_RenderPass;
+            renderPassInfo.renderPass = m_VkRenderPass.getRenderPass();
             renderPassInfo.framebuffer = m_SwapChainFramebuffers[i];
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = m_VkSwapchain.getExtent();
@@ -640,7 +598,8 @@ namespace Yarezo {
         m_VkDevice->waitIdle();
         cleanupSwapChain();
         m_VkSwapchain.init();
-        createRenderPass();
+        Graphics::RenderPassInfo renderPassInfo{ m_VkSwapchain.getImageFormat() };
+        m_VkRenderPass.init(renderPassInfo);
         createGraphicsPipeline();
         createFramebuffers();
         createUniformBuffers();
