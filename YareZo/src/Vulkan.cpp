@@ -19,8 +19,7 @@
 namespace Yarezo {
 
 
-    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan()
-    {
+    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan() {
         initVulkan();
     }
 
@@ -42,7 +41,7 @@ namespace Yarezo {
         }
 
         vkDestroyCommandPool(m_VkDevice->getDevice(), m_CommandPool, nullptr);
-       
+
         Graphics::YzVkDevice::release();
     }
 
@@ -57,10 +56,6 @@ namespace Yarezo {
         vkDestroyPipeline(m_VkDevice->getDevice(), m_GraphicsPipeline, nullptr);
         vkDestroyPipelineLayout(m_VkDevice->getDevice(), m_PipelineLayout, nullptr);
         vkDestroyRenderPass(m_VkDevice->getDevice(), m_RenderPass, nullptr);
-
-        for (auto& imageView : m_SwapChainImageViews) {
-            vkDestroyImageView(m_VkDevice->getDevice(), imageView, nullptr);
-        }
 
         m_VkSwapchain.cleanUp();
 
@@ -81,9 +76,6 @@ namespace Yarezo {
         // Create a swapchain, a swapchain is responsible for maintaining the images
         // that will be presented to the user. 
         m_VkSwapchain.init();
-        // Create and image-view, which will represent a 'view' of an image,
-        // this way we can interface with images without modifying the underlying image
-        createImageViews();
         // Create the Renderpass, the render pass is responsible for the draw calls.
         // It creates a description/map of a graphics job.
         createRenderPass();
@@ -144,15 +136,15 @@ namespace Yarezo {
         VkSubmitInfo submitInfo = {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-        VkSemaphore waitSemaphores[] = {m_ImageAvailableSemaphore[m_CurrentFrame]};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphore[m_CurrentFrame] };
+        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         submitInfo.waitSemaphoreCount = 1;
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &m_CommandBuffers[imageIndex];
 
-        VkSemaphore signalSemaphores[] = {m_RenderFinishedSemaphore[m_CurrentFrame]};
+        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphore[m_CurrentFrame] };
         submitInfo.signalSemaphoreCount = 1;
         submitInfo.pSignalSemaphores = signalSemaphores;
 
@@ -192,38 +184,6 @@ namespace Yarezo {
         m_VkDevice->waitIdle();
     }
 
-
-    void GraphicsDevice_Vulkan::createImageViews() {
-
-        size_t swapchainImagesSize = m_VkSwapchain.getImagesSize();
-
-        m_SwapChainImageViews.resize(swapchainImagesSize);
-
-        for (size_t i = 0; i < swapchainImagesSize; i++) {
-            VkImageViewCreateInfo createInfo = {};
-            createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            createInfo.image = m_VkSwapchain.getImage(i);
-            createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            createInfo.format = m_VkSwapchain.getImageFormat();
-
-            createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-            createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            createInfo.subresourceRange.baseMipLevel = 0;
-            createInfo.subresourceRange.levelCount = 1;
-            createInfo.subresourceRange.baseArrayLayer = 0;
-            createInfo.subresourceRange.layerCount = 1;
-
-            if (vkCreateImageView(m_VkDevice->getDevice(), &createInfo, nullptr, &m_SwapChainImageViews[i]) != VK_SUCCESS) {
-                YZ_ERROR("Failed to create image views.");
-                throw std::runtime_error("Failed to create image views.");
-            }
-        }
-    }
-
     void GraphicsDevice_Vulkan::createRenderPass() {
         VkAttachmentDescription colorAttachment = {};
         colorAttachment.format = m_VkSwapchain.getImageFormat();
@@ -243,7 +203,7 @@ namespace Yarezo {
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         subpass.colorAttachmentCount = 1;
         subpass.pColorAttachments = &colorAttachmentRef;
-        
+
         VkSubpassDependency dependency = {};
         dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
         dependency.dstSubpass = 0;
@@ -307,7 +267,7 @@ namespace Yarezo {
         fragShaderStageInfo.module = fragShaderModule;
         fragShaderStageInfo.pName = "main";
 
-        VkPipelineShaderStageCreateInfo shaderStages[] = {vertShaderStageInfo, fragShaderStageInfo};
+        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
         auto bindingDescription = Vertex::getBindingDescription();
         auto attributeDescriptions = Vertex::getAttributeDescriptions();
@@ -327,13 +287,13 @@ namespace Yarezo {
         VkViewport viewport = {};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
-        viewport.width = (float) m_VkSwapchain.getExtent().width;
+        viewport.width = (float)m_VkSwapchain.getExtent().width;
         viewport.height = (float)m_VkSwapchain.getExtent().height;
         viewport.minDepth = 0.0f;
         viewport.maxDepth = 1.0f;
 
         VkRect2D scissor = {};
-        scissor.offset = {0,0};
+        scissor.offset = { 0,0 };
         scissor.extent = m_VkSwapchain.getExtent();
 
         VkPipelineViewportStateCreateInfo viewportState = {};
@@ -420,11 +380,12 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createFramebuffers() {
-        m_SwapChainFramebuffers.resize(m_SwapChainImageViews.size());
+        m_SwapChainFramebuffers.resize(m_VkSwapchain.getImageViewSize());
 
-        for (size_t i = 0; i < m_SwapChainImageViews.size(); i++){
+        for (size_t i = 0; i < m_VkSwapchain.getImageViewSize(); i++) {
+
             VkImageView attachments[] = {
-                m_SwapChainImageViews[i]
+               m_VkSwapchain.getImageView(i)
             };
 
             VkFramebufferCreateInfo framebufferInfo = {};
@@ -482,7 +443,7 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createIndexBuffer() {
-        
+
         VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
         VkBuffer stagingBuffer;
@@ -586,7 +547,7 @@ namespace Yarezo {
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.commandPool = m_CommandPool;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t) m_CommandBuffers.size();
+        allocInfo.commandBufferCount = (uint32_t)m_CommandBuffers.size();
 
         if (vkAllocateCommandBuffers(m_VkDevice->getDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS) {
             YZ_ERROR("Vulkan Failed to allocate command buffers.");
@@ -607,9 +568,9 @@ namespace Yarezo {
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = m_RenderPass;
             renderPassInfo.framebuffer = m_SwapChainFramebuffers[i];
-            renderPassInfo.renderArea.offset = {0, 0};
+            renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = m_VkSwapchain.getExtent();
-            VkClearValue clearColor = {0.0f, 0.0f, 0.0f, 1.0f};
+            VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
             renderPassInfo.clearValueCount = 1;
             renderPassInfo.pClearValues = &clearColor;
 
@@ -679,7 +640,6 @@ namespace Yarezo {
         m_VkDevice->waitIdle();
         cleanupSwapChain();
         m_VkSwapchain.init();
-        createImageViews();
         createRenderPass();
         createGraphicsPipeline();
         createFramebuffers();
@@ -784,14 +744,14 @@ namespace Yarezo {
                 return i;
             }
         }
-   
+
         YZ_ERROR("Vulkan failed to find a suitable memory type.");
         throw std::runtime_error("Vulkan failed to find a suitable memory type.");
     }
 
 
     VkSurfaceFormatKHR GraphicsDevice_Vulkan::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
-        for (const auto &availableFormat : availableFormats) {
+        for (const auto& availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                 return availableFormat;
@@ -814,18 +774,19 @@ namespace Yarezo {
     VkExtent2D GraphicsDevice_Vulkan::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
-        } else {
+        }
+        else {
             int width, height;
             glfwGetFramebufferSize(static_cast<GLFWwindow*>(Application::getAppInstance()->getWindow()->getNativeWindow()), &width, &height);
 
             Application::getAppInstance()->getWindow()->getCamera()->updateDimensions((float)width, (float)height);
-            
-            VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
+
+            VkExtent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 
             actualExtent.width = std::max(capabilities.minImageExtent.width,
-                                          std::min(capabilities.maxImageExtent.width, actualExtent.width));
+                std::min(capabilities.maxImageExtent.width, actualExtent.width));
             actualExtent.height = std::max(capabilities.minImageExtent.height,
-                                           std::min(capabilities.maxImageExtent.height, actualExtent.height));
+                std::min(capabilities.maxImageExtent.height, actualExtent.height));
 
             return actualExtent;
         }

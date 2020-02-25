@@ -112,8 +112,6 @@ namespace Yarezo {
         Graphics::YzVkDevice* m_VkDevice;
         Graphics::YzVkSwapchain m_VkSwapchain;
 
-
-        std::vector<VkImageView> m_SwapChainImageViews;
         VkRenderPass m_RenderPass;
         VkDescriptorSetLayout m_DescriptorSetLayout;
         VkPipelineLayout m_PipelineLayout;

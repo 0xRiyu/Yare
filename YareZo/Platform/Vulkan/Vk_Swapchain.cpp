@@ -15,9 +15,17 @@ namespace Yarezo {
             // Create a swapchain, a swapchain is responsible for maintaining the images
             // that will be presented to the user. 
             createSwapchain();
+            // Create and image-view, which will represent a 'view' of an image,
+            // this way we can interface with images without modifying the underlying image
+            createImageViews();
         }
 
         void YzVkSwapchain::cleanUp() {
+
+            for (auto& imageView : m_SwapchainImageViews) {
+                vkDestroyImageView(YzVkDevice::instance()->getDevice(), imageView, nullptr);
+            }
+
             if (m_Swapchain) {
                 vkDestroySwapchainKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, nullptr);
             }
@@ -80,6 +88,37 @@ namespace Yarezo {
             m_SwapchainImageFormat = surfaceFormat.format;
             m_SwapchainExtent = extent;
         }
+
+        void YzVkSwapchain::createImageViews() {
+            size_t swapchainImagesSize = getImagesSize();
+
+            m_SwapchainImageViews.resize(swapchainImagesSize);
+
+            for (uint32_t i = 0; i < swapchainImagesSize; i++) {
+                VkImageViewCreateInfo createInfo = {};
+                createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+                createInfo.image = getImage(i);
+                createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+                createInfo.format = getImageFormat();
+
+                createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+                createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+                createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+                createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+                createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                createInfo.subresourceRange.baseMipLevel = 0;
+                createInfo.subresourceRange.levelCount = 1;
+                createInfo.subresourceRange.baseArrayLayer = 0;
+                createInfo.subresourceRange.layerCount = 1;
+
+                if (vkCreateImageView(YzVkDevice::instance()->getDevice(), &createInfo, nullptr, &m_SwapchainImageViews[i]) != VK_SUCCESS) {
+                    YZ_ERROR("Failed to create image views.");
+                    throw std::runtime_error("Failed to create image views.");
+                }
+            }
+        }
+
         VkSurfaceFormatKHR YzVkSwapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
             for (const auto& availableFormat : availableFormats) {
                 if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
@@ -87,18 +126,18 @@ namespace Yarezo {
                     return availableFormat;
                 }
             }
-
             return availableFormats[0];
         }
+
         VkPresentModeKHR YzVkSwapchain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
             for (const auto& availablePresentMode : availablePresentModes) {
                 if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
                     return availablePresentMode;
                 }
             }
-
             return VK_PRESENT_MODE_FIFO_KHR;
         }
+
         VkExtent2D YzVkSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
             if (capabilities.currentExtent.width != UINT32_MAX) {
                 return capabilities.currentExtent;
