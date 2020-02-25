@@ -18,18 +18,13 @@ namespace Yarezo {
         virtual ~InputHandler();
 
         virtual bool isKeyDown(int key);
-
-        virtual void setupKeyInputs(GLFWwindow* window);
-
         virtual void Handle(std::shared_ptr<Camera> currentCamera);
-
 
         bool m_Keys[MAX_KEYS];
         bool m_Buttons[MAX_BUTTONS];
 
     private:
 
-        static void GLFWcallback(GLFWwindow* window, int key, int scancode, int action, int mods);
     };
 
 

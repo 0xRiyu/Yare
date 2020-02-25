@@ -8,20 +8,25 @@
 #include <GLFW/glfw3.h>
 #include "src/Window.h"
 
-namespace Yarezo{
-    class GlfwWindow : public Window {
-    public:
-        GlfwWindow(WindowProperties& properties);
-        virtual ~GlfwWindow();
-        
-        void onUpdate() override;
+namespace Yarezo {
+    namespace Windows {
+        class GlfwWindow : public Window {
+        public:
+            GlfwWindow(WindowProperties& properties);
+            virtual ~GlfwWindow();
 
-        inline virtual void* getNativeWindow() const { return m_Window; };
+            virtual void onUpdate() override;
+            virtual void closeWindow() override;
+            virtual void setKeyInputCallback() override;
+            virtual void setFrameBufferResizeCallback() override;
 
-    private:
-        void init();
-        GLFWwindow* m_Window;
-    };
+            inline virtual void* getNativeWindow() const override { return m_Window; };
+
+        private:
+            void init();
+            GLFWwindow* m_Window;
+        };
+    }
 }
 
 #endif //YAREZO_GLFWWINDOW_H
