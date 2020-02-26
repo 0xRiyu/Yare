@@ -17,37 +17,12 @@
 #include "Platform/Vulkan/Vk_Devices.h"
 #include "Platform/Vulkan/Vk_Swapchain.h"
 #include "Platform/Vulkan/Vk_RenderPass.h"
+#include "Platform/Vulkan/Vk_Pipeline.h"
 
 
 namespace Yarezo {
 
-    struct Vertex {
-        glm::vec2 pos;
-        glm::vec3 color;
-
-        static VkVertexInputBindingDescription getBindingDescription() {
-            VkVertexInputBindingDescription bindingDescription = {};
-            bindingDescription.binding = 0;
-            bindingDescription.stride = sizeof(Vertex);
-            bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-            return bindingDescription;
-        }
-
-        static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-            std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};
-            attributeDescriptions[0].binding = 0;
-            attributeDescriptions[0].location = 0;
-            attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
-            attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-            attributeDescriptions[1].binding = 0;
-            attributeDescriptions[1].location = 1;
-            attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-            attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-            return attributeDescriptions;
-        }
-    };
+ 
 
     struct UniformBufferObject {
         glm::mat4 model;
@@ -68,7 +43,6 @@ namespace Yarezo {
 
     private:
         void cleanupSwapChain();
-        void createDescriptorSetLayout();
         void createGraphicsPipeline();
         void createFramebuffers();
         void createCommandPool();
@@ -95,7 +69,7 @@ namespace Yarezo {
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
         // Demo Rectangle
-        const std::vector<Vertex> vertices = {
+        const std::vector<Graphics::Vertex> vertices = {
             {{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
             {{0.5f, -0.5f}, {0.556f, 0.164f, 0.321f}},
             {{0.5f, 0.5f}, {0.0f, 0.203f, 0.584f}},
@@ -112,10 +86,8 @@ namespace Yarezo {
         Graphics::YzVkDevice* m_VkDevice;
         Graphics::YzVkSwapchain m_VkSwapchain;
         Graphics::YzVkRenderPass m_VkRenderPass;
+        Graphics::YzVkPipeline m_Pipeline;
 
-        VkDescriptorSetLayout m_DescriptorSetLayout;
-        VkPipelineLayout m_PipelineLayout;
-        VkPipeline m_GraphicsPipeline;
         std::vector<VkFramebuffer> m_SwapChainFramebuffers;
         VkCommandPool m_CommandPool;
         std::vector<VkCommandBuffer> m_CommandBuffers;

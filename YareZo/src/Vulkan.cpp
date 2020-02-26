@@ -25,8 +25,7 @@ namespace Yarezo {
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
-
-        vkDestroyDescriptorSetLayout(m_VkDevice->getDevice(), m_DescriptorSetLayout, nullptr);
+        m_Pipeline.cleanupDescSetLayout();
 
         vkDestroyBuffer(m_VkDevice->getDevice(), m_IndexBuffer, nullptr);
         vkFreeMemory(m_VkDevice->getDevice(), m_IndexBufferMemory, nullptr);
@@ -53,9 +52,7 @@ namespace Yarezo {
 
         vkFreeCommandBuffers(m_VkDevice->getDevice(), m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 
-        vkDestroyPipeline(m_VkDevice->getDevice(), m_GraphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(m_VkDevice->getDevice(), m_PipelineLayout, nullptr);
-
+        m_Pipeline.cleanUp();
         m_VkRenderPass.cleanUp();
         m_VkSwapchain.cleanUp();
 
@@ -80,10 +77,6 @@ namespace Yarezo {
         // It creates a description/map of a graphics job.
         Graphics::RenderPassInfo renderPassInfo{ m_VkSwapchain.getImageFormat() };
         m_VkRenderPass.init(renderPassInfo);
-        // A descriptor is a special opaque shader variable that shaders use to access buffer and image
-        // resources in an indirect fashion. It can be thought of as a "pointer" to a resource.
-        // The layout is used to describe the content of a list of descriptor sets
-        createDescriptorSetLayout();
         // Create the graphics Pipeline - A comment cant suffice what this is
         createGraphicsPipeline();
         // Create frame buffers for the swapchain.
@@ -185,27 +178,6 @@ namespace Yarezo {
         m_VkDevice->waitIdle();
     }
 
-    void GraphicsDevice_Vulkan::createDescriptorSetLayout() {
-        VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        // We are only using this in the vertex shader
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        uboLayoutBinding.pImmutableSamplers = nullptr; // Optional Param
-
-        VkDescriptorSetLayoutCreateInfo layoutInfo = {};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = 1;
-        layoutInfo.pBindings = &uboLayoutBinding;
-
-        if (vkCreateDescriptorSetLayout(m_VkDevice->getDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan was unable to create a descriptor set layout.");
-            throw std::runtime_error("Vulkan was unable to create a descriptor set layout.");
-        }
-
-    }
-
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
         auto vertShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboVert.spv");
         auto fragShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboFrag.spv");
@@ -227,114 +199,12 @@ namespace Yarezo {
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
-        auto bindingDescription = Vertex::getBindingDescription();
-        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+        Graphics::PipelineInfo pipelineInfo2 = { { vertShaderStageInfo, fragShaderStageInfo }, &m_VkRenderPass, &m_VkSwapchain };
+        m_Pipeline.init(pipelineInfo2);
 
-        VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
-        vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-        vertexInputInfo.vertexBindingDescriptionCount = 1;
-        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
-
-        VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
-        inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-        inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-        inputAssembly.primitiveRestartEnable = VK_FALSE;
-
-        VkViewport viewport = {};
-        viewport.x = 0.0f;
-        viewport.y = 0.0f;
-        viewport.width = (float)m_VkSwapchain.getExtent().width;
-        viewport.height = (float)m_VkSwapchain.getExtent().height;
-        viewport.minDepth = 0.0f;
-        viewport.maxDepth = 1.0f;
-
-        VkRect2D scissor = {};
-        scissor.offset = { 0,0 };
-        scissor.extent = m_VkSwapchain.getExtent();
-
-        VkPipelineViewportStateCreateInfo viewportState = {};
-        viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-        viewportState.viewportCount = 1;
-        viewportState.pViewports = &viewport;
-        viewportState.scissorCount = 1;
-        viewportState.pScissors = &scissor;
-
-        VkPipelineRasterizationStateCreateInfo rasterizer = {};
-        rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-
-        // If this is enabled, then fragments beyond near and far plains are clamped instead of discarded
-        rasterizer.depthClampEnable = VK_FALSE;
-        // If this is enabled, then we skip the rasterizer stage (we wont get output)
-        rasterizer.rasterizerDiscardEnable = VK_FALSE;
-        // Fill the polygon, just draw lines, or points set here
-        rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
-        rasterizer.lineWidth = 1.0f;
-        rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-        rasterizer.depthBiasEnable = VK_FALSE;
-        rasterizer.depthBiasConstantFactor = 0.0f; //optional
-        rasterizer.depthBiasClamp = 0.0f; //optional
-        rasterizer.depthBiasSlopeFactor = 0.0f; //optional
-
-        VkPipelineMultisampleStateCreateInfo multisampling = {};
-
-        multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-        multisampling.sampleShadingEnable = VK_FALSE;
-        multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-        multisampling.minSampleShading = 1.0f; //optional
-        multisampling.pSampleMask = nullptr; //optional
-        multisampling.alphaToCoverageEnable = VK_FALSE; //optional
-
-        VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        colorBlendAttachment.blendEnable = VK_FALSE;
-
-        VkPipelineColorBlendStateCreateInfo colorBlending = {};
-        colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-        colorBlending.logicOpEnable = VK_FALSE;
-        colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
-        colorBlending.attachmentCount = 1;
-        colorBlending.pAttachments = &colorBlendAttachment;
-        colorBlending.blendConstants[0] = 0.0f;
-        colorBlending.blendConstants[1] = 0.0f;
-        colorBlending.blendConstants[2] = 0.0f;
-        colorBlending.blendConstants[3] = 0.0f;
-
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
-        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 1;
-        pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
-
-        if (vkCreatePipelineLayout(m_VkDevice->getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan Pipeline Layout was unable to be created.");
-            throw std::runtime_error("Vulkan Pipeline Layout was unable to be created.");
-        }
-
-        VkGraphicsPipelineCreateInfo pipelineInfo = {};
-        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        pipelineInfo.stageCount = 2;
-        pipelineInfo.pStages = shaderStages;
-        pipelineInfo.pVertexInputState = &vertexInputInfo;
-        pipelineInfo.pInputAssemblyState = &inputAssembly;
-        pipelineInfo.pViewportState = &viewportState;
-        pipelineInfo.pRasterizationState = &rasterizer;
-        pipelineInfo.pMultisampleState = &multisampling;
-        pipelineInfo.pDepthStencilState = nullptr; // Optional
-        pipelineInfo.pColorBlendState = &colorBlending;
-        pipelineInfo.pDynamicState = nullptr; // Optional
-        pipelineInfo.layout = m_PipelineLayout;
-        pipelineInfo.renderPass = m_VkRenderPass.getRenderPass();
-        pipelineInfo.subpass = 0;
-        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-
-        if (vkCreateGraphicsPipelines(m_VkDevice->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan failed to create the graphics pipeline.");
-            throw std::runtime_error("Vulkan failed to create the graphics pipeline.");
-        }
         vkDestroyShaderModule(m_VkDevice->getDevice(), fragShaderModule, nullptr);
         vkDestroyShaderModule(m_VkDevice->getDevice(), vertShaderModule, nullptr);
+        
     }
 
     void GraphicsDevice_Vulkan::createFramebuffers() {
@@ -463,7 +333,7 @@ namespace Yarezo {
     void GraphicsDevice_Vulkan::createDescriptorSets() {
         size_t swapchainImagesSize = m_VkSwapchain.getImagesSize();
 
-        std::vector<VkDescriptorSetLayout> layouts(swapchainImagesSize, m_DescriptorSetLayout);
+        std::vector<VkDescriptorSetLayout> layouts(swapchainImagesSize, m_Pipeline.getDescriptorSetLayout());
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = m_DescriptorPool;
@@ -534,7 +404,7 @@ namespace Yarezo {
 
             vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-            vkCmdBindPipeline(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+            vkCmdBindPipeline(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.getPipeline());
 
             VkBuffer vertexBuffers[] = { m_VertexBuffer };
             VkDeviceSize offsets[] = { 0 };
@@ -542,7 +412,7 @@ namespace Yarezo {
 
             vkCmdBindIndexBuffer(m_CommandBuffers[i], m_IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_PipelineLayout, 0, 1, &m_DescriptorSets[i], 0, nullptr);
+            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.getPipelineLayout(), 0, 1, &m_DescriptorSets[i], 0, nullptr);
 
             vkCmdDrawIndexed(m_CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 

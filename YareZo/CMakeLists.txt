@@ -26,6 +26,7 @@ set (YAREZOENGINE_SOURCES
         Platform/Vulkan/Vk_Devices.cpp
         Platform/Vulkan/Vk_Swapchain.cpp
         Platform/Vulkan/Vk_Renderpass.cpp
+        Platform/Vulkan/Vk_Pipeline.cpp
 )
 
 #--------------------------------------------------------------------
@@ -58,6 +59,7 @@ set (YAREZOENGINE_HEADERS
         Platform/Vulkan/Vk_Devices.h
         Platform/Vulkan/Vk_Swapchain.h
         Platform/Vulkan/Vk_Renderpass.h
+        Platform/Vulkan/Vk_Pipeline.h
 )
 
 #--------------------------------------------------------------------
