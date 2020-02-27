@@ -5,15 +5,13 @@
 namespace Yarezo {
     namespace Graphics {
 
-
-
         YzVkFramebuffer::YzVkFramebuffer(const FramebufferInfo& framebufferInfo) {
 
             VkFramebufferCreateInfo framebufferCreateInfo = {};
             framebufferCreateInfo.sType = framebufferInfo.type; // VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            //framebufferInfo.renderPass = m_RenderPass;
-            framebufferCreateInfo.attachmentCount = 1;
-            framebufferCreateInfo.pAttachments = &framebufferInfo.attachments;
+            framebufferCreateInfo.renderPass = framebufferInfo.renderPass->getRenderPass();
+            framebufferCreateInfo.attachmentCount = (uint32_t)framebufferInfo.attachments.size();
+            framebufferCreateInfo.pAttachments = framebufferInfo.attachments.data();
             framebufferCreateInfo.width = framebufferInfo.width;
             framebufferCreateInfo.height = framebufferInfo.height;
             framebufferCreateInfo.layers = framebufferInfo.layers;
@@ -26,11 +24,12 @@ namespace Yarezo {
         }
 
         YzVkFramebuffer::~YzVkFramebuffer() {
+        }
+
+        void YzVkFramebuffer::cleanUp() {
             if (m_Framebuffer) {
                 vkDestroyFramebuffer(YzVkDevice::instance()->getDevice(), m_Framebuffer, nullptr);
             }
-
         }
-
     }
 }

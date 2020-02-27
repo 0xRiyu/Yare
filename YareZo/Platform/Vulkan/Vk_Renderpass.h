@@ -19,7 +19,7 @@ namespace Yarezo {
             void init(const RenderPassInfo& renderPassInfo);
             void cleanUp();
 
-            inline const VkRenderPass& getRenderPass() const { return m_RenderPass; }
+            const VkRenderPass& getRenderPass() const { return m_RenderPass; }
 
         private:
             VkRenderPass m_RenderPass;

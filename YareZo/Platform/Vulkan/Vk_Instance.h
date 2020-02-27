@@ -12,7 +12,7 @@ namespace Yarezo {
             YzVkInstance();
             ~YzVkInstance();
             void init();
-            inline VkInstance getVKInstance() const { return m_Instance; }
+            const VkInstance& getVKInstance() const { return m_Instance; }
             static inline YzVkInstance* getYzVkInstancePtr(){ return s_YzVkInstance; }
 
         private:

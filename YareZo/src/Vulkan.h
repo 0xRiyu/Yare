@@ -18,6 +18,7 @@
 #include "Platform/Vulkan/Vk_Swapchain.h"
 #include "Platform/Vulkan/Vk_RenderPass.h"
 #include "Platform/Vulkan/Vk_Pipeline.h"
+#include "Platform/Vulkan/Vk_Framebuffer.h"
 
 
 namespace Yarezo {
@@ -86,9 +87,9 @@ namespace Yarezo {
         Graphics::YzVkDevice* m_VkDevice;
         Graphics::YzVkSwapchain m_VkSwapchain;
         Graphics::YzVkRenderPass m_VkRenderPass;
-        Graphics::YzVkPipeline m_Pipeline;
+        Graphics::YzVkPipeline m_VkPipeline;
+        std::vector<Graphics::YzVkFramebuffer> m_VkFramebuffers;
 
-        std::vector<VkFramebuffer> m_SwapChainFramebuffers;
         VkCommandPool m_CommandPool;
         std::vector<VkCommandBuffer> m_CommandBuffers;
         std::vector<VkSemaphore> m_ImageAvailableSemaphore;

@@ -15,13 +15,13 @@ namespace Yarezo {
             void init();
             void cleanUp();
 
-            inline VkSwapchainKHR getSwapchain()            const { return m_Swapchain; }
-            inline size_t getImagesSize()                   const { return m_SwapchainImages.size(); }
-            inline size_t getImageViewSize()                const { return m_SwapchainImageViews.size(); }
-            inline VkImage getImage(uint32_t index)         const { return m_SwapchainImages[index]; }
-            inline VkImageView getImageView(uint32_t index) const { return m_SwapchainImageViews[index]; }
-            inline VkFormat getImageFormat()                const { return m_SwapchainImageFormat; }
-            inline VkExtent2D getExtent()                   const { return m_SwapchainExtent; }
+            const VkSwapchainKHR& getSwapchain()            const { return m_Swapchain; }
+            const size_t getImagesSize()                   const { return m_SwapchainImages.size(); }
+            const size_t getImageViewSize()                const { return m_SwapchainImageViews.size(); }
+            const VkImage& getImage(uint32_t index)         const { return m_SwapchainImages[index]; }
+            const VkImageView& getImageView(uint32_t index) const { return m_SwapchainImageViews[index]; }
+            const VkFormat& getImageFormat()                const { return m_SwapchainImageFormat; }
+            const VkExtent2D& getExtent()                   const { return m_SwapchainExtent; }
 
         private:
             void createSwapchain();

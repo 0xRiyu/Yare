@@ -56,9 +56,9 @@ namespace Yarezo {
             void cleanUp();
             void cleanupDescSetLayout();
 
-            inline VkDescriptorSetLayout getDescriptorSetLayout()  const { return m_DescriptorSetLayout; }
-            inline VkPipelineLayout getPipelineLayout()            const { return m_PipelineLayout; }
-            inline VkPipeline getPipeline()                        const { return m_GraphicsPipeline; }
+            const VkDescriptorSetLayout& getDescriptorSetLayout()  const { return m_DescriptorSetLayout; }
+            const VkPipelineLayout& getPipelineLayout()            const { return m_PipelineLayout; }
+            const VkPipeline& getPipeline()                        const { return m_GraphicsPipeline; }
 
         private:
             void createDescriptorSetLayout();

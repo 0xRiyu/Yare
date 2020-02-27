@@ -2,6 +2,8 @@
 #define YAREZO_VK_FRAMEBUFFER_H
 
 #include "Platform/Vulkan/Vk.h"
+#include "Platform/Vulkan/Vk_Swapchain.h"
+#include "Platform/Vulkan/Vk_Renderpass.h"
 
 namespace Yarezo {
     namespace Graphics {
@@ -11,8 +13,8 @@ namespace Yarezo {
             uint32_t width;
             uint32_t height;
             uint32_t layers = 1;
-            uint32_t attachmentCount = 1;
-            VkImageView attachments;
+            std::vector<VkImageView> attachments;
+            YzVkRenderPass* renderPass;
         };
 
         class YzVkFramebuffer {
@@ -22,15 +24,13 @@ namespace Yarezo {
             YzVkFramebuffer(const FramebufferInfo& framebufferInfo);
             ~YzVkFramebuffer();
 
-            inline const VkFramebuffer& getFramebuffer() const { return m_Framebuffer; }
+            void cleanUp();
+            const VkFramebuffer& getFramebuffer() const { return m_Framebuffer; }
 
         private:
-
-            VkFramebuffer m_Framebuffer;
+            VkFramebuffer m_Framebuffer = nullptr;
 
         };
-
-
     }
 }
 

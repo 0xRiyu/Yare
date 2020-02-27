@@ -34,11 +34,11 @@ namespace Yarezo {
 
             void waitIdle();
 
-            inline VkSurfaceKHR getSurfaceKHR()     const { return m_Surface; }
-            inline VkDevice getDevice()             const { return m_Device; }
-            inline VkPhysicalDevice getGPU()        const { return m_PhysicalDevice; }
-            inline VkQueue getGraphicsQueue()       const { return m_GraphicsQueue; }
-            inline VkQueue getPresentQueue()        const { return m_PresentQueue; }
+            const VkSurfaceKHR& getSurfaceKHR()     const { return m_Surface; }
+            const VkDevice& getDevice()             const { return m_Device; }
+            const VkPhysicalDevice& getGPU()        const { return m_PhysicalDevice; }
+            const VkQueue& getGraphicsQueue()       const { return m_GraphicsQueue; }
+            const VkQueue& getPresentQueue()        const { return m_PresentQueue; }
 
             QueueFamilyIndices getQueueFamilyIndicies();
             SwapChainSupportDetails getSwapChainSupport();

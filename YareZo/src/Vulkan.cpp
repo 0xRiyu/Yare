@@ -25,7 +25,7 @@ namespace Yarezo {
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
-        m_Pipeline.cleanupDescSetLayout();
+        m_VkPipeline.cleanupDescSetLayout();
 
         vkDestroyBuffer(m_VkDevice->getDevice(), m_IndexBuffer, nullptr);
         vkFreeMemory(m_VkDevice->getDevice(), m_IndexBufferMemory, nullptr);
@@ -46,13 +46,14 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::cleanupSwapChain() {
 
-        for (auto& framebuffer : m_SwapChainFramebuffers) {
-            vkDestroyFramebuffer(m_VkDevice->getDevice(), framebuffer, nullptr);
+        for (int i = m_VkFramebuffers.size() - 1; i >= 0; i--) {
+            m_VkFramebuffers[i].cleanUp();
+            m_VkFramebuffers.pop_back();
         }
 
         vkFreeCommandBuffers(m_VkDevice->getDevice(), m_CommandPool, static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
 
-        m_Pipeline.cleanUp();
+        m_VkPipeline.cleanUp();
         m_VkRenderPass.cleanUp();
         m_VkSwapchain.cleanUp();
 
@@ -64,23 +65,57 @@ namespace Yarezo {
         vkDestroyDescriptorPool(m_VkDevice->getDevice(), m_DescriptorPool, nullptr);
     }
 
+    void GraphicsDevice_Vulkan::createGraphicsPipeline() {
+        auto vertShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboVert.spv");
+        auto fragShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboFrag.spv");
+
+        VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
+        VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+
+        VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
+        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
+        vertShaderStageInfo.module = vertShaderModule;
+        vertShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
+        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        fragShaderStageInfo.module = fragShaderModule;
+        fragShaderStageInfo.pName = "main";
+
+        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
+
+        Graphics::PipelineInfo pipelineInfo2 = { { vertShaderStageInfo, fragShaderStageInfo }, &m_VkRenderPass, &m_VkSwapchain };
+        m_VkPipeline.init(pipelineInfo2);
+
+        vkDestroyShaderModule(m_VkDevice->getDevice(), fragShaderModule, nullptr);
+        vkDestroyShaderModule(m_VkDevice->getDevice(), vertShaderModule, nullptr);
+    }
+
 
     void GraphicsDevice_Vulkan::initVulkan() {
 
         m_VkInstance.init();
 
         m_VkDevice = Graphics::YzVkDevice::instance();
+
         // Create a swapchain, a swapchain is responsible for maintaining the images
         // that will be presented to the user. 
         m_VkSwapchain.init();
+
         // Create the Renderpass, the render pass is responsible for the draw calls.
         // It creates a description/map of a graphics job.
         Graphics::RenderPassInfo renderPassInfo{ m_VkSwapchain.getImageFormat() };
         m_VkRenderPass.init(renderPassInfo);
-        // Create the graphics Pipeline - A comment cant suffice what this is
+
+
         createGraphicsPipeline();
-        // Create frame buffers for the swapchain.
+
+
         createFramebuffers();
+
+
         // Create a command pool which will manage the memory to store command buffers.
         createCommandPool();
         // Create a vertex buffer, which will store our arbitrary data read by the GPU.
@@ -178,58 +213,19 @@ namespace Yarezo {
         m_VkDevice->waitIdle();
     }
 
-    void GraphicsDevice_Vulkan::createGraphicsPipeline() {
-        auto vertShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboVert.spv");
-        auto fragShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboFrag.spv");
-
-        VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-        VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
-
-        VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
-        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertShaderStageInfo.module = vertShaderModule;
-        vertShaderStageInfo.pName = "main";
-
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
-        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragShaderStageInfo.module = fragShaderModule;
-        fragShaderStageInfo.pName = "main";
-
-        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-        Graphics::PipelineInfo pipelineInfo2 = { { vertShaderStageInfo, fragShaderStageInfo }, &m_VkRenderPass, &m_VkSwapchain };
-        m_Pipeline.init(pipelineInfo2);
-
-        vkDestroyShaderModule(m_VkDevice->getDevice(), fragShaderModule, nullptr);
-        vkDestroyShaderModule(m_VkDevice->getDevice(), vertShaderModule, nullptr);
-        
-    }
-
     void GraphicsDevice_Vulkan::createFramebuffers() {
-        m_SwapChainFramebuffers.resize(m_VkSwapchain.getImageViewSize());
+        Graphics::FramebufferInfo framebufferInfo;
+        framebufferInfo.type = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        framebufferInfo.renderPass = &m_VkRenderPass;
+        framebufferInfo.width = m_VkSwapchain.getExtent().width;
+        framebufferInfo.height = m_VkSwapchain.getExtent().height;
+        framebufferInfo.layers = 1;
 
-        for (size_t i = 0; i < m_VkSwapchain.getImageViewSize(); i++) {
-
-            VkImageView attachments[] = {
-               m_VkSwapchain.getImageView(i)
-            };
-
-            VkFramebufferCreateInfo framebufferInfo = {};
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            framebufferInfo.renderPass = m_VkRenderPass.getRenderPass();
-            framebufferInfo.attachmentCount = 1;
-            framebufferInfo.pAttachments = attachments;
-            framebufferInfo.width = m_VkSwapchain.getExtent().width;
-            framebufferInfo.height = m_VkSwapchain.getExtent().height;
-            framebufferInfo.layers = 1;
-
-            if (vkCreateFramebuffer(m_VkDevice->getDevice(), &framebufferInfo, nullptr, &m_SwapChainFramebuffers[i]) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan failed to create a framebuffer");
-                throw std::runtime_error("Vulkan failed to create a framebuffer");
-            }
+        for (uint32_t i = 0; i < m_VkSwapchain.getImageViewSize(); i++) {
+            framebufferInfo.attachments = { m_VkSwapchain.getImageView(i) };
+             m_VkFramebuffers.emplace_back(framebufferInfo);
         }
+
     }
 
     void GraphicsDevice_Vulkan::createCommandPool() {
@@ -333,7 +329,7 @@ namespace Yarezo {
     void GraphicsDevice_Vulkan::createDescriptorSets() {
         size_t swapchainImagesSize = m_VkSwapchain.getImagesSize();
 
-        std::vector<VkDescriptorSetLayout> layouts(swapchainImagesSize, m_Pipeline.getDescriptorSetLayout());
+        std::vector<VkDescriptorSetLayout> layouts(swapchainImagesSize, m_VkPipeline.getDescriptorSetLayout());
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         allocInfo.descriptorPool = m_DescriptorPool;
@@ -369,7 +365,7 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createCommandBuffers() {
-        m_CommandBuffers.resize(m_SwapChainFramebuffers.size());
+        m_CommandBuffers.resize(m_VkFramebuffers.size());
 
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -395,7 +391,7 @@ namespace Yarezo {
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = m_VkRenderPass.getRenderPass();
-            renderPassInfo.framebuffer = m_SwapChainFramebuffers[i];
+            renderPassInfo.framebuffer = m_VkFramebuffers[i].getFramebuffer();
             renderPassInfo.renderArea.offset = { 0, 0 };
             renderPassInfo.renderArea.extent = m_VkSwapchain.getExtent();
             VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -404,7 +400,7 @@ namespace Yarezo {
 
             vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-            vkCmdBindPipeline(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.getPipeline());
+            vkCmdBindPipeline(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipeline.getPipeline());
 
             VkBuffer vertexBuffers[] = { m_VertexBuffer };
             VkDeviceSize offsets[] = { 0 };
@@ -412,7 +408,7 @@ namespace Yarezo {
 
             vkCmdBindIndexBuffer(m_CommandBuffers[i], m_IndexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
-            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline.getPipelineLayout(), 0, 1, &m_DescriptorSets[i], 0, nullptr);
+            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_VkPipeline.getPipelineLayout(), 0, 1, &m_DescriptorSets[i], 0, nullptr);
 
             vkCmdDrawIndexed(m_CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
