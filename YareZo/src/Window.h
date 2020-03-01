@@ -6,7 +6,7 @@
 #define YAREZO_WINDOW
 
 #include "src/Core.h"
-#include "src/YzInput.h"
+#include "src/YzKeyHandler.h"
 #include "src/YzCamera.h"
 
 #include <memory>
