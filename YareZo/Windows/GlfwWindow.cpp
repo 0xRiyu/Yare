@@ -12,15 +12,7 @@ std::shared_ptr<Yarezo::Window> Yarezo::Window::createNewWindow(Yarezo::WindowPr
 
 namespace Yarezo {
     namespace Windows {
-        // mouse things
-        float yaw = -90.0f;
-        float pitch = 0.0f;
-        float fov = 45.0f;
 
-        bool isFirstMouseInput = true;
-        float prevMouseX;
-        float prevMouseY;
-        const float mouseSensitivity = 0.1f;
 
         static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
             auto app = reinterpret_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
@@ -28,36 +20,14 @@ namespace Yarezo {
         }
 
         static void GLFWcallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-            auto inputHandler = Application::getAppInstance()->getWindow()->getInputHandler();
-            inputHandler->m_Keys[key] = action != GLFW_RELEASE;
+            auto keyHandler = Application::getAppInstance()->getWindow()->getKeyHandler();
+            keyHandler->m_Keys[key] = action != GLFW_RELEASE;
         }
 
         static void GLFWmouseCallback(GLFWwindow* window, double mouseX, double mouseY) {
-            YZ_INFO("mouseX: " + STR(mouseX) + "\tmouseY: " + STR(mouseY));
-
-            if (isFirstMouseInput) {
-                prevMouseX = mouseX;
-                prevMouseY = mouseY;
-                isFirstMouseInput = false;
-            }
-
-            float deltaX = mouseX - prevMouseX;
-            float deltaY = mouseY - prevMouseY;
-            prevMouseX = mouseX;
-            prevMouseY = mouseY;
-
-            deltaX *= mouseSensitivity;
-            deltaY *= mouseSensitivity;
-
-            yaw += deltaX;
-            pitch = glm::clamp(pitch + deltaY, -89.0f, 89.0f);
-
-            glm::vec3 front;
-            front.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-            front.y = -glm::sin(glm::radians(pitch));
-            front.z = 0.5f; // glm::sin(glm::radians(yaw))* glm::cos(glm::radians(pitch));
-
-            Application::getAppInstance()->getWindow()->getCamera()->setLookAt(glm::normalize(front));
+            auto mouseHandler = Application::getAppInstance()->getWindow()->getMouseHandler();
+            mouseHandler->mouseX= (float)mouseX;
+            mouseHandler->mouseY= (float)mouseY;
         }
 
         static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
@@ -71,7 +41,8 @@ namespace Yarezo {
         GlfwWindow::GlfwWindow(WindowProperties& properties) {
             m_Properties = properties;
             m_Camera = std::make_shared<Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
-            m_InputHandler = std::make_shared<InputHandler>();
+            m_keyHandler = std::make_shared<KeyHandler>();
+            m_mouseHandler = std::make_shared<MouseHandler>();
             init();
         }
 
@@ -95,7 +66,8 @@ namespace Yarezo {
 
         void GlfwWindow::onUpdate() {
             glfwPollEvents();
-            m_InputHandler->Handle(m_Camera);
+            m_keyHandler->Handle(m_Camera);
+            m_mouseHandler->Handle(m_Camera);
             windowResized = false;
         }
 

@@ -1,4 +1,4 @@
-#include "src/YzKeyHandler.h"
+#include "src/handlers/YzKeyHandler.h"
 #include "Utilities/YzLogger.h"
 #include "src/Application.h"
 
@@ -13,7 +13,7 @@
 namespace Yarezo {
 
 
-    InputHandler::InputHandler() {
+	KeyHandler::KeyHandler() {
 
 		for (int i = 0; i < MAX_KEYS; i++)
 		{
@@ -23,13 +23,13 @@ namespace Yarezo {
 		{
 			m_Buttons[i] = false;
 		}
-		YZ_INFO("Input Handler Created");
+		YZ_INFO("Key Input Handler Created");
     }
 
-	InputHandler::~InputHandler() {
+	KeyHandler::~KeyHandler() {
 	}
 
-	bool InputHandler::isKeyDown(int key) {
+	bool KeyHandler::isKeyDown(int key) {
 		if (key > MAX_KEYS) {
 			YZ_WARN("Requested the status of a key " + STR(key) +" that is outside the range of maximum keys.");
 			return false;
@@ -37,7 +37,7 @@ namespace Yarezo {
 		return m_Keys[key];
 	}
 
-	void InputHandler::Handle(std::shared_ptr<Camera> currentCamera) {
+	void KeyHandler::Handle(std::shared_ptr<Camera> currentCamera) {
 
 		auto posVec = currentCamera->getPosition();
 		auto upVec = currentCamera->getUpVector();

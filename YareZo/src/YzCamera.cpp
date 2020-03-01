@@ -17,7 +17,10 @@ namespace Yarezo {
 
         m_Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
 
+        float yaw = -90.0f;
+        float pitch = 0.0f;
         m_fov = 45.0f;
+
         updateView();
         updateProj();
     }
@@ -42,6 +45,14 @@ namespace Yarezo {
 
     void Camera::setFov(const float in) {
         m_fov = in;
+        updateProj();
+    }
+    void Camera::setYaw(const float in) {
+        m_yaw = in;
+        updateProj();
+    }
+    void Camera::setPitch(const float in) {
+        m_pitch = in;
         updateProj();
     }
 

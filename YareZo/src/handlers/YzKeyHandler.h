@@ -1,5 +1,5 @@
-#ifndef YZINPUT_HPP
-#define YZINPUT_HPP
+#ifndef YZKEY_HPP
+#define YZKEY_HPP
 
 #include "src/YzCamera.h"
 #include <GLFW/glfw3.h>
@@ -11,11 +11,11 @@
 
 namespace Yarezo {
 
-    class InputHandler {
+    class KeyHandler {
     public:
 
-        InputHandler();
-        virtual ~InputHandler();
+        KeyHandler();
+        virtual ~KeyHandler();
 
         virtual bool isKeyDown(int key);
         virtual void Handle(std::shared_ptr<Camera> currentCamera);
