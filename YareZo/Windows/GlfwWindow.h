@@ -18,6 +18,8 @@ namespace Yarezo {
             virtual void onUpdate() override;
             virtual void closeWindow() override;
             virtual void setKeyInputCallback() override;
+            virtual void setMouseInputCallback() override;
+            virtual void setScrollInputCallback() override;
             virtual void setFrameBufferResizeCallback() override;
 
             inline virtual void* getNativeWindow() const override { return m_Window; };

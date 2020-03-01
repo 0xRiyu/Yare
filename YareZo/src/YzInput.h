@@ -24,7 +24,7 @@ namespace Yarezo {
         bool m_Buttons[MAX_BUTTONS];
 
     private:
-        const float cameraSpeed = 0.005f;
+
     };
 
 

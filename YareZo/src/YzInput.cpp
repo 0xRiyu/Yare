@@ -31,7 +31,7 @@ namespace Yarezo {
 
 	bool InputHandler::isKeyDown(int key) {
 		if (key > MAX_KEYS) {
-			YZ_WARN("Requested the status of a key " + std::to_string(key) +" that is outside the range of maximum keys.");
+			YZ_WARN("Requested the status of a key " + STR(key) +" that is outside the range of maximum keys.");
 			return false;
 		}
 		return m_Keys[key];
@@ -42,6 +42,7 @@ namespace Yarezo {
 		auto posVec = currentCamera->getPosition();
 		auto upVec = currentCamera->getUpVector();
 		auto lookAtVec = currentCamera->getLookAtVector();
+		float cameraSpeed = currentCamera->getCameraSpeed();
 
 
 		if (isKeyDown(GLFW_KEY_S)) {

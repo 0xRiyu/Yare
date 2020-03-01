@@ -24,6 +24,10 @@ namespace Yarezo {
         virtual void setPosition(const glm::vec3& in);
         // Todo when mouse input
         virtual void setRotation(const glm::vec3& in);
+        // mouse panning
+        virtual void setLookAt(const glm::vec3& in);
+        // scroll wheel updates fov
+        virtual void setFov(const float in);
 
         virtual void updateDimensions(const float screenWidth, const float screenHeight);
 
@@ -33,6 +37,8 @@ namespace Yarezo {
         inline virtual glm::vec3 getUpVector()          const { return m_Up; }
         inline virtual glm::mat4 getProjectionMatrix()  const { return m_ProjectionMatrix; }
         inline virtual glm::mat4 getViewMatrix()        const { return m_ViewMatrix; }
+        inline virtual float getFov()                   const { return m_fov; }
+        inline virtual float getCameraSpeed()           const { return m_cameraSpeed; }
 
     private:
 
@@ -47,6 +53,9 @@ namespace Yarezo {
 
         glm::mat4 m_ProjectionMatrix;
         glm::mat4 m_ViewMatrix;
+
+        float m_fov;
+        const float m_cameraSpeed = 0.005f;
     };
 
 }

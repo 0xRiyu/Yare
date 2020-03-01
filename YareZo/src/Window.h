@@ -24,6 +24,8 @@ namespace Yarezo {
         virtual void onUpdate() = 0;
         virtual void closeWindow() = 0;
         virtual void setKeyInputCallback() = 0;
+        virtual void setMouseInputCallback() = 0;
+        virtual void setScrollInputCallback() = 0;
         virtual void setFrameBufferResizeCallback() = 0;
         inline virtual WindowProperties getWindowProperties()                   { return m_Properties; }
         inline virtual std::shared_ptr<InputHandler> getInputHandler()          { return m_InputHandler; }
