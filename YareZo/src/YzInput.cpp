@@ -62,12 +62,11 @@ namespace Yarezo {
 
 
 		if (isKeyDown(GLFW_KEY_Q)) {
-			posVec += glm::normalize(upVec) * cameraSpeed;
+			posVec += upVec * cameraSpeed;
 		}
 
 		if (isKeyDown(GLFW_KEY_E)) {
-			YZ_INFO("Q pressed");
-			posVec -= glm::normalize(upVec) * cameraSpeed;
+			posVec -= upVec * cameraSpeed;
 		}
 
 	
