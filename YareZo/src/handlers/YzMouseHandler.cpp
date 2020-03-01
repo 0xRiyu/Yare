@@ -20,7 +20,7 @@ namespace Yarezo {
     MouseHandler::~MouseHandler() {
 	}
 
-	void MouseHandler::Handle(std::shared_ptr<Camera> currentCamera) {
+	void MouseHandler::handle(std::shared_ptr<Camera> currentCamera) {
         //YZ_INFO("mouseX: " + STR(mouseX) + "\tmouseY: " + STR(mouseY));
         //currentCamera = Application::getAppInstance()->getWindow()->getCamera();
         float yaw = currentCamera->getYaw();

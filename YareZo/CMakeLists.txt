@@ -47,6 +47,7 @@ set (YAREZOENGINE_HEADERS
         src/Application.h
         src/Window.h
         src/Vulkan.h
+        src/handlers/Handler.h
         src/handlers/YzKeyHandler.h
         src/handlers/YzMouseHandler.h
         src/YzCamera.h

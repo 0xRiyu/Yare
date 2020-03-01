@@ -3,6 +3,7 @@
 
 #include "src/YzCamera.h"
 #include <GLFW/glfw3.h>
+#include "src/handlers/Handler.h"
 
 #include <memory>
 
@@ -11,14 +12,14 @@
 
 namespace Yarezo {
 
-    class KeyHandler {
+    class KeyHandler: public Handler {
     public:
 
         KeyHandler();
         virtual ~KeyHandler();
 
         virtual bool isKeyDown(int key);
-        virtual void Handle(std::shared_ptr<Camera> currentCamera);
+        virtual void handle(std::shared_ptr<Camera> currentCamera) override;
 
         bool m_Keys[MAX_KEYS];
         bool m_Buttons[MAX_BUTTONS];

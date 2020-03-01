@@ -37,7 +37,7 @@ namespace Yarezo {
 		return m_Keys[key];
 	}
 
-	void KeyHandler::Handle(std::shared_ptr<Camera> currentCamera) {
+	void KeyHandler::handle(std::shared_ptr<Camera> currentCamera) {
 
 		auto posVec = currentCamera->getPosition();
 		auto upVec = currentCamera->getUpVector();

@@ -3,21 +3,20 @@
 
 #include "src/YzCamera.h"
 #include <GLFW/glfw3.h>
+#include "src/handlers/Handler.h"
 
 #include <memory>
 
-#define MAX_BUTTONS GLFW_MOUSE_BUTTON_LAST
-#define MAX_KEYS GLFW_KEY_LAST
 
 namespace Yarezo {
 
-    class MouseHandler {
+    class MouseHandler: public Handler {
     public:
 
         MouseHandler();
         virtual ~MouseHandler();
 
-        virtual void Handle(std::shared_ptr<Camera> currentCamera);
+        virtual void handle(std::shared_ptr<Camera> currentCamera) override;
 
         bool isFirstMouseInput = true;
         float mouseX;

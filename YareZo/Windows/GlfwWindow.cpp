@@ -66,8 +66,8 @@ namespace Yarezo {
 
         void GlfwWindow::onUpdate() {
             glfwPollEvents();
-            m_keyHandler->Handle(m_Camera);
-            m_mouseHandler->Handle(m_Camera);
+            m_keyHandler->handle(m_Camera);
+            m_mouseHandler->handle(m_Camera);
             windowResized = false;
         }
 
