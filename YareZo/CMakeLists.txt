@@ -22,12 +22,15 @@ set (YAREZOENGINE_SOURCES
         ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
 
         # Vulkan
-        Platform/Vulkan/Vk_Instance.cpp
+        Platform/Vulkan/Vk_Buffer.cpp
         Platform/Vulkan/Vk_Devices.cpp
-        Platform/Vulkan/Vk_Swapchain.cpp
-        Platform/Vulkan/Vk_Renderpass.cpp
+        Platform/Vulkan/Vk_Instance.cpp
         Platform/Vulkan/Vk_Pipeline.cpp
+        Platform/Vulkan/Vk_Swapchain.cpp
+        Platform/Vulkan/Vk_Utilities.cpp
+        Platform/Vulkan/Vk_Renderpass.cpp
         Platform/Vulkan/Vk_Framebuffer.cpp
+        Platform/Vulkan/Vk_CommandPool.cpp
 )
 
 #--------------------------------------------------------------------
@@ -56,12 +59,15 @@ set (YAREZOENGINE_HEADERS
 
         # Vulkan
         Platform/Vulkan/Vk.h
-        Platform/Vulkan/Vk_Instance.h
+        Platform/Vulkan/Vk_Buffer.h
         Platform/Vulkan/Vk_Devices.h
-        Platform/Vulkan/Vk_Swapchain.h
-        Platform/Vulkan/Vk_Renderpass.h
         Platform/Vulkan/Vk_Pipeline.h
+        Platform/Vulkan/Vk_Instance.h
+        Platform/Vulkan/Vk_Swapchain.h
+        Platform/Vulkan/Vk_Utilities.h
+        Platform/Vulkan/Vk_Renderpass.h
         Platform/Vulkan/Vk_Framebuffer.h
+        Platform/Vulkan/Vk_CommandPool.h
 )
 
 #--------------------------------------------------------------------

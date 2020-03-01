@@ -19,7 +19,8 @@
 #include "Platform/Vulkan/Vk_RenderPass.h"
 #include "Platform/Vulkan/Vk_Pipeline.h"
 #include "Platform/Vulkan/Vk_Framebuffer.h"
-
+#include "Platform/Vulkan/Vk_CommandPool.h"
+#include "Platform/Vulkan/Vk_Buffer.h"
 
 namespace Yarezo {
 
@@ -46,9 +47,7 @@ namespace Yarezo {
         void cleanupSwapChain();
         void createGraphicsPipeline();
         void createFramebuffers();
-        void createCommandPool();
-        void createVertexBuffer();
-        void createIndexBuffer();
+        void createBuffers();
         void createUniformBuffers();
         void createDescriptorPool();
         void createDescriptorSets();
@@ -83,26 +82,24 @@ namespace Yarezo {
 
 
         // Class members created by GraphicsDevice_Vulkan class
-        Graphics::YzVkInstance m_VkInstance;
-        Graphics::YzVkDevice* m_VkDevice;
-        Graphics::YzVkSwapchain m_VkSwapchain;
-        Graphics::YzVkRenderPass m_VkRenderPass;
-        Graphics::YzVkPipeline m_VkPipeline;
-        std::vector<Graphics::YzVkFramebuffer> m_VkFramebuffers;
+        Graphics::YzVkInstance m_YzInstance;
+        Graphics::YzVkDevice* m_YzDevice;
+        Graphics::YzVkSwapchain m_YzSwapchain;
+        Graphics::YzVkRenderPass m_YzRenderPass;
+        Graphics::YzVkPipeline m_YzPipeline;
+        std::vector<Graphics::YzVkFramebuffer> m_YzFramebuffers;
+        Graphics::YzVkCommandPool m_YzCommandPool;
 
-        VkCommandPool m_CommandPool;
+        Graphics::YzVkBuffer m_VertexBuffer;
+        Graphics::YzVkBuffer m_IndexBuffer;
+        std::vector<Graphics::YzVkBuffer> m_UniformBuffers;
+
         std::vector<VkCommandBuffer> m_CommandBuffers;
         std::vector<VkSemaphore> m_ImageAvailableSemaphore;
         std::vector<VkSemaphore> m_RenderFinishedSemaphore;
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
-        VkDeviceMemory m_VertexBufferMemory;
-        VkDeviceMemory m_IndexBufferMemory;
-        std::vector<VkDeviceMemory> m_UniformBuffersMemory;
-        VkBuffer m_VertexBuffer;
-        VkBuffer m_IndexBuffer;
-        std::vector<VkBuffer> m_UniformBuffers;
         VkDescriptorPool m_DescriptorPool;
         std::vector<VkDescriptorSet> m_DescriptorSets;
 
