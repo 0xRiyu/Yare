@@ -31,6 +31,7 @@ set (YAREZOENGINE_SOURCES
         Platform/Vulkan/Vk_Renderpass.cpp
         Platform/Vulkan/Vk_Framebuffer.cpp
         Platform/Vulkan/Vk_CommandPool.cpp
+        Platform/Vulkan/Vk_DescriptorSet.cpp
 )
 
 #--------------------------------------------------------------------
@@ -68,6 +69,7 @@ set (YAREZOENGINE_HEADERS
         Platform/Vulkan/Vk_Renderpass.h
         Platform/Vulkan/Vk_Framebuffer.h
         Platform/Vulkan/Vk_CommandPool.h
+        Platform/Vulkan/Vk_DescriptorSet.h
 )
 
 #--------------------------------------------------------------------

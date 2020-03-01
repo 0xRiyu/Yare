@@ -20,6 +20,7 @@
 #include "Platform/Vulkan/Vk_Framebuffer.h"
 #include "Platform/Vulkan/Vk_CommandPool.h"
 #include "Platform/Vulkan/Vk_Buffer.h"
+#include "Platform/Vulkan/Vk_DescriptorSet.h"
 
 namespace Yarezo {
 
@@ -76,7 +77,7 @@ namespace Yarezo {
         Graphics::YzVkPipeline m_YzPipeline;
         std::vector<Graphics::YzVkFramebuffer> m_YzFramebuffers;
         Graphics::YzVkCommandPool m_YzCommandPool;
-
+        Graphics::YzVkDescriptorSet m_YzDescriptorSets;
         Graphics::YzVkBuffer m_VertexBuffer;
         Graphics::YzVkBuffer m_IndexBuffer;
         std::vector<Graphics::YzVkBuffer> m_UniformBuffers;
@@ -87,7 +88,6 @@ namespace Yarezo {
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
-        std::vector<VkDescriptorSet> m_DescriptorSets;
 
     };
 }

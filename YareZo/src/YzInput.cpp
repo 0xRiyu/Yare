@@ -60,15 +60,13 @@ namespace Yarezo {
 			posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
 		}
 
-
-		if (isKeyDown(GLFW_KEY_Q)) {
+		if (isKeyDown(GLFW_KEY_E)) {
 			posVec += upVec * cameraSpeed;
 		}
 
-		if (isKeyDown(GLFW_KEY_E)) {
+		if (isKeyDown(GLFW_KEY_Q)) {
 			posVec -= upVec * cameraSpeed;
 		}
-
 	
 		if (isKeyDown(GLFW_KEY_ESCAPE)) {
 			YZ_INFO("Escape Key Pressed - Closing Window");

@@ -243,38 +243,22 @@ namespace Yarezo {
     void GraphicsDevice_Vulkan::createDescriptorSets() {
         size_t swapchainImagesSize = m_YzSwapchain.getImagesSize();
 
-        std::vector<VkDescriptorSetLayout> layouts(swapchainImagesSize, m_YzPipeline.getDescriptorSetLayout());
-        VkDescriptorSetAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = m_YzPipeline.getDescriptorPool();
-        allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImagesSize);
-        allocInfo.pSetLayouts = layouts.data();
+        Graphics::DescriptorSetInfo descriptorSetInfo;
+        descriptorSetInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImagesSize);
+        descriptorSetInfo.pipeline = &m_YzPipeline;
 
-        m_DescriptorSets.resize(swapchainImagesSize);
+        // First create the descriptor set, but the buffers are empty
+        m_YzDescriptorSets.init(descriptorSetInfo);
 
-        //This wont need to be cleaned up because it is auto cleaned up when the pool is destroyed
-        if (vkAllocateDescriptorSets(m_YzDevice->getDevice(), &allocInfo, m_DescriptorSets.data()) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan was unable to allocate descriptor sets.");
-            throw std::runtime_error("Vulkan was unable to allocate descriptor sets.");
-        }
-
+        // For each of our swapchain images, load the associated buffer into the descriptor set
         for (size_t i = 0; i < swapchainImagesSize; i++) {
-            VkDescriptorBufferInfo bufferInfo = {};
+            Graphics::BufferInfo bufferInfo;
             bufferInfo.buffer = m_UniformBuffers[i].getBuffer();
             bufferInfo.offset = 0;
-            bufferInfo.range = sizeof(UniformBufferObject);
+            bufferInfo.size = sizeof(UniformBufferObject);
+            bufferInfo.binding = i;
 
-            VkWriteDescriptorSet descriptorWrite = {};
-            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            descriptorWrite.dstSet = m_DescriptorSets[i];
-            descriptorWrite.dstBinding = 0;
-            descriptorWrite.dstArrayElement = 0;
-            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            descriptorWrite.descriptorCount = 1;
-            descriptorWrite.pBufferInfo = &bufferInfo;
-            descriptorWrite.pImageInfo = nullptr; // Optional
-            descriptorWrite.pTexelBufferView = nullptr; // Optional
-            vkUpdateDescriptorSets(m_YzDevice->getDevice(), 1, &descriptorWrite, 0, nullptr);
+            m_YzDescriptorSets.Update(bufferInfo);
         }
     }
 
@@ -322,7 +306,7 @@ namespace Yarezo {
 
             vkCmdBindIndexBuffer(m_CommandBuffers[i], m_IndexBuffer.getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0, 1, &m_DescriptorSets[i], 0, nullptr);
+            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0, 1, &m_YzDescriptorSets.getDescriptorSet(i), 0, nullptr);
 
             vkCmdDrawIndexed(m_CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
