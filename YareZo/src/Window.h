@@ -8,6 +8,7 @@
 #include "src/Core.h"
 #include "src/handlers/YzKeyHandler.h"
 #include "src/handlers/YzMouseHandler.h"
+#include "src/handlers/YzScrollHandler.h"
 #include "src/YzCamera.h"
 
 #include <memory>
@@ -31,6 +32,7 @@ namespace Yarezo {
         inline virtual WindowProperties getWindowProperties()                   { return m_Properties; }
         inline virtual std::shared_ptr<KeyHandler> getKeyHandler()          { return m_keyHandler; }
         inline virtual std::shared_ptr<MouseHandler> getMouseHandler()          { return m_mouseHandler; }
+        inline virtual std::shared_ptr<ScrollHandler> getScrollHandler()          { return m_scrollHandler; }
         inline virtual std::shared_ptr<Camera> getCamera()                      { return m_Camera; }
 
         static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
@@ -41,6 +43,7 @@ namespace Yarezo {
         WindowProperties m_Properties;
         std::shared_ptr<KeyHandler> m_keyHandler;
         std::shared_ptr<MouseHandler> m_mouseHandler;
+        std::shared_ptr<ScrollHandler> m_scrollHandler;
         std::shared_ptr<Camera> m_Camera;
     };
 }

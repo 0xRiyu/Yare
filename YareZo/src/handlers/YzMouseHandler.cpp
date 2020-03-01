@@ -6,9 +6,6 @@
 #define GLM_FORCE_RADIANS
 #endif
 
-#include <glm.hpp>
-#include <ext.hpp>
-#include <gtx/string_cast.hpp>
 
 namespace Yarezo {
 
@@ -22,7 +19,6 @@ namespace Yarezo {
 
 	void MouseHandler::handle(std::shared_ptr<Camera> currentCamera) {
         //YZ_INFO("mouseX: " + STR(mouseX) + "\tmouseY: " + STR(mouseY));
-        //currentCamera = Application::getAppInstance()->getWindow()->getCamera();
         float yaw = currentCamera->getYaw();
         float pitch = currentCamera->getPitch();
         

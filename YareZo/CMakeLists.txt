@@ -7,6 +7,7 @@ set (YAREZOENGINE_SOURCES
         src/Vulkan.cpp
         src/handlers/YzKeyHandler.cpp
         src/handlers/YzMouseHandler.cpp
+        src/handlers/YzScrollHandler.cpp
         src/YzCamera.cpp
 
         # Utilities
@@ -50,6 +51,7 @@ set (YAREZOENGINE_HEADERS
         src/handlers/Handler.h
         src/handlers/YzKeyHandler.h
         src/handlers/YzMouseHandler.h
+        src/handlers/YzScrollHandler.h
         src/YzCamera.h
 
         # Utilities

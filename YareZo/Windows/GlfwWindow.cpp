@@ -19,7 +19,7 @@ namespace Yarezo {
             app->windowResized = true;
         }
 
-        static void GLFWcallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+        static void GLFWkeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
             auto keyHandler = Application::getAppInstance()->getWindow()->getKeyHandler();
             keyHandler->m_Keys[key] = action != GLFW_RELEASE;
         }
@@ -31,10 +31,9 @@ namespace Yarezo {
         }
 
         static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
-            float currFov = Application::getAppInstance()->getWindow()->getCamera()->getFov();
-            float newFov = glm::clamp(currFov - (float)verticalScroll, 1.0f, 90.0f);
-            Application::getAppInstance()->getWindow()->getCamera()->setFov(newFov);
-            YZ_INFO("newFov: " + STR(newFov));
+            auto scrollHandler = Application::getAppInstance()->getWindow()->getScrollHandler();
+            scrollHandler->horizontalScroll = (float)horizontalScroll;
+            scrollHandler->verticalScroll = (float)verticalScroll;
         }
 
 
@@ -43,6 +42,7 @@ namespace Yarezo {
             m_Camera = std::make_shared<Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
             m_keyHandler = std::make_shared<KeyHandler>();
             m_mouseHandler = std::make_shared<MouseHandler>();
+            m_scrollHandler = std::make_shared<ScrollHandler>();
             init();
         }
 
@@ -68,6 +68,7 @@ namespace Yarezo {
             glfwPollEvents();
             m_keyHandler->handle(m_Camera);
             m_mouseHandler->handle(m_Camera);
+            m_scrollHandler->handle(m_Camera);
             windowResized = false;
         }
 
@@ -76,7 +77,7 @@ namespace Yarezo {
         }
 
         void GlfwWindow::setKeyInputCallback() {
-            glfwSetKeyCallback(m_Window, GLFWcallback);
+            glfwSetKeyCallback(m_Window, GLFWkeyCallback);
         }
 
         void GlfwWindow::setMouseInputCallback() {
