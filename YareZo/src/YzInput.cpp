@@ -45,21 +45,32 @@ namespace Yarezo {
 
 
 		if (isKeyDown(GLFW_KEY_S)) {
-			posVec += (glm::normalize(lookAtVec) * 0.005f);
+			posVec += (glm::normalize(lookAtVec) * cameraSpeed);
 		}
 
 		if (isKeyDown(GLFW_KEY_W)) {
-			posVec -= (glm::normalize(lookAtVec) * 0.005f);
+			posVec -= (glm::normalize(lookAtVec) * cameraSpeed);
 		}
 
 		if (isKeyDown(GLFW_KEY_A)) {
-			posVec += (glm::normalize(glm::cross(lookAtVec, upVec)) * 0.005f);
+			posVec += (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
 		}
 
 		if (isKeyDown(GLFW_KEY_D)) {
-			posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * 0.005f);
+			posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
 		}
 
+
+		if (isKeyDown(GLFW_KEY_Q)) {
+			posVec += glm::normalize(upVec) * cameraSpeed;
+		}
+
+		if (isKeyDown(GLFW_KEY_E)) {
+			YZ_INFO("Q pressed");
+			posVec -= glm::normalize(upVec) * cameraSpeed;
+		}
+
+	
 		if (isKeyDown(GLFW_KEY_ESCAPE)) {
 			YZ_INFO("Escape Key Pressed - Closing Window");
 			Application::getAppInstance()->getWindow()->closeWindow();
