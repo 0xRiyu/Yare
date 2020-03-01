@@ -7,7 +7,6 @@
 
 #include <vector>
 #include <memory>
-#include <iostream>
 #include <glm.hpp>
 #include <gtc/matrix_transform.hpp>
 #include <array>
@@ -23,8 +22,6 @@
 #include "Platform/Vulkan/Vk_Buffer.h"
 
 namespace Yarezo {
-
- 
 
     struct UniformBufferObject {
         glm::mat4 model;
@@ -56,14 +53,6 @@ namespace Yarezo {
         void recreateSwapChain();
         void updateUniformBuffer(uint32_t currentImage);
 
-        void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
-        void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-        uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-
-        // Swap Chain required functions
-        VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-        VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-        VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
         VkShaderModule createShaderModule(const std::vector<char>& shader_code);
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -79,7 +68,6 @@ namespace Yarezo {
         const std::vector<uint16_t> indices = {
             0,1,2,2,3,0
         };
-
 
         // Class members created by GraphicsDevice_Vulkan class
         Graphics::YzVkInstance m_YzInstance;
