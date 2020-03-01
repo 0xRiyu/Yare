@@ -1,25 +1,29 @@
 
 #include "src/YzCamera.h"
-
-#include <gtc/matrix_transform.hpp>
 #include "Utilities/YzLogger.h"
 
+#include <gtc/matrix_transform.hpp>
 
 namespace Yarezo {
-    long frameCounter = 0l;
 
     Camera::Camera(const float screenWidth, const float screenHeight) {
         m_Aspect = screenWidth / screenHeight;
-        m_Position = glm::vec3(0.0f, 2.0f, 2.0f);
-        m_LookAt = glm::vec3(0.0f, 0.5f, 0.5f);
-        // m_Up = glm::vec3(0.0f, 0.0f, 1.0f); // not gonna ask why up was +Z
-        m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
+        m_Position = glm::vec3(3.0f, 0.0f, 0.0f);
 
-        m_Rotation = glm::vec3(0.0f, 0.0f, 0.0f);
-
-        float yaw = -90.0f;
+        float yaw = 0.0f;
         float pitch = 0.0f;
-        m_fov = 45.0f;
+        float roll = 0.0f;
+        m_Rotation = glm::vec3(yaw, pitch, roll);
+
+        m_LookAt.x = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
+        m_LookAt.y = sin(glm::radians(m_Rotation.y));
+        m_LookAt.z = sin(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
+        m_LookAt = glm::normalize(m_LookAt);
+
+        glm::vec3 right = glm::normalize(glm::cross(m_LookAt, m_Up));
+        m_Up = glm::normalize(glm::cross(right, m_LookAt));
+
+        m_Fov = 50.0f;
 
         updateView();
         updateProj();
@@ -34,7 +38,18 @@ namespace Yarezo {
     }
 
     void Camera::setRotation(const glm::vec3& in) {
+
         m_Rotation = in;
+
+        m_LookAt.x = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
+        m_LookAt.y = sin(glm::radians(m_Rotation.y));
+        m_LookAt.z = sin(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
+        m_LookAt = glm::normalize(m_LookAt);
+
+        m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 right = glm::normalize(glm::cross(m_LookAt, m_Up));
+        m_Up = glm::normalize(glm::cross(right, m_LookAt));
+
         updateView();
     }
 
@@ -44,15 +59,7 @@ namespace Yarezo {
     }
 
     void Camera::setFov(const float in) {
-        m_fov = in;
-        updateProj();
-    }
-    void Camera::setYaw(const float in) {
-        m_yaw = in;
-        updateProj();
-    }
-    void Camera::setPitch(const float in) {
-        m_pitch = in;
+        m_Fov = in;
         updateProj();
     }
 
@@ -62,12 +69,10 @@ namespace Yarezo {
     }
 
     void Camera::updateView() {
-        frameCounter++;
-        if (frameCounter % 1000 == 0) YZ_INFO("LookAtX: " + STR(m_LookAt.x) + "\tLookAtY: " + STR(m_LookAt.y) + "\tLookAtZ: " + STR(m_LookAt.z));
         m_ViewMatrix = glm::lookAtLH(m_Position, m_Position + m_LookAt, m_Up);
     }
 
     void Camera::updateProj() {
-        m_ProjectionMatrix = glm::perspective(glm::radians(m_fov), m_Aspect, 0.1f, 100.0f);
+        m_ProjectionMatrix = glm::perspective(glm::radians(m_Fov), m_Aspect, 0.1f, 100.0f);
     }
 }

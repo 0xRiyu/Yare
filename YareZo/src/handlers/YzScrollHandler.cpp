@@ -6,8 +6,6 @@
 #define GLM_FORCE_RADIANS
 #endif
 
-
-
 namespace Yarezo {
 
 

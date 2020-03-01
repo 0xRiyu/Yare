@@ -21,38 +21,26 @@ namespace Yarezo {
 	}
 
 	void MouseHandler::handle(std::shared_ptr<Camera> currentCamera) {
-        //YZ_INFO("mouseX: " + STR(mouseX) + "\tmouseY: " + STR(mouseY));
-        float yaw = currentCamera->getYaw();
-        float pitch = currentCamera->getPitch();
-        
+
+        auto rotation = currentCamera->getRotation();
+
         if (isFirstMouseInput) {
             prevMouseX = mouseX;
             prevMouseY = mouseY;
             isFirstMouseInput = false;
         }
 
-        float deltaX = mouseX - prevMouseX;
-        float deltaY = mouseY - prevMouseY;
+        float deltaX = glm::clamp(mouseX - prevMouseX, -10.0f, 10.0f) * mouseSensitivity;
+        float deltaY = glm::clamp(mouseY - prevMouseY, -10.0f, 10.0f) * mouseSensitivity;
+
+        rotation.x += deltaX;
+        rotation.y = glm::clamp(rotation.y + deltaY, -89.0f, 89.0f);
+
+        currentCamera->setRotation(rotation);        
+
         prevMouseX = mouseX;
         prevMouseY = mouseY;
 
-        deltaX *= mouseSensitivity;
-        deltaY *= mouseSensitivity;
-
-        yaw += deltaX;
-        pitch = glm::clamp(pitch + deltaY, -89.0f, 89.0f);
-
-        currentCamera->setYaw(yaw);
-        currentCamera->setPitch(pitch);
-        
-        //YZ_INFO("yaw: " + STR(yaw) + "\tpitch: " + STR(pitch));
-
-        glm::vec3 front;
-        front.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
-        front.y = -glm::sin(glm::radians(pitch));
-        front.z = 0.5f; // glm::sin(glm::radians(yaw))* glm::cos(glm::radians(pitch));
-
-        currentCamera->setLookAt(glm::normalize(front));
 	}
 
 }

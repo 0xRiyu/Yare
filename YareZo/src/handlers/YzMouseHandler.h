@@ -19,10 +19,10 @@ namespace Yarezo {
         virtual void handle(std::shared_ptr<Camera> currentCamera) override;
 
         bool isFirstMouseInput = true;
-        float mouseX;
-        float mouseY;
-        float prevMouseX;
-        float prevMouseY;
+        float mouseX = 0;
+        float mouseY = 0;
+        float prevMouseX = 0;
+        float prevMouseY = 0;
         const float mouseSensitivity = 0.1f;
 
     private:

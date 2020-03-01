@@ -394,7 +394,9 @@ namespace Yarezo {
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo = {};
-        ubo.model = glm::rotate(glm::mat4(0.5f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 model = glm::mat4(0.5f);
+        model = glm::rotate(model, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+        ubo.model = glm::rotate(model, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         ubo.view = Application::getAppInstance()->getWindow()->getCamera()->getViewMatrix();
 

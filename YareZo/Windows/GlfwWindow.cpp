@@ -26,8 +26,8 @@ namespace Yarezo {
 
         static void GLFWmouseCallback(GLFWwindow* window, double mouseX, double mouseY) {
             auto mouseHandler = Application::getAppInstance()->getWindow()->getMouseHandler();
-            mouseHandler->mouseX= (float)mouseX;
-            mouseHandler->mouseY= (float)mouseY;
+            mouseHandler->mouseX = (float)mouseX;
+            mouseHandler->mouseY = (float)mouseY;
         }
 
         static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {

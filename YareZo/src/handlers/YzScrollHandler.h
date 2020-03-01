@@ -18,8 +18,8 @@ namespace Yarezo {
 
         virtual void handle(std::shared_ptr<Camera> currentCamera) override;
 
-        float horizontalScroll;
-        float verticalScroll;
+        float horizontalScroll = 0;
+        float verticalScroll = 0;
 
     private:
 
