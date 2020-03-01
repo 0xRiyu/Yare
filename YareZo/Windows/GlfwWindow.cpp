@@ -34,6 +34,7 @@ namespace Yarezo {
             auto scrollHandler = Application::getAppInstance()->getWindow()->getScrollHandler();
             scrollHandler->horizontalScroll = (float)horizontalScroll;
             scrollHandler->verticalScroll = (float)verticalScroll;
+
         }
 
 

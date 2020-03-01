@@ -6,6 +6,9 @@
 #define GLM_FORCE_RADIANS
 #endif
 
+#include <glm.hpp>
+#include <ext.hpp>
+#include <gtx/string_cast.hpp>
 
 namespace Yarezo {
 
@@ -42,7 +45,7 @@ namespace Yarezo {
         currentCamera->setYaw(yaw);
         currentCamera->setPitch(pitch);
         
-        YZ_INFO("yaw: " + STR(yaw) + "\tpitch: " + STR(pitch));
+        //YZ_INFO("yaw: " + STR(yaw) + "\tpitch: " + STR(pitch));
 
         glm::vec3 front;
         front.x = glm::cos(glm::radians(yaw)) * glm::cos(glm::radians(pitch));
