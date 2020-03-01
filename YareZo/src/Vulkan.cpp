@@ -58,7 +58,6 @@ namespace Yarezo {
             m_UniformBuffers[i].cleanUp();
         }
 
-        vkDestroyDescriptorPool(m_YzDevice->getDevice(), m_DescriptorPool, nullptr);
     }
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
@@ -115,8 +114,6 @@ namespace Yarezo {
         // The uniform buffers are for storing the projection matrices
         createBuffers();
         createUniformBuffers();
-        // Descriptor sets can't be created directly, they must be allocated from a pool like command buffers. We create those here.
-        createDescriptorPool();
         // Create a set of descriptors for the shader to receive,
         // A descriptor set is called a "set" because it can refer to an array of homogenous resources that can be described with the same layout binding. 
         createDescriptorSets();
@@ -243,34 +240,13 @@ namespace Yarezo {
         }
     }
 
-
-    void GraphicsDevice_Vulkan::createDescriptorPool() {
-        size_t swapchainImagesSize = m_YzSwapchain.getImagesSize();
-
-        VkDescriptorPoolSize poolSize = {};
-        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        poolSize.descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
-
-        VkDescriptorPoolCreateInfo poolInfo = {};
-        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        poolInfo.poolSizeCount = 1;
-        poolInfo.pPoolSizes = &poolSize;
-        poolInfo.maxSets = static_cast<uint32_t>(swapchainImagesSize);
-
-        if (vkCreateDescriptorPool(m_YzDevice->getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan creation of descriptor pool failed.");
-            throw std::runtime_error("Vulkan creation of descriptor pool failed.");
-        }
-
-    }
-
     void GraphicsDevice_Vulkan::createDescriptorSets() {
         size_t swapchainImagesSize = m_YzSwapchain.getImagesSize();
 
         std::vector<VkDescriptorSetLayout> layouts(swapchainImagesSize, m_YzPipeline.getDescriptorSetLayout());
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = m_DescriptorPool;
+        allocInfo.descriptorPool = m_YzPipeline.getDescriptorPool();
         allocInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImagesSize);
         allocInfo.pSetLayouts = layouts.data();
 
@@ -407,10 +383,8 @@ namespace Yarezo {
         createGraphicsPipeline();
         createFramebuffers();
         createUniformBuffers();
-        createDescriptorPool();
         createDescriptorSets();
         createCommandBuffers();
-
     }
 
     void GraphicsDevice_Vulkan::updateUniformBuffer(uint32_t currentImage) {

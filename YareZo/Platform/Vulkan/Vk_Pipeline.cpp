@@ -16,7 +16,11 @@ namespace Yarezo {
             // The layout is used to describe the content of a list of descriptor sets
             createDescriptorSetLayout();
 
+            // Pipeline yay
             createGraphicsPipeline(pipelineInfo);
+
+            // Descriptor sets can't be created directly, they must be allocated from a pool like command buffers. We create those here.
+            createDescriptorPool(pipelineInfo);
         }
 
         void YzVkPipeline::cleanUp() {
@@ -25,6 +29,9 @@ namespace Yarezo {
             }
             if (m_GraphicsPipeline) {
                 vkDestroyPipeline(YzVkDevice::instance()->getDevice(), m_GraphicsPipeline, nullptr);
+            }
+            if (m_DescriptorPool) {
+                vkDestroyDescriptorPool(YzVkDevice::instance()->getDevice(), m_DescriptorPool, nullptr);
             }
         }
 
@@ -162,6 +169,25 @@ namespace Yarezo {
                 throw std::runtime_error("Vulkan failed to create the graphics pipeline.");
             }
 
+
+        }
+        void YzVkPipeline::createDescriptorPool(PipelineInfo& pipelineInfo) {
+            size_t swapchainImagesSize = pipelineInfo.swapchain->getImagesSize();
+
+            VkDescriptorPoolSize poolSize = {};
+            poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            poolSize.descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
+
+            VkDescriptorPoolCreateInfo poolInfo = {};
+            poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+            poolInfo.poolSizeCount = 1;
+            poolInfo.pPoolSizes = &poolSize;
+            poolInfo.maxSets = static_cast<uint32_t>(swapchainImagesSize);
+
+            if (vkCreateDescriptorPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
+                YZ_ERROR("Vulkan creation of descriptor pool failed.");
+                throw std::runtime_error("Vulkan creation of descriptor pool failed.");
+            }
 
         }
     }

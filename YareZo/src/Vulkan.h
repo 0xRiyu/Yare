@@ -46,7 +46,6 @@ namespace Yarezo {
         void createFramebuffers();
         void createBuffers();
         void createUniformBuffers();
-        void createDescriptorPool();
         void createDescriptorSets();
         void createCommandBuffers();
         void createSyncObjects();
@@ -88,7 +87,6 @@ namespace Yarezo {
         std::vector<VkFence> m_InFlightFences;
         std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
-        VkDescriptorPool m_DescriptorPool;
         std::vector<VkDescriptorSet> m_DescriptorSets;
 
     };
