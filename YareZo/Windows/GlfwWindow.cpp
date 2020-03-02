@@ -13,7 +13,6 @@ std::shared_ptr<Yarezo::Window> Yarezo::Window::createNewWindow(Yarezo::WindowPr
 namespace Yarezo {
     namespace Windows {
 
-
         static void framebufferResizeCallback(GLFWwindow* window, int width, int height) {
             auto app = reinterpret_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
             app->windowResized = true;
@@ -21,29 +20,28 @@ namespace Yarezo {
 
         static void GLFWkeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
             auto keyHandler = Application::getAppInstance()->getWindow()->getKeyHandler();
-            keyHandler->m_Keys[key] = action != GLFW_RELEASE;
+            keyHandler->m_KeyState[key] = action;
         }
 
         static void GLFWmouseCallback(GLFWwindow* window, double mouseX, double mouseY) {
             auto mouseHandler = Application::getAppInstance()->getWindow()->getMouseHandler();
-            mouseHandler->mouseX = (float)mouseX;
-            mouseHandler->mouseY = (float)mouseY;
+            mouseHandler->currentMouseX = (float)mouseX;
+            mouseHandler->currentMouseY = (float)mouseY;
+            mouseHandler->mouseEvent = true;
         }
 
         static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
-            auto scrollHandler = Application::getAppInstance()->getWindow()->getScrollHandler();
-            scrollHandler->horizontalScroll = (float)horizontalScroll;
-            scrollHandler->verticalScroll = (float)verticalScroll;
-
+            auto mouseHandler = Application::getAppInstance()->getWindow()->getMouseHandler();
+            mouseHandler->setHorizontalScroll((float)horizontalScroll);
+            mouseHandler->setVerticalScroll((float)verticalScroll);
+            mouseHandler->scrollEvent = true;
         }
-
 
         GlfwWindow::GlfwWindow(WindowProperties& properties) {
             m_Properties = properties;
             m_Camera = std::make_shared<Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
-            m_keyHandler = std::make_shared<KeyHandler>();
-            m_mouseHandler = std::make_shared<MouseHandler>();
-            m_scrollHandler = std::make_shared<ScrollHandler>();
+            m_KeyHandler = std::make_shared<KeyHandler>(m_Camera);
+            m_MouseHandler = std::make_shared<MouseHandler>(m_Camera);
             init();
         }
 
@@ -67,9 +65,8 @@ namespace Yarezo {
 
         void GlfwWindow::onUpdate() {
             glfwPollEvents();
-            m_keyHandler->handle(m_Camera);
-            m_mouseHandler->handle(m_Camera);
-            m_scrollHandler->handle(m_Camera);
+            m_KeyHandler->handle();
+            m_MouseHandler->handle();
             windowResized = false;
         }
 

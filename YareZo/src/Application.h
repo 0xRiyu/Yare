@@ -21,6 +21,7 @@ namespace Yarezo {
         std::shared_ptr<Window> getWindow() const { return m_Window; }
 
         inline static Application* getAppInstance() { return s_AppInstance; }
+        static bool logFPS;
     private:
         std::shared_ptr<Window> m_Window;
         static Application* s_AppInstance;

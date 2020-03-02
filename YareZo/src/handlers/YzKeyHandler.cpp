@@ -12,12 +12,12 @@
 
 namespace Yarezo {
 
-
-	KeyHandler::KeyHandler() {
+	KeyHandler::KeyHandler(std::shared_ptr<Camera> currentCamera)
+	:p_Camera(currentCamera) {
 
 		for (int i = 0; i < MAX_KEYS; i++)
 		{
-			m_Keys[i] = false;
+			m_KeyState[i] = 0;
 		}
 		for (int i = 0; i < MAX_BUTTONS; i++)
 		{
@@ -34,15 +34,24 @@ namespace Yarezo {
 			YZ_WARN("Requested the status of a key " + STR(key) +" that is outside the range of maximum keys.");
 			return false;
 		}
-		return m_Keys[key];
+
+		return m_KeyState[key] == GLFW_PRESS || m_KeyState[key] == GLFW_REPEAT;
 	}
 
-	void KeyHandler::handle(std::shared_ptr<Camera> currentCamera) {
+	bool KeyHandler::isKeyPressed(int key) {
+		if (key > MAX_KEYS) {
+			YZ_WARN("Requested the status of a key " + STR(key) + " that is outside the range of maximum keys.");
+			return false;
+		}
+		return m_KeyState[key] == GLFW_PRESS;
+	}
 
-		auto posVec = currentCamera->getPosition();
-		auto upVec = currentCamera->getUpVector();
-		auto lookAtVec = currentCamera->getLookAtVector();
-		float cameraSpeed = currentCamera->getCameraSpeed();
+	void KeyHandler::handle() {
+
+		auto posVec = p_Camera->getPosition();
+		auto upVec = p_Camera->getUpVector();
+		auto lookAtVec = p_Camera->getLookAtVector();
+		float cameraSpeed = p_Camera->getCameraSpeed();
 
 
 		if (isKeyDown(GLFW_KEY_S)) {
@@ -61,7 +70,6 @@ namespace Yarezo {
 			posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
 		}
 
-
 		if (isKeyDown(GLFW_KEY_Q)) {
 			posVec += upVec * cameraSpeed;
 		}
@@ -70,13 +78,18 @@ namespace Yarezo {
 			posVec -= upVec * cameraSpeed;
 		}
 
-	
+		if ((isKeyDown(GLFW_KEY_LEFT_CONTROL) || isKeyDown(GLFW_KEY_RIGHT_CONTROL)) && isKeyPressed(GLFW_KEY_F)) {
+			YZ_INFO("FPS Logging Toggled");
+			Application::logFPS = !Application::logFPS;
+			m_KeyState[GLFW_KEY_F] = 0;
+		}
+
 		if (isKeyDown(GLFW_KEY_ESCAPE)) {
 			YZ_INFO("Escape Key Pressed - Closing Window");
 			Application::getAppInstance()->getWindow()->closeWindow();
 		}
 
-		currentCamera->setPosition(posVec);
+		p_Camera->setPosition(posVec);
 	}
 
 }

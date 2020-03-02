@@ -12,6 +12,7 @@
 namespace Yarezo {
 
     Application* Application::s_AppInstance = nullptr;
+    bool Application::logFPS = false;
 
     Application::Application() {
         if (s_AppInstance) {
@@ -20,14 +21,13 @@ namespace Yarezo {
         s_AppInstance = this;
     }
 
-
     Application::~Application() {
     }
 
     void Application::run() {
 
         Yarezo::YzLogger::init();
-        YZ_WARN("Logger Initialized");
+        YZ_INFO("Logger Initialized");
 
         //Create a window
         WindowProperties props = {800, 600};
@@ -42,12 +42,13 @@ namespace Yarezo {
         while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(m_Window->getNativeWindow()))) {
             double currentTime = glfwGetTime();
             frameCount++;
-
+            double deltaTime = currentTime - previousTime;
             // Output some fps info every 5s to determine if we nuke performace
-            if (currentTime - previousTime >= 5.0) {
-                YZ_INFO("FPS: " + std::to_string(frameCount / 5));
+            if (deltaTime >= 1.0) {
+                if (logFPS) YZ_INFO("FPS: " + std::to_string(frameCount));
                 frameCount = 0;
                 previousTime = currentTime;
+                m_Window->getCamera()->setCameraSpeed(deltaTime * 0.002);
             }
 
             vulkanDevice.drawFrame();

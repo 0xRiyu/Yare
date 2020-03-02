@@ -9,21 +9,15 @@ namespace Yarezo {
     Camera::Camera(const float screenWidth, const float screenHeight) {
         m_Aspect = screenWidth / screenHeight;
         m_Position = glm::vec3(3.0f, 0.0f, 0.0f);
+        m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
+        m_Fov = 50.0f;
 
         float yaw = 0.0f;
         float pitch = 0.0f;
         float roll = 0.0f;
         m_Rotation = glm::vec3(yaw, pitch, roll);
 
-        m_LookAt.x = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
-        m_LookAt.y = sin(glm::radians(m_Rotation.y));
-        m_LookAt.z = sin(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
-        m_LookAt = glm::normalize(m_LookAt);
-
-        glm::vec3 right = glm::normalize(glm::cross(m_LookAt, m_Up));
-        m_Up = glm::normalize(glm::cross(right, m_LookAt));
-
-        m_Fov = 50.0f;
+        recalculateViewParams();
 
         updateView();
         updateProj();
@@ -38,18 +32,9 @@ namespace Yarezo {
     }
 
     void Camera::setRotation(const glm::vec3& in) {
-
         m_Rotation = in;
 
-        m_LookAt.x = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
-        m_LookAt.y = sin(glm::radians(m_Rotation.y));
-        m_LookAt.z = sin(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
-        m_LookAt = glm::normalize(m_LookAt);
-
-        m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::vec3 right = glm::normalize(glm::cross(m_LookAt, m_Up));
-        m_Up = glm::normalize(glm::cross(right, m_LookAt));
-
+        recalculateViewParams();
         updateView();
     }
 
@@ -63,9 +48,24 @@ namespace Yarezo {
         updateProj();
     }
 
+    void Camera::setCameraSpeed(const float speed) {
+        m_CameraSpeed = speed;
+    }
+
     void Camera::updateDimensions(const float screenWidth, const float screenHeight) {
         m_Aspect = screenWidth / screenHeight;
         updateProj();
+    }
+
+    void Camera::recalculateViewParams() {
+        m_LookAt.x = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
+        m_LookAt.y = sin(glm::radians(m_Rotation.y));
+        m_LookAt.z = sin(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
+        m_LookAt = glm::normalize(m_LookAt);
+
+        m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 right = glm::normalize(glm::cross(m_LookAt, m_Up));
+        m_Up = glm::normalize(glm::cross(right, m_LookAt));
     }
 
     void Camera::updateView() {

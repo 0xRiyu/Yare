@@ -22,28 +22,28 @@ namespace Yarezo {
 
         // Some functions that just take in a vec 3, Todo, make non vec3 inputs
         virtual void setPosition(const glm::vec3& in);
-        // Todo when mouse input
         virtual void setRotation(const glm::vec3& in);
-        // mouse panning
         virtual void setLookAt(const glm::vec3& in);
-        // scroll wheel updates fov
         virtual void setFov(const float in);
+        virtual void setCameraSpeed(const float speed);
 
         virtual void updateDimensions(const float screenWidth, const float screenHeight);
 
-        inline virtual glm::vec3 getPosition()          const { return m_Position; }
-        inline virtual glm::vec3 getRotation()          const { return m_Rotation; }
-        inline virtual glm::vec3 getLookAtVector()      const { return m_LookAt; }
-        inline virtual glm::vec3 getUpVector()          const { return m_Up; }
-        inline virtual glm::mat4 getProjectionMatrix()  const { return m_ProjectionMatrix; }
-        inline virtual glm::mat4 getViewMatrix()        const { return m_ViewMatrix; }
-        inline virtual float getFov()                   const { return m_Fov; }
-        inline virtual float getCameraSpeed()           const { return m_cameraSpeed; }
+        virtual glm::vec3 getPosition()          const { return m_Position; }
+        virtual glm::vec3 getRotation()          const { return m_Rotation; }
+        virtual glm::vec3 getLookAtVector()      const { return m_LookAt; }
+        virtual glm::vec3 getUpVector()          const { return m_Up; }
+        virtual glm::mat4 getProjectionMatrix()  const { return m_ProjectionMatrix; }
+        virtual glm::mat4 getViewMatrix()        const { return m_ViewMatrix; }
+        virtual float getFov()                   const { return m_Fov; }
+        virtual float getCameraSpeed()           const { return m_CameraSpeed; }
 
     private:
 
+        void recalculateViewParams();
         void updateView();
         void updateProj();
+
         glm::vec3 m_Position;
         glm::vec3 m_Rotation;
         glm::vec3 m_LookAt;
@@ -56,7 +56,7 @@ namespace Yarezo {
         glm::mat4 m_ViewMatrix;
 
         float m_Fov;
-        const float m_cameraSpeed = 0.005f;
+        float m_CameraSpeed = 0.0f;
     };
 
 }
