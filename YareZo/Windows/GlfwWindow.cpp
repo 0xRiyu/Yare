@@ -18,16 +18,30 @@ namespace Yarezo {
             app->windowResized = true;
         }
 
-        static void GLFWcallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-            auto inputHandler = Application::getAppInstance()->getWindow()->getInputHandler();
-            inputHandler->m_Keys[key] = action != GLFW_RELEASE;
+        static void GLFWkeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+            auto keyHandler = Application::getAppInstance()->getWindow()->getKeyHandler();
+            keyHandler->m_KeyState[key] = action;
         }
 
+        static void GLFWmouseCallback(GLFWwindow* window, double mouseX, double mouseY) {
+            auto mouseHandler = Application::getAppInstance()->getWindow()->getMouseHandler();
+            mouseHandler->currentMouseX = (float)mouseX;
+            mouseHandler->currentMouseY = (float)mouseY;
+            mouseHandler->mouseEvent = true;
+        }
+
+        static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
+            auto mouseHandler = Application::getAppInstance()->getWindow()->getMouseHandler();
+            mouseHandler->setHorizontalScroll((float)horizontalScroll);
+            mouseHandler->setVerticalScroll((float)verticalScroll);
+            mouseHandler->scrollEvent = true;
+        }
 
         GlfwWindow::GlfwWindow(WindowProperties& properties) {
             m_Properties = properties;
             m_Camera = std::make_shared<Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
-            m_InputHandler = std::make_shared<InputHandler>();
+            m_KeyHandler = std::make_shared<KeyHandler>(m_Camera);
+            m_MouseHandler = std::make_shared<MouseHandler>(m_Camera);
             init();
         }
 
@@ -43,12 +57,16 @@ namespace Yarezo {
             glfwSetWindowUserPointer(m_Window, this);
             setFrameBufferResizeCallback();
             setKeyInputCallback();
+            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
+            setMouseInputCallback();
+            setScrollInputCallback();
         }
 
 
         void GlfwWindow::onUpdate() {
             glfwPollEvents();
-            m_InputHandler->Handle(m_Camera);
+            m_KeyHandler->handle();
+            m_MouseHandler->handle();
             windowResized = false;
         }
 
@@ -57,12 +75,19 @@ namespace Yarezo {
         }
 
         void GlfwWindow::setKeyInputCallback() {
-            glfwSetKeyCallback(m_Window, GLFWcallback);
+            glfwSetKeyCallback(m_Window, GLFWkeyCallback);
+        }
+
+        void GlfwWindow::setMouseInputCallback() {
+            glfwSetCursorPosCallback(m_Window, GLFWmouseCallback);
+        }
+
+        void GlfwWindow::setScrollInputCallback() {
+            glfwSetScrollCallback(m_Window, GLFWscrollCallback);
         }
 
         void GlfwWindow::setFrameBufferResizeCallback() {
             glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
         }
-
     }
 }

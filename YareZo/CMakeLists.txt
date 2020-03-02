@@ -5,7 +5,8 @@ set (YAREZOENGINE_SOURCES
         # Source
         src/Application.cpp
         src/Vulkan.cpp
-        src/YzInput.cpp
+        src/Handlers/YzKeyHandler.cpp
+        src/Handlers/YzMouseHandler.cpp
         src/YzCamera.cpp
 
         # Utilities
@@ -47,7 +48,9 @@ set (YAREZOENGINE_HEADERS
         src/Application.h
         src/Window.h
         src/Vulkan.h
-        src/YzInput.h
+        src/Handlers/YzInputHandler.h
+        src/Handlers/YzKeyHandler.h
+        src/Handlers/YzMouseHandler.h
         src/YzCamera.h
 
         # Utilities
@@ -90,7 +93,6 @@ target_include_directories(${PROJECT_NAME}
 # Find static libraries that are required
 #--------------------------------------------------------------------
 find_package(Vulkan REQUIRED)
-
 
 if(NOT TARGET spdlog)
 

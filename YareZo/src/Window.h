@@ -6,7 +6,8 @@
 #define YAREZO_WINDOW
 
 #include "src/Core.h"
-#include "src/YzInput.h"
+#include "src/handlers/YzKeyHandler.h"
+#include "src/handlers/YzMouseHandler.h"
 #include "src/YzCamera.h"
 
 #include <memory>
@@ -24,10 +25,13 @@ namespace Yarezo {
         virtual void onUpdate() = 0;
         virtual void closeWindow() = 0;
         virtual void setKeyInputCallback() = 0;
+        virtual void setMouseInputCallback() = 0;
+        virtual void setScrollInputCallback() = 0;
         virtual void setFrameBufferResizeCallback() = 0;
-        inline virtual WindowProperties getWindowProperties()                   { return m_Properties; }
-        inline virtual std::shared_ptr<InputHandler> getInputHandler()          { return m_InputHandler; }
-        inline virtual std::shared_ptr<Camera> getCamera()                      { return m_Camera; }
+        virtual WindowProperties getWindowProperties()          const { return m_Properties; }
+        virtual std::shared_ptr<KeyHandler> getKeyHandler()     const { return m_KeyHandler; }
+        virtual std::shared_ptr<MouseHandler> getMouseHandler() const { return m_MouseHandler; }
+        virtual std::shared_ptr<Camera> getCamera()             const { return m_Camera; }
 
         static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
@@ -35,7 +39,8 @@ namespace Yarezo {
         bool windowResized = false;
     protected:
         WindowProperties m_Properties;
-        std::shared_ptr<InputHandler> m_InputHandler;
+        std::shared_ptr<KeyHandler> m_KeyHandler;
+        std::shared_ptr<MouseHandler> m_MouseHandler;
         std::shared_ptr<Camera> m_Camera;
     };
 }
