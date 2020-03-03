@@ -62,6 +62,15 @@ namespace Yarezo {
             setupDebugMessenger();
         }
 
+        void YzVkInstance::cleanUp() {
+            m_YzCommandPool.cleanUp();
+
+        }
+
+        void YzVkInstance::createCommandPool() {
+            m_YzCommandPool.init();
+        }
+
         void YzVkInstance::createInstance() {
             if (enableValidationLayers && !checkValidationLayerSupport()) {
                 YZ_ERROR("VK Instance was unable to be created, no validation layers available");

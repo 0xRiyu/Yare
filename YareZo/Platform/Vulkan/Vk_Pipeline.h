@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/Vk.h"
 #include "Platform/Vulkan/Vk_Renderpass.h"
 #include "Platform/Vulkan/Vk_Swapchain.h"
+#include "Platform/Vulkan/Vk_CommandBuffer.h"
 
 #include <glm.hpp>
 #include <array>
@@ -55,6 +56,7 @@ namespace Yarezo {
             void init(PipelineInfo& pipelineInfo);
             void cleanUp();
             void cleanupDescSetLayout();
+            void setActive(const YzVkCommandBuffer& commandBuffer);
 
             const VkDescriptorPool& getDescriptorPool()            const { return m_DescriptorPool; }
             const VkDescriptorSetLayout& getDescriptorSetLayout()  const { return m_DescriptorSetLayout; }

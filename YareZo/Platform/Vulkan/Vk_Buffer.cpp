@@ -54,6 +54,8 @@ namespace Yarezo {
 			if (data != nullptr) {
 				setData(size, data);
 			}
+
+			m_Usage = usageFlags;
 		}
 
 
@@ -66,6 +68,19 @@ namespace Yarezo {
 				YZ_ERROR("Mapping failed - Not copying data to buffer");
 			}
 			
+		}
+
+		void YzVkBuffer::bind(const YzVkCommandBuffer& commandBuffer) {
+			auto vertexBufferFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			auto indexBufferFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+
+			if (m_Usage == vertexBufferFlags) {
+				VkDeviceSize offset = 0;
+				vkCmdBindVertexBuffers(commandBuffer.getCommandBuffer(), 0, 1, &m_Buffer, &offset);
+			}
+			if (m_Usage == indexBufferFlags) {
+				vkCmdBindIndexBuffer(commandBuffer.getCommandBuffer(), m_Buffer, 0, VK_INDEX_TYPE_UINT16);
+			}
 		}
 
 		bool YzVkBuffer::mapMemory(VkDeviceSize offset, VkDeviceSize size) {

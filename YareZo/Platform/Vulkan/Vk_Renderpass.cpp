@@ -1,5 +1,6 @@
 #include "Platform/Vulkan/Vk_Renderpass.h"
 #include "Platform/Vulkan/Vk_Devices.h"
+#include "Platform/Vulkan/Vk_Framebuffer.h"
 #include "Utilities/YzLogger.h"
 
 
@@ -60,6 +61,24 @@ namespace Yarezo {
             if (m_RenderPass) {
                 vkDestroyRenderPass(YzVkDevice::instance()->getDevice(), m_RenderPass, nullptr);
             }
+        }
+
+		void YzVkRenderPass::beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain) {
+            VkRenderPassBeginInfo renderPassInfo = {};
+            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfo.renderPass = m_RenderPass;
+            renderPassInfo.framebuffer = frameBuffer->getFramebuffer();
+            renderPassInfo.renderArea.offset = { 0, 0 };
+            renderPassInfo.renderArea.extent = swapchain->getExtent();
+            VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+            renderPassInfo.clearValueCount = 1;
+            renderPassInfo.pClearValues = &clearColor;
+
+            vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		}
+        void YzVkRenderPass::endRenderPass(YzVkCommandBuffer* const commandBuffer) {
+            vkCmdEndRenderPass(commandBuffer->getCommandBuffer());
         }
     }
 }

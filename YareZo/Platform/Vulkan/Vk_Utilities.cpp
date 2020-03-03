@@ -17,6 +17,21 @@ namespace Yarezo {
                 YZ_ERROR("Vulkan failed to find a suitable memory type.");
                 throw std::runtime_error("Vulkan failed to find a suitable memory type.");
 			}
+
+			VkShaderModule createShaderModule(const std::vector<char>& shader_code) {
+                VkShaderModuleCreateInfo createInfo = {};
+                createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+                createInfo.codeSize = shader_code.size();
+                createInfo.pCode = reinterpret_cast<const uint32_t*>(shader_code.data());
+
+                VkShaderModule shaderModule;
+                if (vkCreateShaderModule(YzVkDevice::instance()->getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
+                    YZ_ERROR("Vulkan was unable to create a shaderModule with provided shader code.");
+                    throw std::runtime_error("Vulkan was unable to create a shaderModule with provided shader code.");
+                }
+
+                return shaderModule;
+			}
 		}
 	}
 }

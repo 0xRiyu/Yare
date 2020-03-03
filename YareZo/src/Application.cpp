@@ -36,20 +36,23 @@ namespace Yarezo {
         // Create the vulkan pipeline
         GraphicsDevice_Vulkan vulkanDevice;
 
-        double previousTime = glfwGetTime();
+        double previousFPSTime = glfwGetTime();
+        double previousFrameTime = glfwGetTime();
         int frameCount = 0;
 
         while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(m_Window->getNativeWindow()))) {
             double currentTime = glfwGetTime();
             frameCount++;
-            double deltaTime = currentTime - previousTime;
+            double deltaFrameTime = currentTime - previousFrameTime;
+            double deltaFPSTime = currentTime - previousFPSTime;
+            m_Window->getCamera()->setCameraSpeed(deltaFrameTime * 5);
             // Output some fps info every 5s to determine if we nuke performace
-            if (deltaTime >= 1.0) {
+            if (deltaFPSTime >= 1.0) {
                 if (logFPS) YZ_INFO("FPS: " + std::to_string(frameCount));
                 frameCount = 0;
-                previousTime = currentTime;
-                m_Window->getCamera()->setCameraSpeed(deltaTime * 0.002);
+                previousFPSTime = currentTime;
             }
+            previousFrameTime = currentTime;
 
             vulkanDevice.drawFrame();
             m_Window->onUpdate();

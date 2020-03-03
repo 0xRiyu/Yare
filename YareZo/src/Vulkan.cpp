@@ -15,6 +15,7 @@
 #include "src/Vulkan.h"
 #include "Window.h"
 #include "src/Application.h"
+#include "Platform/Vulkan/Vk_Utilities.h"
 
 namespace Yarezo {
 
@@ -36,7 +37,8 @@ namespace Yarezo {
             vkDestroyFence(m_YzDevice->getDevice(), m_InFlightFences[i], nullptr);
         }
 
-        m_YzCommandPool.cleanUp();
+        // Cleans up command pool
+        m_YzInstance.cleanUp();
 
         Graphics::YzVkDevice::release();
     }
@@ -48,7 +50,9 @@ namespace Yarezo {
             m_YzFramebuffers.pop_back();
         }
 
-        vkFreeCommandBuffers(m_YzDevice->getDevice(), m_YzCommandPool.getCommandPool(), static_cast<uint32_t>(m_CommandBuffers.size()), m_CommandBuffers.data());
+        for (Graphics::YzVkCommandBuffer& commandBuffer : m_YzCommandBuffers) {
+            commandBuffer.cleanUp();
+        }
 
         m_YzPipeline.cleanUp();
         m_YzRenderPass.cleanUp();
@@ -64,8 +68,8 @@ namespace Yarezo {
         auto vertShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboVert.spv");
         auto fragShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboFrag.spv");
 
-        VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
-        VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
+        VkShaderModule vertShaderModule = Graphics::Util::createShaderModule(vertShaderCode);
+        VkShaderModule fragShaderModule = Graphics::Util::createShaderModule(fragShaderCode);
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -106,7 +110,7 @@ namespace Yarezo {
         // Frame Buffers
         createFramebuffers();
         // Create a command pool which will manage the memory to store command buffers.
-        m_YzCommandPool.init();
+        m_YzInstance.createCommandPool();
         // Create the Vertex/Indices/Uniform buffers;
         // A vertex data will store arbitrary triangle data to be read by the GPU
         // The indices data will connect the vertices data suc that we can re-use some vertices
@@ -157,7 +161,7 @@ namespace Yarezo {
         submitInfo.pWaitSemaphores = waitSemaphores;
         submitInfo.pWaitDstStageMask = waitStages;
         submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &m_CommandBuffers[imageIndex];
+        submitInfo.pCommandBuffers = &m_YzCommandBuffers[imageIndex].getCommandBuffer();
 
         VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphore[m_CurrentFrame] };
         submitInfo.signalSemaphoreCount = 1;
@@ -263,59 +267,27 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createCommandBuffers() {
-        m_CommandBuffers.resize(m_YzFramebuffers.size());
+        m_YzCommandBuffers.resize(m_YzFramebuffers.size());
 
-        VkCommandBufferAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        allocInfo.commandPool = m_YzCommandPool.getCommandPool();
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandBufferCount = (uint32_t)m_CommandBuffers.size();
+        for (size_t i = 0; i < m_YzCommandBuffers.size(); i++) {
 
-        if (vkAllocateCommandBuffers(m_YzDevice->getDevice(), &allocInfo, m_CommandBuffers.data()) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan Failed to allocate command buffers.");
-            throw std::runtime_error("Vulkan Failed to allocate command buffers.");
-        }
+            m_YzCommandBuffers[i].init();
 
-        for (size_t i = 0; i < m_CommandBuffers.size(); i++) {
-            VkCommandBufferBeginInfo beginInfo = {};
-            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            beginInfo.flags = 0; // Optional
-            beginInfo.pInheritanceInfo = nullptr; // Optional
+            m_YzCommandBuffers[i].beginRecording();
 
-            if (vkBeginCommandBuffer(m_CommandBuffers[i], &beginInfo) != VK_SUCCESS) {
-                throw std::runtime_error("failed to begin recording command buffer!");
-            }
+            m_YzRenderPass.beginRenderPass(&m_YzCommandBuffers[i], &m_YzFramebuffers[i], &m_YzSwapchain);
 
-            VkRenderPassBeginInfo renderPassInfo = {};
-            renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfo.renderPass = m_YzRenderPass.getRenderPass();
-            renderPassInfo.framebuffer = m_YzFramebuffers[i].getFramebuffer();
-            renderPassInfo.renderArea.offset = { 0, 0 };
-            renderPassInfo.renderArea.extent = m_YzSwapchain.getExtent();
-            VkClearValue clearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-            renderPassInfo.clearValueCount = 1;
-            renderPassInfo.pClearValues = &clearColor;
+            m_YzPipeline.setActive(m_YzCommandBuffers[i]);
 
-            vkCmdBeginRenderPass(m_CommandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+            m_VertexBuffer.bind(m_YzCommandBuffers[i]);
+            m_IndexBuffer.bind(m_YzCommandBuffers[i]);
 
-            vkCmdBindPipeline(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipeline());
+            vkCmdBindDescriptorSets(m_YzCommandBuffers[i].getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0, 1, &m_YzDescriptorSets.getDescriptorSet(i), 0, nullptr);
+            vkCmdDrawIndexed(m_YzCommandBuffers[i].getCommandBuffer(), static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
-            VkBuffer vertexBuffers[] = { m_VertexBuffer.getBuffer() };
-            VkDeviceSize offsets[] = { 0 };
-            vkCmdBindVertexBuffers(m_CommandBuffers[i], 0, 1, vertexBuffers, offsets);
+            m_YzRenderPass.endRenderPass(&m_YzCommandBuffers[i]);
 
-            vkCmdBindIndexBuffer(m_CommandBuffers[i], m_IndexBuffer.getBuffer(), 0, VK_INDEX_TYPE_UINT16);
-
-            vkCmdBindDescriptorSets(m_CommandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0, 1, &m_YzDescriptorSets.getDescriptorSet(i), 0, nullptr);
-
-            vkCmdDrawIndexed(m_CommandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
-
-            vkCmdEndRenderPass(m_CommandBuffers[i]);
-
-            if (vkEndCommandBuffer(m_CommandBuffers[i]) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan failed to record command buffer.");
-                throw std::runtime_error("Vulkan failed to record command buffer.");
-            }
+            m_YzCommandBuffers[i].endRecording();
         }
     }
 
@@ -389,21 +361,5 @@ namespace Yarezo {
         ubo.proj[1][1] *= -1;
 
         m_UniformBuffers[currentImage].setData(sizeof(ubo), &ubo);
-    }
-
-    VkShaderModule GraphicsDevice_Vulkan::createShaderModule(const std::vector<char>& shader_code) {
-
-        VkShaderModuleCreateInfo createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = shader_code.size();
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(shader_code.data());
-
-        VkShaderModule shaderModule;
-        if (vkCreateShaderModule(m_YzDevice->getDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan was unable to create a shaderModule with provided shader code.");
-            throw std::runtime_error("Vulkan was unable to create a shaderModule with provided shader code.");
-        }
-
-        return shaderModule;
     }
 }

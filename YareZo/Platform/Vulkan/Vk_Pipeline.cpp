@@ -41,6 +41,10 @@ namespace Yarezo {
             }
         }
 
+		void YzVkPipeline::setActive(const YzVkCommandBuffer& commandBuffer) {
+            vkCmdBindPipeline(commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
+		}
+
         void YzVkPipeline::createDescriptorSetLayout() {
 
             VkDescriptorSetLayoutBinding uboLayoutBinding = {};

@@ -2,6 +2,7 @@
 #define YZ_VK_INSTANCE_HPP
 
 #include "Platform/Vulkan/Vk.h"
+#include "Platform/Vulkan/Vk_CommandPool.h"
 #include <vector>
 
 namespace Yarezo {
@@ -12,7 +13,10 @@ namespace Yarezo {
             YzVkInstance();
             ~YzVkInstance();
             void init();
+            void cleanUp();
+            void createCommandPool();
             const VkInstance& getVKInstance() const { return m_Instance; }
+            const YzVkCommandPool& getYzCommandPool() const { return m_YzCommandPool; }
             static inline YzVkInstance* getYzVkInstancePtr(){ return s_YzVkInstance; }
 
         private:
@@ -25,6 +29,8 @@ namespace Yarezo {
         private:
             VkInstance m_Instance = VK_NULL_HANDLE;
             VkDebugUtilsMessengerEXT m_DebugMessenger;
+            // To be initialized after a device has been created
+            YzVkCommandPool m_YzCommandPool;
 
             const std::vector<const char*> validationLayers = {
                 "VK_LAYER_KHRONOS_validation"
@@ -37,6 +43,7 @@ namespace Yarezo {
             #endif
 
             static YzVkInstance* s_YzVkInstance;
+
         };
     }
 }

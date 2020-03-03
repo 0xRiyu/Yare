@@ -21,6 +21,7 @@
 #include "Platform/Vulkan/Vk_CommandPool.h"
 #include "Platform/Vulkan/Vk_Buffer.h"
 #include "Platform/Vulkan/Vk_DescriptorSet.h"
+#include "Platform/Vulkan/Vk_CommandBuffer.h"
 
 namespace Yarezo {
 
@@ -53,7 +54,6 @@ namespace Yarezo {
         void recreateSwapChain();
         void updateUniformBuffer(uint32_t currentImage);
 
-        VkShaderModule createShaderModule(const std::vector<char>& shader_code);
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -76,13 +76,12 @@ namespace Yarezo {
         Graphics::YzVkRenderPass m_YzRenderPass;
         Graphics::YzVkPipeline m_YzPipeline;
         std::vector<Graphics::YzVkFramebuffer> m_YzFramebuffers;
-        Graphics::YzVkCommandPool m_YzCommandPool;
         Graphics::YzVkDescriptorSet m_YzDescriptorSets;
         Graphics::YzVkBuffer m_VertexBuffer;
         Graphics::YzVkBuffer m_IndexBuffer;
         std::vector<Graphics::YzVkBuffer> m_UniformBuffers;
+        std::vector<Graphics::YzVkCommandBuffer> m_YzCommandBuffers;
 
-        std::vector<VkCommandBuffer> m_CommandBuffers;
         std::vector<VkSemaphore> m_ImageAvailableSemaphore;
         std::vector<VkSemaphore> m_RenderFinishedSemaphore;
         std::vector<VkFence> m_InFlightFences;
