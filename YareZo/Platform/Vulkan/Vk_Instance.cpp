@@ -73,8 +73,7 @@ namespace Yarezo {
 
         void YzVkInstance::createInstance() {
             if (enableValidationLayers && !checkValidationLayerSupport()) {
-                YZ_ERROR("VK Instance was unable to be created, no validation layers available");
-                throw std::runtime_error("validation layers requested, but not available!");
+                YZ_CRITICAL("VK Instance was unable to be created, no validation layers available");
             }
 
             VkApplicationInfo appInfo = {};
@@ -106,8 +105,7 @@ namespace Yarezo {
             }
 
             if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS) {
-                YZ_ERROR("VK Instance was unable to be created");
-                throw std::runtime_error("failed to create instance!");
+                YZ_CRITICAL("VK Instance was unable to be created");
             }
         }
 

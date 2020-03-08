@@ -22,8 +22,7 @@ namespace Yarezo {
 			poolInfo.flags = 0; // Optional
 
 			if (vkCreateCommandPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
-				YZ_ERROR("Vulkan failed to create a command pool.");
-				throw std::runtime_error("Vulkan failed to create a command pool.");
+				YZ_CRITICAL("Vulkan failed to create a command pool.");
 			}
 		}
 

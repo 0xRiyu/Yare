@@ -17,8 +17,7 @@ namespace Yarezo {
             framebufferCreateInfo.layers = framebufferInfo.layers;
 
             if (vkCreateFramebuffer(YzVkDevice::instance()->getDevice(), &framebufferCreateInfo, nullptr, &m_Framebuffer) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan failed to create a framebuffer");
-                throw std::runtime_error("Vulkan failed to create a framebuffer");
+                YZ_CRITICAL("Vulkan failed to create a framebuffer");
             }
 
         }

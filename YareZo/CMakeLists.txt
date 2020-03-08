@@ -24,6 +24,7 @@ set (YAREZOENGINE_SOURCES
 
         # Vulkan
         Platform/Vulkan/Vk_Buffer.cpp
+        Platform/Vulkan/Vk_Shader.cpp
         Platform/Vulkan/Vk_Devices.cpp
         Platform/Vulkan/Vk_Instance.cpp
         Platform/Vulkan/Vk_Pipeline.cpp
@@ -65,6 +66,7 @@ set (YAREZOENGINE_HEADERS
         # Vulkan
         Platform/Vulkan/Vk.h
         Platform/Vulkan/Vk_Buffer.h
+        Platform/Vulkan/Vk_Shader.h
         Platform/Vulkan/Vk_Devices.h
         Platform/Vulkan/Vk_Pipeline.h
         Platform/Vulkan/Vk_Instance.h

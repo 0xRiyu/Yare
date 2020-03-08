@@ -42,8 +42,7 @@ namespace Yarezo {
             GLFWwindow* windowInstance = static_cast<GLFWwindow*>(Application::getAppInstance()->getWindow()->getNativeWindow());
 
             if (glfwCreateWindowSurface(m_YzVkInstance->getVKInstance(), windowInstance, nullptr, &m_Surface) != VK_SUCCESS) {
-                YZ_ERROR("Could not create a window surface.");
-                throw std::runtime_error("Could not create a window surface.");
+                YZ_CRITICAL("Could not create a window surface.");
             }
         }
 
@@ -52,8 +51,7 @@ namespace Yarezo {
             vkEnumeratePhysicalDevices(m_YzVkInstance->getVKInstance(), &deviceCount, nullptr);
 
             if (deviceCount == 0) {
-                YZ_ERROR("Failed to find GPUs with Vulkan Support!");
-                throw std::runtime_error("Failed to find GPUs with Vulkan support!");
+                YZ_CRITICAL("Failed to find GPUs with Vulkan Support!");
             }
 
             std::vector<VkPhysicalDevice> devices(deviceCount);
@@ -66,8 +64,7 @@ namespace Yarezo {
                 }
             }
             if (m_PhysicalDevice == VK_NULL_HANDLE) {
-                YZ_ERROR("Failed to find a suitable GPU");
-                throw std::runtime_error("Failed to find a suitable GPU");
+                YZ_CRITICAL("Failed to find a suitable GPU");
             }
         }
 
@@ -106,8 +103,7 @@ namespace Yarezo {
             //}
 
             if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS) {
-                YZ_ERROR("Failed to create a logical device.");
-                throw std::runtime_error("Failed to create a logical device.");
+                YZ_CRITICAL("Failed to create a logical device.");
             }
 
             vkGetDeviceQueue(m_Device, indices.graphicsFamily, 0, &m_GraphicsQueue);

@@ -12,10 +12,11 @@
 #include "Utilities/IOHelper.h"
 
 #include "Platform/Vulkan/Vk.h"
+#include "Platform/Vulkan/Vk_Shader.h"
 #include "src/Vulkan.h"
 #include "Window.h"
 #include "src/Application.h"
-#include "Platform/Vulkan/Vk_Utilities.h"
+
 
 namespace Yarezo {
 
@@ -65,31 +66,13 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
-        auto vertShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboVert.spv");
-        auto fragShaderCode = Utilities::readFile("..\\..\\..\\..\\YareZo\\Shaders\\uboFrag.spv");
 
-        VkShaderModule vertShaderModule = Graphics::Util::createShaderModule(vertShaderCode);
-        VkShaderModule fragShaderModule = Graphics::Util::createShaderModule(fragShaderCode);
+        Graphics::YzVkShader shader("..\\..\\..\\..\\YareZo\\Shaders", "ubo.shader");
 
-        VkPipelineShaderStageCreateInfo vertShaderStageInfo = {};
-        vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-        vertShaderStageInfo.module = vertShaderModule;
-        vertShaderStageInfo.pName = "main";
+        Graphics::PipelineInfo pipelineInfo = { &shader,  &m_YzRenderPass, &m_YzSwapchain };
+        m_YzPipeline.init(pipelineInfo);
 
-        VkPipelineShaderStageCreateInfo fragShaderStageInfo = {};
-        fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        fragShaderStageInfo.module = fragShaderModule;
-        fragShaderStageInfo.pName = "main";
-
-        VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
-
-        Graphics::PipelineInfo pipelineInfo2 = { { vertShaderStageInfo, fragShaderStageInfo }, &m_YzRenderPass, &m_YzSwapchain };
-        m_YzPipeline.init(pipelineInfo2);
-
-        vkDestroyShaderModule(m_YzDevice->getDevice(), fragShaderModule, nullptr);
-        vkDestroyShaderModule(m_YzDevice->getDevice(), vertShaderModule, nullptr);
+        shader.unloadModules();
     }
 
 
@@ -141,7 +124,6 @@ namespace Yarezo {
         }
         else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
             YZ_ERROR("Vulkan failed to aquire a swapchain image.");
-            throw std::runtime_error("Vulkan failed to acquire swap chain image!");
         }
 
         updateUniformBuffer(imageIndex);
@@ -170,7 +152,6 @@ namespace Yarezo {
         vkResetFences(m_YzDevice->getDevice(), 1, &m_InFlightFences[m_CurrentFrame]);
         if (vkQueueSubmit(m_YzDevice->getGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to submit draw command buffer.");
-            throw std::runtime_error("Vulkan failed to submit draw command buffer!");
         }
 
         VkPresentInfoKHR presentInfo = {};
@@ -191,7 +172,6 @@ namespace Yarezo {
         }
         else if (result != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to present a swap chain image.");
-            throw std::runtime_error("Vulkan failed to present swap chain image!");
         }
 
         vkQueueWaitIdle(m_YzDevice->getPresentQueue());
@@ -308,8 +288,7 @@ namespace Yarezo {
             if (vkCreateSemaphore(m_YzDevice->getDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
                 vkCreateSemaphore(m_YzDevice->getDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
                 vkCreateFence(m_YzDevice->getDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan failed to create sync objects. (Semaphores or Fence)");
-                throw std::runtime_error("Vulkan failed to create sync objects. (Semaphores or Fence)");
+                YZ_CRITICAL("Vulkan failed to create sync objects. (Semaphores or Fence)");
             }
         }
     }

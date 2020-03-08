@@ -32,8 +32,7 @@ namespace Yarezo {
 			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
 			if (vkCreateBuffer(YzVkDevice::instance()->getDevice(), &bufferInfo, nullptr, &m_Buffer) != VK_SUCCESS) {
-				YZ_ERROR("Vulkan was unable to create a buffer.");
-				throw std::runtime_error("failed to create a buffer");
+				YZ_CRITICAL("Vulkan was unable to create a buffer.");
 			}
 
 			VkMemoryRequirements memRequirements;
@@ -42,11 +41,10 @@ namespace Yarezo {
 			VkMemoryAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			allocInfo.allocationSize = memRequirements.size;
-			allocInfo.memoryTypeIndex = Util::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			allocInfo.memoryTypeIndex = VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 			if (vkAllocateMemory(YzVkDevice::instance()->getDevice(), &allocInfo, nullptr, &m_BufferMemory) != VK_SUCCESS) {
-				YZ_ERROR("Vulkan failed to allocate buffer memory!");
-				throw std::runtime_error("Vulkan failed to allocate buffer memory!");
+				YZ_CRITICAL("Vulkan failed to allocate buffer memory!");
 			}
 
 			vkBindBufferMemory(YzVkDevice::instance()->getDevice(), m_Buffer, m_BufferMemory, 0);

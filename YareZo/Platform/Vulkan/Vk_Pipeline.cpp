@@ -61,8 +61,7 @@ namespace Yarezo {
             layoutInfo.pBindings = &uboLayoutBinding;
 
             if (vkCreateDescriptorSetLayout(YzVkDevice::instance()->getDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan was unable to create a descriptor set layout.");
-                throw std::runtime_error("Vulkan was unable to create a descriptor set layout.");
+                YZ_CRITICAL("Vulkan was unable to create a descriptor set layout.");
             }
         }
         void YzVkPipeline::createGraphicsPipeline(PipelineInfo& pipelineInfo) {
@@ -147,14 +146,13 @@ namespace Yarezo {
             pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
 
             if (vkCreatePipelineLayout(YzVkDevice::instance()->getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan Pipeline Layout was unable to be created.");
-                throw std::runtime_error("Vulkan Pipeline Layout was unable to be created.");
+                YZ_CRITICAL("Vulkan Pipeline Layout was unable to be created.");
             }
 
             VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
             pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineCreateInfo.stageCount = 2;
-            pipelineCreateInfo.pStages = pipelineInfo.shaders;
+            pipelineCreateInfo.stageCount = pipelineInfo.shader->getStageCount();
+            pipelineCreateInfo.pStages = pipelineInfo.shader->getShaderStages();
             pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
             pipelineCreateInfo.pInputAssemblyState = &inputAssembly;
             pipelineCreateInfo.pViewportState = &viewportState;
@@ -169,8 +167,7 @@ namespace Yarezo {
             pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
             if (vkCreateGraphicsPipelines(YzVkDevice::instance()->getDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan failed to create the graphics pipeline.");
-                throw std::runtime_error("Vulkan failed to create the graphics pipeline.");
+                YZ_CRITICAL("Vulkan failed to create the graphics pipeline.");
             }
 
 
@@ -189,8 +186,7 @@ namespace Yarezo {
             poolInfo.maxSets = static_cast<uint32_t>(swapchainImagesSize);
 
             if (vkCreateDescriptorPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan creation of descriptor pool failed.");
-                throw std::runtime_error("Vulkan creation of descriptor pool failed.");
+                YZ_CRITICAL("Vulkan creation of descriptor pool failed.");
             }
 
         }

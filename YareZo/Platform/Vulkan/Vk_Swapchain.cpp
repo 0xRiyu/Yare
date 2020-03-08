@@ -77,8 +77,7 @@ namespace Yarezo {
             createInfo.oldSwapchain = VK_NULL_HANDLE;
 
             if (vkCreateSwapchainKHR(YzVkDeviceinstance->getDevice(), &createInfo, nullptr, &m_Swapchain) != VK_SUCCESS) {
-                YZ_ERROR("SwapChain failed to create");
-                throw std::runtime_error("SwapChain failed to create.");
+                YZ_CRITICAL("SwapChain failed to create");
             }
 
             vkGetSwapchainImagesKHR(YzVkDeviceinstance->getDevice(), m_Swapchain, &imageCount, nullptr);
@@ -113,8 +112,7 @@ namespace Yarezo {
                 createInfo.subresourceRange.layerCount = 1;
 
                 if (vkCreateImageView(YzVkDevice::instance()->getDevice(), &createInfo, nullptr, &m_SwapchainImageViews[i]) != VK_SUCCESS) {
-                    YZ_ERROR("Failed to create image views.");
-                    throw std::runtime_error("Failed to create image views.");
+                    YZ_CRITICAL("Failed to create image views.");
                 }
             }
         }

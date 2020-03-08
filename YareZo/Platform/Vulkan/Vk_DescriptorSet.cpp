@@ -24,8 +24,7 @@ namespace Yarezo {
 
 			//This wont need to be cleaned up because it is auto cleaned up when the pool is destroyed
 			if (vkAllocateDescriptorSets(YzVkDevice::instance()->getDevice(), &allocInfo, m_DescriptorSets.data()) != VK_SUCCESS) {
-				YZ_ERROR("Vulkan was unable to allocate descriptor sets.");
-				throw std::runtime_error("Vulkan was unable to allocate descriptor sets.");
+				YZ_CRITICAL("Vulkan was unable to allocate descriptor sets.");
 			}
 
 		}

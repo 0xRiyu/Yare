@@ -22,8 +22,7 @@ namespace Yarezo {
 			allocInfo.commandBufferCount = 1;
 
 			if (vkAllocateCommandBuffers(YzVkDevice::instance()->getDevice(), &allocInfo, &m_CommandBuffer) != VK_SUCCESS) {
-				YZ_ERROR("Vulkan Failed to allocate command buffers.");
-				throw std::runtime_error("Vulkan Failed to allocate command buffers.");
+				YZ_CRITICAL("Vulkan Failed to allocate command buffers.");
 			}
 		
 		}
@@ -41,15 +40,13 @@ namespace Yarezo {
 			beginInfo.pInheritanceInfo = nullptr; // Optional
 
 			if (vkBeginCommandBuffer(m_CommandBuffer, &beginInfo) != VK_SUCCESS) {
-				YZ_ERROR("Vulkan failed to begin recording command buffer.");
-				throw std::runtime_error("failed to begin recording command buffer!");
+				YZ_CRITICAL("Vulkan failed to begin recording command buffer.");
 			}
 		}
 
 		void YzVkCommandBuffer::endRecording() {
 			if (vkEndCommandBuffer(m_CommandBuffer) != VK_SUCCESS) {
-				YZ_ERROR("Vulkan failed to end recording command buffer.");
-				throw std::runtime_error("Vulkan failed to end recording command buffer.");
+				YZ_CRITICAL("Vulkan failed to end recording command buffer.");
 			}
 		}
 	}

@@ -6,22 +6,21 @@
 
 namespace Yarezo::Utilities {
 
-    std::vector<char> readFile(const std::string& filename) {
-        std::ifstream file(filename, std::ios::ate | std::ios::binary);
+    std::vector<std::string> readFile(const std::string& filename) {
+        std::ifstream file(filename);
 
         if (!file.is_open()) {
             YZ_ERROR("File '" + filename + "' was unable to open.");
             throw std::runtime_error("File '" + filename + "' was unable to open.");
         }
 
-        size_t fileSize = (size_t) file.tellg();
-        std::vector<char> buffer(fileSize);
+        // captures lines not separated by whitespace
+        std::vector<std::string> myLines;
+        std::copy(std::istream_iterator<std::string>(file),
+                  std::istream_iterator<std::string>(),
+                  std::back_inserter(myLines));
 
-        file.seekg(0);
-        file.read(buffer.data(), fileSize);
-        file.close();
-
-        return buffer;
+        return myLines;
     }
 
 }

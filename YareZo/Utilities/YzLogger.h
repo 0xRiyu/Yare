@@ -25,7 +25,10 @@ namespace Yarezo {
 #define YZ_INFO(...)        ::Yarezo::YzLogger::getEventLogger()->info(__VA_ARGS__)
 #define YZ_WARN(...)        ::Yarezo::YzLogger::getEventLogger()->warn(__VA_ARGS__)
 #define YZ_ERROR(...)       ::Yarezo::YzLogger::getEventLogger()->error(__VA_ARGS__)
-#define YZ_CRITICAL(...)    ::Yarezo::YzLogger::getEventLogger()->critical(__VA_ARGS__)
+#define YZ_CRITICAL(...)    { \
+                            ::Yarezo::YzLogger::getEventLogger()->critical(__VA_ARGS__); \
+                            throw std::runtime_error(__VA_ARGS__); \
+                            }
 
 #define STR(x)              (std::to_string(x))
 

@@ -12,7 +12,6 @@ namespace Yarezo {
         YzVkRenderPass::~YzVkRenderPass() {
         }
 
-
         void YzVkRenderPass::init(const RenderPassInfo& renderPassInfo) {
 
             VkAttachmentDescription colorAttachment = {};
@@ -52,8 +51,7 @@ namespace Yarezo {
             renderPassCreateInfo.pDependencies = &dependency;
 
             if (vkCreateRenderPass(YzVkDevice::instance()->getDevice(), &renderPassCreateInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
-                YZ_ERROR("Vulkan failed to create a render pass.");
-                throw std::runtime_error("failed to create render pass!");
+                YZ_CRITICAL("Vulkan failed to create a render pass.");
             }
 
         }

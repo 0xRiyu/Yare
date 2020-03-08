@@ -3,12 +3,13 @@
 
 #include "Platform/Vulkan/Vk.h"
 #include <vector>
+#include <string>
 
 namespace Yarezo {
 	namespace Graphics {
-		namespace Util {
+		namespace VkUtil {
 			uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-			VkShaderModule createShaderModule(const std::vector<char>& shader_code);
+			std::vector<char> readShaderFile(const std::string& filePath);
 
 		}
 	}

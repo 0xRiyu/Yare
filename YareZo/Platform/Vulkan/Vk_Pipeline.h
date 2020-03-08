@@ -5,6 +5,7 @@
 #include "Platform/Vulkan/Vk_Renderpass.h"
 #include "Platform/Vulkan/Vk_Swapchain.h"
 #include "Platform/Vulkan/Vk_CommandBuffer.h"
+#include "Platform/Vulkan/Vk_Shader.h"
 
 #include <glm.hpp>
 #include <array>
@@ -42,7 +43,7 @@ namespace Yarezo {
         };
 
         struct PipelineInfo {
-            VkPipelineShaderStageCreateInfo shaders[2];
+            YzVkShader* shader;
             YzVkRenderPass* renderpass;
             YzVkSwapchain* swapchain;
 
