@@ -63,6 +63,9 @@ set (YAREZOENGINE_HEADERS
         # Windows Platform Specific
         Windows/GlfwWindow.h
 
+        # Compiling some libs
+         ${CMAKE_SOURCE_DIR}/libs/stb/stb_image.h
+
         # Vulkan
         Platform/Vulkan/Vk.h
         Platform/Vulkan/Vk_Buffer.h
@@ -91,7 +94,8 @@ add_library(YareZo::Engine ALIAS ${PROJECT_NAME})
 target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC ${CMAKE_SOURCE_DIR}/libs/glm
-        PUBLIC ${CMAKE_SOURCE_DIR}/libs/imgui)
+        PUBLIC ${CMAKE_SOURCE_DIR}/libs/imgui
+        PUBLIC ${CMAKE_SOURCE_DIR}/libs/stb)
 
 #--------------------------------------------------------------------
 # Find static libraries that are required
@@ -126,14 +130,13 @@ target_link_libraries(${PROJECT_NAME}
 #--------------------------------------------------------------------
 if(WIN32)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-
         target_include_directories(${PROJECT_NAME}
             PUBLIC  ${CMAKE_SOURCE_DIR}/libs/glfw-vc2019/include)
 
         target_link_libraries(${PROJECT_NAME}
             PUBLIC ${CMAKE_SOURCE_DIR}/libs/glfw-vc2019/lib/glfw3.lib)
 
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MinGW")
+    elseif (CMAKE_CXX_COMPILER_I} STREQUAL "MinGW")
 
         target_include_directories(${PROJECT_NAME}
             PUBLIC  ${CMAKE_SOURCE_DIR}/libs/glfw-mingw/include)

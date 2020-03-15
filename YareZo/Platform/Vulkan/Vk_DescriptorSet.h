@@ -27,7 +27,7 @@ namespace Yarezo {
 			~YzVkDescriptorSet();
 
 			void init(const DescriptorSetInfo& descriptorSetInfo);
-			void Update(BufferInfo& newBufferInfo);
+			void update(BufferInfo& newBufferInfo);
 
 			const VkDescriptorSet& getDescriptorSet(unsigned int index) const { return m_DescriptorSets[index]; }
 

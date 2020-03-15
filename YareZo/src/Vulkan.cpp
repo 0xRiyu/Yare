@@ -7,12 +7,15 @@
 #include <set>
 #include <cstdint>
 #include <algorithm>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 #include "Utilities/YzLogger.h"
 #include "Utilities/IOHelper.h"
 
 #include "Platform/Vulkan/Vk.h"
 #include "Platform/Vulkan/Vk_Shader.h"
+#include "Platform/Vulkan/Vk_Utilities.h"
 #include "src/Vulkan.h"
 #include "Window.h"
 #include "src/Application.h"
@@ -27,17 +30,19 @@ namespace Yarezo {
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
+
+        vkDestroyImage(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, nullptr);
+        vkFreeMemory(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImageMemory, nullptr);
+
         m_YzPipeline.cleanupDescSetLayout();
 
         m_VertexBuffer.cleanUp();
         m_IndexBuffer.cleanUp();
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(m_YzDevice->getDevice(), m_RenderFinishedSemaphore[i], nullptr);
-            vkDestroySemaphore(m_YzDevice->getDevice(), m_ImageAvailableSemaphore[i], nullptr);
-            vkDestroyFence(m_YzDevice->getDevice(), m_InFlightFences[i], nullptr);
+            vkDestroySemaphore(Graphics::YzVkDevice::instance()->getDevice(), m_RenderFinishedSemaphore[i], nullptr);
+            vkDestroySemaphore(Graphics::YzVkDevice::instance()->getDevice(), m_ImageAvailableSemaphore[i], nullptr);
         }
-
         // Cleans up command pool
         m_YzInstance.cleanUp();
 
@@ -67,7 +72,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
 
-        Graphics::YzVkShader shader("..\\..\\..\\..\\YareZo\\Shaders", "ubo.shader");
+        Graphics::YzVkShader shader("..\\..\\..\\..\\YareZo\\Resources\\Shaders", "ubo.shader");
 
         Graphics::PipelineInfo pipelineInfo = { &shader,  &m_YzRenderPass, &m_YzSwapchain };
         m_YzPipeline.init(pipelineInfo);
@@ -94,6 +99,7 @@ namespace Yarezo {
         createFramebuffers();
         // Create a command pool which will manage the memory to store command buffers.
         m_YzInstance.createCommandPool();
+        createTextureImage();
         // Create the Vertex/Indices/Uniform buffers;
         // A vertex data will store arbitrary triangle data to be read by the GPU
         // The indices data will connect the vertices data suc that we can re-use some vertices
@@ -111,10 +117,8 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::drawFrame() {
-        vkWaitForFences(m_YzDevice->getDevice(), 1, &m_InFlightFences[m_CurrentFrame], VK_TRUE, UINT64_MAX);
-
         uint32_t imageIndex;
-        VkResult result = vkAcquireNextImageKHR(m_YzDevice->getDevice(), m_YzSwapchain.getSwapchain(), UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult result = vkAcquireNextImageKHR(Graphics::YzVkDevice::instance()->getDevice(), m_YzSwapchain.getSwapchain(), UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
 
         auto window = Application::getAppInstance()->getWindow();
 
@@ -128,37 +132,13 @@ namespace Yarezo {
 
         updateUniformBuffer(imageIndex);
 
-        if (m_ImagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(m_YzDevice->getDevice(), 1, &m_ImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-        }
-
-        m_ImagesInFlight[imageIndex] = m_InFlightFences[m_CurrentFrame];
-
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
-        VkSemaphore waitSemaphores[] = { m_ImageAvailableSemaphore[m_CurrentFrame] };
-        VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &m_YzCommandBuffers[imageIndex].getCommandBuffer();
-
-        VkSemaphore signalSemaphores[] = { m_RenderFinishedSemaphore[m_CurrentFrame] };
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
-
-        vkResetFences(m_YzDevice->getDevice(), 1, &m_InFlightFences[m_CurrentFrame]);
-        if (vkQueueSubmit(m_YzDevice->getGraphicsQueue(), 1, &submitInfo, m_InFlightFences[m_CurrentFrame]) != VK_SUCCESS) {
-            YZ_ERROR("Vulkan failed to submit draw command buffer.");
-        }
+        m_YzCommandBuffers[imageIndex].submitGfxQueue(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_ImageAvailableSemaphore[m_CurrentFrame], m_RenderFinishedSemaphore[m_CurrentFrame], true);
 
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
         presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
+        presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphore[m_CurrentFrame];
 
         VkSwapchainKHR swapChains[] = { m_YzSwapchain.getSwapchain() };
         presentInfo.swapchainCount = 1;
@@ -195,6 +175,110 @@ namespace Yarezo {
             framebufferInfo.attachments = { m_YzSwapchain.getImageView(i) };
              m_YzFramebuffers.emplace_back(framebufferInfo);
         }
+    }
+
+    void GraphicsDevice_Vulkan::createTextureImage() {
+        int texWidth, texHeight, texChannels;
+        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\sprite.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+        if (!pixels) {
+            YZ_CRITICAL("failed to load texture image");
+        }
+
+        Graphics::YzVkBuffer stagingBuffer{VK_BUFFER_USAGE_TRANSFER_SRC_BIT, imageSize, pixels};
+
+        stbi_image_free(pixels);
+
+        createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImage, m_TextureImageMemory);
+
+        transitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        Graphics::VkUtil::copyBufferToImage(stagingBuffer.getBuffer(), m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
+        transitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    void GraphicsDevice_Vulkan::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
+        VkImageCreateInfo imageInfo = {};
+        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        imageInfo.imageType = VK_IMAGE_TYPE_2D;
+        imageInfo.extent.width = width;
+        imageInfo.extent.height = height;
+        imageInfo.extent.depth = 1;
+        imageInfo.mipLevels = 1;
+        imageInfo.arrayLayers = 1;
+        imageInfo.format = format;
+        imageInfo.tiling = tiling;
+        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        imageInfo.usage = usage;
+        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        if (vkCreateImage(Graphics::YzVkDevice::instance()->getDevice(), &imageInfo, nullptr, &m_TextureImage) != VK_SUCCESS) {
+            YZ_CRITICAL("Failed to create an image.");
+        }
+
+        VkMemoryRequirements memRequirements;
+        vkGetImageMemoryRequirements(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, &memRequirements);
+
+        VkMemoryAllocateInfo allocInfo = {};
+        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        allocInfo.allocationSize = memRequirements.size;
+        allocInfo.memoryTypeIndex = Graphics::VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        if (vkAllocateMemory(Graphics::YzVkDevice::instance()->getDevice(), &allocInfo, nullptr, &m_TextureImageMemory) != VK_SUCCESS) {
+            YZ_CRITICAL("failed to allocate image memory!");
+        }
+
+        vkBindImageMemory(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, m_TextureImageMemory, 0);
+    }
+
+    void GraphicsDevice_Vulkan::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
+        VkCommandBuffer commandBuffer = Graphics::VkUtil::beginSingleTimeCommands();
+
+        VkImageMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.oldLayout = oldLayout;
+        barrier.newLayout = newLayout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        VkPipelineStageFlags sourceStage;
+        VkPipelineStageFlags destinationStage;
+
+        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        }
+        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        }
+        else {
+            YZ_CRITICAL("unsupported layout transition!");
+        }
+
+        vkCmdPipelineBarrier(
+            commandBuffer,
+            sourceStage, destinationStage,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier
+        );
+
+        Graphics::VkUtil::endSingleTimeCommands(commandBuffer);
     }
 
     void GraphicsDevice_Vulkan::createBuffers() {
@@ -242,7 +326,7 @@ namespace Yarezo {
             bufferInfo.size = sizeof(UniformBufferObject);
             bufferInfo.binding = i;
 
-            m_YzDescriptorSets.Update(bufferInfo);
+            m_YzDescriptorSets.update(bufferInfo);
         }
     }
 
@@ -274,21 +358,14 @@ namespace Yarezo {
     void GraphicsDevice_Vulkan::createSyncObjects() {
         m_ImageAvailableSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
         m_RenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
-        m_InFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-        m_ImagesInFlight.resize(m_YzSwapchain.getImagesSize(), VK_NULL_HANDLE);
 
         VkSemaphoreCreateInfo semaphoreInfo = {};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        VkFenceCreateInfo fenceInfo = {};
-        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(m_YzDevice->getDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(m_YzDevice->getDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS ||
-                vkCreateFence(m_YzDevice->getDevice(), &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS) {
-                YZ_CRITICAL("Vulkan failed to create sync objects. (Semaphores or Fence)");
+            if (vkCreateSemaphore(Graphics::YzVkDevice::instance()->getDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(Graphics::YzVkDevice::instance()->getDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS) {
+                YZ_CRITICAL("Vulkan failed to create sync objects. (Semaphores)");
             }
         }
     }

@@ -39,6 +39,7 @@ namespace Yarezo {
             const VkPhysicalDevice& getGPU()        const { return m_PhysicalDevice; }
             const VkQueue& getGraphicsQueue()       const { return m_GraphicsQueue; }
             const VkQueue& getPresentQueue()        const { return m_PresentQueue; }
+            const YzVkInstance* getYzVkInstance()   const { return m_YzVkInstance; }
 
             QueueFamilyIndices getQueueFamilyIndicies();
             SwapChainSupportDetails getSwapChainSupport();

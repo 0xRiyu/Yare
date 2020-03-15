@@ -46,6 +46,9 @@ namespace Yarezo {
         void cleanupSwapChain();
         void createGraphicsPipeline();
         void createFramebuffers();
+        void createTextureImage();
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
         void createBuffers();
         void createUniformBuffers();
         void createDescriptorSets();
@@ -82,10 +85,11 @@ namespace Yarezo {
         std::vector<Graphics::YzVkBuffer> m_UniformBuffers;
         std::vector<Graphics::YzVkCommandBuffer> m_YzCommandBuffers;
 
+
+        VkImage m_TextureImage;
+        VkDeviceMemory m_TextureImageMemory;
         std::vector<VkSemaphore> m_ImageAvailableSemaphore;
         std::vector<VkSemaphore> m_RenderFinishedSemaphore;
-        std::vector<VkFence> m_InFlightFences;
-        std::vector<VkFence> m_ImagesInFlight;
         size_t m_CurrentFrame = 0;
 
     };

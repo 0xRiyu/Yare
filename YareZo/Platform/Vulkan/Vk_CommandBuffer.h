@@ -16,10 +16,13 @@ namespace Yarezo {
 			void cleanUp();
 			void beginRecording();
 			void endRecording();
+			void submitGfxQueue(VkPipelineStageFlags flags, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, bool waitFence);
 
 			const VkCommandBuffer& getCommandBuffer() const { return m_CommandBuffer; }
+			const VkFence& getFence() const { return m_Fence; }
 		private:
 			VkCommandBuffer m_CommandBuffer;
+			VkFence m_Fence;
 
 		};
 	}

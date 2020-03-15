@@ -29,7 +29,7 @@ namespace Yarezo {
 
 		}
 
-		void YzVkDescriptorSet::Update(BufferInfo& newBufferInfo) {
+		void YzVkDescriptorSet::update(BufferInfo& newBufferInfo) {
 			VkDescriptorBufferInfo bufferInfo = {};
 			bufferInfo.buffer = newBufferInfo.buffer;
 			bufferInfo.offset = newBufferInfo.offset;

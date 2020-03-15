@@ -24,6 +24,7 @@ namespace Yarezo {
     Application::~Application() {
     }
 
+  
     void Application::run() {
 
         Yarezo::YzLogger::init();
