@@ -25,6 +25,13 @@ namespace Yarezo {
 
 
     GraphicsDevice_Vulkan::GraphicsDevice_Vulkan() {
+        glm::mat4 model = glm::mat4(1.0f);
+
+        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        m_ModelPos = model;
+
         initVulkan();
     }
 
@@ -75,7 +82,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
 
-        Graphics::YzVkShader shader("..\\..\\..\\..\\YareZo\\Resources\\Shaders", "ubo.shader");
+        Graphics::YzVkShader shader("..\\..\\..\\..\\YareZo\\Resources\\Shaders", "texture.shader");
 
         Graphics::PipelineInfo pipelineInfo = { &shader,  &m_YzRenderPass, &m_YzSwapchain };
         m_YzPipeline.init(pipelineInfo);
@@ -122,7 +129,8 @@ namespace Yarezo {
         createSyncObjects();
     }
 
-    void GraphicsDevice_Vulkan::drawFrame() {
+    void GraphicsDevice_Vulkan::drawFrame(double deltaTime) {
+        m_DeltaTime = deltaTime;
         uint32_t imageIndex;
         VkResult result = vkAcquireNextImageKHR(Graphics::YzVkDevice::instance()->getDevice(), m_YzSwapchain.getSwapchain(), UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
 
@@ -360,6 +368,8 @@ namespace Yarezo {
             bufferInfo.offset = 0;
             bufferInfo.size = sizeof(UniformBufferObject);
             bufferInfo.binding = i;
+            bufferInfo.imageSampler = m_TextureSampler;
+            bufferInfo.imageView = m_TextureImageView;
 
             m_YzDescriptorSets.update(bufferInfo);
         }
@@ -435,20 +445,21 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::updateUniformBuffer(uint32_t currentImage) {
-        static auto startTime = std::chrono::high_resolution_clock::now();
 
-        auto currentTime = std::chrono::high_resolution_clock::now();
-        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+        auto rotationAmount = m_DeltaTime * glm::radians(90.0f);
+        m_ModelPos = glm::rotate(m_ModelPos, float(rotationAmount * m_RotationDir), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        if (m_ModelPos[0][1] > 0.4f) {
+            m_RotationDir = 1;
+        }
+        else if (m_ModelPos[0][1] < -0.4f) {
+            m_RotationDir = -1;
+        }
 
         UniformBufferObject ubo = {};
-        glm::mat4 model = glm::mat4(0.5f);
-        model = glm::rotate(model, 90.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-        ubo.model = glm::rotate(model, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
+        ubo.model = m_ModelPos;
         ubo.view = Application::getAppInstance()->getWindow()->getCamera()->getViewMatrix();
-
         ubo.proj = Application::getAppInstance()->getWindow()->getCamera()->getProjectionMatrix();
-
         ubo.proj[1][1] *= -1;
 
         m_UniformBuffers[currentImage].setData(sizeof(ubo), &ubo);

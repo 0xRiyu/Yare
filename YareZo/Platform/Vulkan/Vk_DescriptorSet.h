@@ -16,6 +16,8 @@ namespace Yarezo {
 
 		struct BufferInfo {
 			VkBuffer buffer;
+			VkImageView imageView;
+			VkSampler imageSampler;
 			uint32_t offset;
 			uint32_t size;
 			int binding;

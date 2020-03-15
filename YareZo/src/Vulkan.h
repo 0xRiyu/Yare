@@ -39,7 +39,7 @@ namespace Yarezo {
         ~GraphicsDevice_Vulkan();
 
         void initVulkan();
-        void drawFrame();
+        void drawFrame(double deltaTime);
         void waitIdle();
 
     private:
@@ -64,15 +64,19 @@ namespace Yarezo {
 
         // Demo Rectangle
         const std::vector<Graphics::Vertex> vertices = {
-            {{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}},
-            {{0.5f, -0.5f}, {0.556f, 0.164f, 0.321f}},
-            {{0.5f, 0.5f}, {0.0f, 0.203f, 0.584f}},
-            {{-0.5f, 0.5f}, {0.521f, 0.490f, 0.215f}}
+            {{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f},        {1.0f, 0.0f}},
+            {{0.5f, -0.5f},  {0.556f, 0.164f, 0.321f},  {0.0f, 0.0f}},
+            {{0.5f, 0.5f},   {0.0f, 0.203f, 0.584f},    {0.0f, 1.0f}},
+            {{-0.5f, 0.5f},  {0.521f, 0.490f, 0.215f},  {1.0f, 1.0f}}
         };
 
         const std::vector<uint16_t> indices = {
             0,1,2,2,3,0
         };
+
+        int m_RotationDir = 1;
+        double m_DeltaTime = 0;
+        glm::mat4 m_ModelPos;
 
         // Class members created by GraphicsDevice_Vulkan class
         Graphics::YzVkInstance                      m_YzInstance;

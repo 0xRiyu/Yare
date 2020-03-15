@@ -55,7 +55,7 @@ namespace Yarezo {
             }
             previousFrameTime = currentTime;
 
-            vulkanDevice.drawFrame();
+            vulkanDevice.drawFrame(deltaFrameTime);
             m_Window->onUpdate();
         }
 
