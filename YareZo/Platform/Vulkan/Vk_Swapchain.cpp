@@ -3,6 +3,7 @@
 #include "Utilities/YzLogger.h"
 #include "src/Application.h"
 #include "Platform/Vulkan/Vk_Devices.h"
+#include "Platform/Vulkan/Vk_Utilities.h"
 
 namespace Yarezo {
     namespace Graphics {
@@ -89,31 +90,10 @@ namespace Yarezo {
         }
 
         void YzVkSwapchain::createImageViews() {
-            size_t swapchainImagesSize = getImagesSize();
+            m_SwapchainImageViews.resize(getImagesSize());
 
-            m_SwapchainImageViews.resize(swapchainImagesSize);
-
-            for (uint32_t i = 0; i < swapchainImagesSize; i++) {
-                VkImageViewCreateInfo createInfo = {};
-                createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-                createInfo.image = getImage(i);
-                createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-                createInfo.format = getImageFormat();
-
-                createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-                createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-                createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-                createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-                createInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                createInfo.subresourceRange.baseMipLevel = 0;
-                createInfo.subresourceRange.levelCount = 1;
-                createInfo.subresourceRange.baseArrayLayer = 0;
-                createInfo.subresourceRange.layerCount = 1;
-
-                if (vkCreateImageView(YzVkDevice::instance()->getDevice(), &createInfo, nullptr, &m_SwapchainImageViews[i]) != VK_SUCCESS) {
-                    YZ_CRITICAL("Failed to create image views.");
-                }
+            for (uint32_t i = 0; i < getImagesSize(); i++) {
+                m_SwapchainImageViews[i] = VkUtil::createImageView(m_SwapchainImages[i], m_SwapchainImageFormat);
             }
         }
 

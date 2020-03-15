@@ -30,6 +30,9 @@ namespace Yarezo {
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
+        
+        vkDestroySampler(Graphics::YzVkDevice::instance()->getDevice(), m_TextureSampler, nullptr);
+        vkDestroyImageView(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImageView, nullptr);
 
         vkDestroyImage(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, nullptr);
         vkFreeMemory(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImageMemory, nullptr);
@@ -99,7 +102,10 @@ namespace Yarezo {
         createFramebuffers();
         // Create a command pool which will manage the memory to store command buffers.
         m_YzInstance.createCommandPool();
+        // Texture stuff
         createTextureImage();
+        createTextureImageView();
+        createTextureSampler();
         // Create the Vertex/Indices/Uniform buffers;
         // A vertex data will store arbitrary triangle data to be read by the GPU
         // The indices data will connect the vertices data suc that we can re-use some vertices
@@ -195,6 +201,35 @@ namespace Yarezo {
         transitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         Graphics::VkUtil::copyBufferToImage(stagingBuffer.getBuffer(), m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
         transitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    void GraphicsDevice_Vulkan::createTextureImageView() {
+        m_TextureImageView = Graphics::VkUtil::createImageView(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB);
+    }
+
+    void GraphicsDevice_Vulkan::createTextureSampler() {
+        VkSamplerCreateInfo samplerInfo = {};
+        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        samplerInfo.magFilter = VK_FILTER_LINEAR;
+        samplerInfo.minFilter = VK_FILTER_LINEAR;
+        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.anisotropyEnable = VK_TRUE;
+        samplerInfo.maxAnisotropy = 16;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.unnormalizedCoordinates = VK_FALSE;
+        samplerInfo.compareEnable = VK_FALSE;
+        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        samplerInfo.mipLodBias = 0.0f;
+        samplerInfo.minLod = 0.0f;
+        samplerInfo.maxLod = 0.0f;
+
+        if (vkCreateSampler(Graphics::YzVkDevice::instance()->getDevice(), &samplerInfo, nullptr, &m_TextureSampler) != VK_SUCCESS) {
+            YZ_CRITICAL("Vulkan failed to create a texture sampler.");
+        }
+
     }
 
     void GraphicsDevice_Vulkan::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {

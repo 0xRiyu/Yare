@@ -15,6 +15,8 @@ namespace Yarezo {
 			void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 			void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
+			VkImageView createImageView(VkImage image, VkFormat format);
+
 		}
 	}
 }

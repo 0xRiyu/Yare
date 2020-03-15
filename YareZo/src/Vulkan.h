@@ -47,8 +47,8 @@ namespace Yarezo {
         void createGraphicsPipeline();
         void createFramebuffers();
         void createTextureImage();
-        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void createTextureImageView();
+        void createTextureSampler();
         void createBuffers();
         void createUniformBuffers();
         void createDescriptorSets();
@@ -57,6 +57,8 @@ namespace Yarezo {
         void recreateSwapChain();
         void updateUniformBuffer(uint32_t currentImage);
 
+        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -73,23 +75,26 @@ namespace Yarezo {
         };
 
         // Class members created by GraphicsDevice_Vulkan class
-        Graphics::YzVkInstance m_YzInstance;
-        Graphics::YzVkDevice* m_YzDevice;
-        Graphics::YzVkSwapchain m_YzSwapchain;
-        Graphics::YzVkRenderPass m_YzRenderPass;
-        Graphics::YzVkPipeline m_YzPipeline;
-        std::vector<Graphics::YzVkFramebuffer> m_YzFramebuffers;
-        Graphics::YzVkDescriptorSet m_YzDescriptorSets;
+        Graphics::YzVkInstance                      m_YzInstance;
+        Graphics::YzVkDevice*                       m_YzDevice;
+        Graphics::YzVkSwapchain                     m_YzSwapchain;
+        Graphics::YzVkRenderPass                    m_YzRenderPass;
+        Graphics::YzVkPipeline                      m_YzPipeline;
+        std::vector<Graphics::YzVkFramebuffer>      m_YzFramebuffers;
+        Graphics::YzVkDescriptorSet                 m_YzDescriptorSets;
         Graphics::YzVkBuffer m_VertexBuffer;
         Graphics::YzVkBuffer m_IndexBuffer;
-        std::vector<Graphics::YzVkBuffer> m_UniformBuffers;
-        std::vector<Graphics::YzVkCommandBuffer> m_YzCommandBuffers;
+        std::vector<Graphics::YzVkBuffer>           m_UniformBuffers;
+        std::vector<Graphics::YzVkCommandBuffer>    m_YzCommandBuffers;
 
 
-        VkImage m_TextureImage;
-        VkDeviceMemory m_TextureImageMemory;
-        std::vector<VkSemaphore> m_ImageAvailableSemaphore;
-        std::vector<VkSemaphore> m_RenderFinishedSemaphore;
+        VkImage                                     m_TextureImage;
+        VkDeviceMemory                              m_TextureImageMemory;
+        VkImageView                                 m_TextureImageView;
+        VkSampler                                   m_TextureSampler;
+
+        std::vector<VkSemaphore>                    m_ImageAvailableSemaphore;
+        std::vector<VkSemaphore>                    m_RenderFinishedSemaphore;
         size_t m_CurrentFrame = 0;
 
     };

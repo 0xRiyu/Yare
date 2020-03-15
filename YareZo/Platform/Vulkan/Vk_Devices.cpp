@@ -85,6 +85,7 @@ namespace Yarezo {
             }
 
             VkPhysicalDeviceFeatures deviceFeatures = {};
+            deviceFeatures.samplerAnisotropy = VK_TRUE;
             VkDeviceCreateInfo createInfo = {};
 
             createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -120,8 +121,10 @@ namespace Yarezo {
                 SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
                 swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
             }
+            VkPhysicalDeviceFeatures supportedFeatures;
+            vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-            return indices.isComplete() && extensionsSupported && swapChainAdequate;
+            return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
         }
 
         bool YzVkDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
