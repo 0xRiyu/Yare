@@ -86,8 +86,6 @@ namespace Yarezo {
 
         Graphics::PipelineInfo pipelineInfo = { &shader,  &m_YzRenderPass, &m_YzSwapchain };
         m_YzPipeline.init(pipelineInfo);
-
-        shader.unloadModules();
     }
 
 
@@ -131,44 +129,28 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::drawFrame(double deltaTime) {
         m_DeltaTime = deltaTime;
-        uint32_t imageIndex;
-        VkResult result = vkAcquireNextImageKHR(Graphics::YzVkDevice::instance()->getDevice(), m_YzSwapchain.getSwapchain(), UINT64_MAX, m_ImageAvailableSemaphore[m_CurrentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult result = m_YzSwapchain.acquireNextImage(m_ImageAvailableSemaphore[m_CurrentFrame]);
 
-        auto window = Application::getAppInstance()->getWindow();
-
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->windowResized) {
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             recreateSwapChain();
             return;
         }
-        else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+        else if (result != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to aquire a swapchain image.");
         }
 
-        updateUniformBuffer(imageIndex);
+        updateUniformBuffer(m_YzSwapchain.getCurrentImage());
 
-        m_YzCommandBuffers[imageIndex].submitGfxQueue(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_ImageAvailableSemaphore[m_CurrentFrame], m_RenderFinishedSemaphore[m_CurrentFrame], true);
+        m_YzCommandBuffers[m_YzSwapchain.getCurrentImage()].submitGfxQueue(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_ImageAvailableSemaphore[m_CurrentFrame], m_RenderFinishedSemaphore[m_CurrentFrame], true);
 
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = &m_RenderFinishedSemaphore[m_CurrentFrame];
-
-        VkSwapchainKHR swapChains[] = { m_YzSwapchain.getSwapchain() };
-        presentInfo.swapchainCount = 1;
-        presentInfo.pSwapchains = swapChains;
-        presentInfo.pImageIndices = &imageIndex;
-        presentInfo.pResults = nullptr; // Optional
-        result = vkQueuePresentKHR(m_YzDevice->getPresentQueue(), &presentInfo);
+        result = m_YzSwapchain.present(m_RenderFinishedSemaphore[m_CurrentFrame]);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             recreateSwapChain();
         }
         else if (result != VK_SUCCESS) {
-            YZ_ERROR("Vulkan failed to present a swap chain image.");
+            YZ_ERROR("Vulkan failed to present a swapchain image.");
         }
-
-        vkQueueWaitIdle(m_YzDevice->getPresentQueue());
 
         m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
@@ -193,7 +175,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createTextureImage() {
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\sprite.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\crate.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels) {

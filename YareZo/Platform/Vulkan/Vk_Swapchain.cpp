@@ -32,6 +32,23 @@ namespace Yarezo {
             }
         }
 
+        VkResult YzVkSwapchain::present(VkSemaphore waitSemaphore) {
+            VkPresentInfoKHR presentInfo = {};
+            presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+            presentInfo.waitSemaphoreCount = 1;
+            presentInfo.pWaitSemaphores = &waitSemaphore;
+            presentInfo.swapchainCount = 1;
+            presentInfo.pSwapchains = &m_Swapchain;
+            presentInfo.pImageIndices = &m_CurrentImage;
+            presentInfo.pResults = nullptr; // Optional
+            return vkQueuePresentKHR(YzVkDevice::instance()->getPresentQueue(), &presentInfo);
+        }
+
+        VkResult YzVkSwapchain::acquireNextImage(VkSemaphore signalSemaphore) {
+            return vkAcquireNextImageKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, UINT64_MAX, signalSemaphore, VK_NULL_HANDLE, &m_CurrentImage);
+        }
+
         void YzVkSwapchain::createSwapchain() {
             auto YzVkDeviceinstance = YzVkDevice::instance();
 

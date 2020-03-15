@@ -21,6 +21,7 @@ namespace Yarezo {
 		}
 
 		YzVkShader::~YzVkShader() {
+			unloadModules();
 			delete[] m_ShaderStages;
 		}
 
