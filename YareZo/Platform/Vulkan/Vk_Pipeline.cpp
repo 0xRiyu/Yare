@@ -133,6 +133,18 @@ namespace Yarezo {
             multisampling.pSampleMask = nullptr; //optional
             multisampling.alphaToCoverageEnable = VK_FALSE; //optional
 
+            VkPipelineDepthStencilStateCreateInfo depthStencil = {};
+            depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+            depthStencil.depthTestEnable = VK_TRUE;
+            depthStencil.depthWriteEnable = VK_TRUE;
+            depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+            depthStencil.depthBoundsTestEnable = VK_FALSE;
+            depthStencil.stencilTestEnable = VK_FALSE;
+            depthStencil.minDepthBounds = 0.0f; // Optional
+            depthStencil.maxDepthBounds = 1.0f; // Optional
+            depthStencil.front = {}; // Optional
+            depthStencil.back = {}; // Optional
+
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
             colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             colorBlendAttachment.blendEnable = VK_FALSE;
@@ -166,7 +178,7 @@ namespace Yarezo {
             pipelineCreateInfo.pViewportState = &viewportState;
             pipelineCreateInfo.pRasterizationState = &rasterizer;
             pipelineCreateInfo.pMultisampleState = &multisampling;
-            pipelineCreateInfo.pDepthStencilState = nullptr; // Optional
+            pipelineCreateInfo.pDepthStencilState = &depthStencil;
             pipelineCreateInfo.pColorBlendState = &colorBlending;
             pipelineCreateInfo.pDynamicState = nullptr; // Optional
             pipelineCreateInfo.layout = m_PipelineLayout;

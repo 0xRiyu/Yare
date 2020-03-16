@@ -32,6 +32,7 @@ namespace Yarezo {
         virtual std::shared_ptr<KeyHandler> getKeyHandler()     const { return m_KeyHandler; }
         virtual std::shared_ptr<MouseHandler> getMouseHandler() const { return m_MouseHandler; }
         virtual std::shared_ptr<Camera> getCamera()             const { return m_Camera; }
+        virtual void setIcon(const std::string& filePath) = 0;
 
         static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;

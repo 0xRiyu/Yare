@@ -4,6 +4,7 @@
 #ifndef YAREZO_VULKAN_H
 #define YAREZO_VULKAN_H
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <vector>
 #include <memory>
@@ -49,6 +50,7 @@ namespace Yarezo {
         void createTextureImage();
         void createTextureImageView();
         void createTextureSampler();
+        void createDepthResources();
         void createBuffers();
         void createUniformBuffers();
         void createDescriptorSets();
@@ -64,14 +66,20 @@ namespace Yarezo {
 
         // Demo Rectangle
         const std::vector<Graphics::Vertex> vertices = {
-            {{-0.5f, -0.5f}, {1.0f, 1.0f, 1.0f},        {1.0f, 0.0f}},
-            {{0.5f, -0.5f},  {0.556f, 0.164f, 0.321f},  {0.0f, 0.0f}},
-            {{0.5f, 0.5f},   {0.0f, 0.203f, 0.584f},    {0.0f, 1.0f}},
-            {{-0.5f, 0.5f},  {0.521f, 0.490f, 0.215f},  {1.0f, 1.0f}}
+            {{-0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},        {1.0f, 0.0f}},
+            {{0.5f, -0.5f, 0.0f},  {0.556f, 0.164f, 0.321f},  {0.0f, 0.0f}},
+            {{0.5f, 0.5f, 0.0f},   {0.0f, 0.203f, 0.584f},    {0.0f, 1.0f}},
+            {{-0.5f, 0.5f, 0.0f},  {0.521f, 0.490f, 0.215f},  {1.0f, 1.0f}},
+
+            {{-0.0f, -0.0f, -0.5f}, {1.0f, 1.0f, 1.0f},        {1.0f, 0.0f}},
+            {{1.0f, -0.0f, -0.5f},  {0.556f, 0.164f, 0.321f},  {0.0f, 0.0f}},
+            {{1.0f, 1.0f, -0.5f},   {0.0f, 0.203f, 0.584f},    {0.0f, 1.0f}},
+            {{-0.0f, 1.0f, -0.5f},  {0.521f, 0.490f, 0.215f},  {1.0f, 1.0f}}
         };
 
         const std::vector<uint16_t> indices = {
-            0,1,2,2,3,0
+            0, 1, 2, 2, 3, 0,
+            4, 5, 6, 6, 7, 4
         };
 
         int m_RotationDir = 1;
@@ -96,6 +104,9 @@ namespace Yarezo {
         VkDeviceMemory                              m_TextureImageMemory;
         VkImageView                                 m_TextureImageView;
         VkSampler                                   m_TextureSampler;
+        VkImage                                     m_DepthImage;
+        VkDeviceMemory                              m_DepthImageMemory;
+        VkImageView                                 m_DepthImageView;
 
         std::vector<VkSemaphore>                    m_ImageAvailableSemaphore;
         std::vector<VkSemaphore>                    m_RenderFinishedSemaphore;

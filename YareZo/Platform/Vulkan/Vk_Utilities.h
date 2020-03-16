@@ -15,7 +15,12 @@ namespace Yarezo {
 			void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 			void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
-			VkImageView createImageView(VkImage image, VkFormat format);
+			VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
+
+			VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+			VkFormat findDepthFormat();
+			bool hasStencilComponent(VkFormat format);
+			void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 		}
 	}

@@ -7,7 +7,7 @@
 #include <set>
 #include <cstdint>
 #include <algorithm>
-#define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 #include "Utilities/YzLogger.h"
@@ -60,7 +60,10 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::cleanupSwapChain() {
-
+        vkDestroyImageView(Graphics::YzVkDevice::instance()->getDevice(), m_DepthImageView, nullptr);
+        vkDestroyImage(Graphics::YzVkDevice::instance()->getDevice(), m_DepthImage, nullptr);
+        vkFreeMemory(Graphics::YzVkDevice::instance()->getDevice(), m_DepthImageMemory, nullptr);
+        
         for (int i = m_YzFramebuffers.size() - 1; i >= 0; i--) {
             m_YzFramebuffers[i].cleanUp();
             m_YzFramebuffers.pop_back();
@@ -103,6 +106,7 @@ namespace Yarezo {
         m_YzRenderPass.init(renderPassInfo);
         // Graphics Pipeline
         createGraphicsPipeline();
+        createDepthResources();
         // Frame Buffers
         createFramebuffers();
         // Create a command pool which will manage the memory to store command buffers.
@@ -168,14 +172,14 @@ namespace Yarezo {
         framebufferInfo.layers = 1;
 
         for (uint32_t i = 0; i < m_YzSwapchain.getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_YzSwapchain.getImageView(i) };
+            framebufferInfo.attachments = { m_YzSwapchain.getImageView(i), m_DepthImageView };
              m_YzFramebuffers.emplace_back(framebufferInfo);
         }
     }
 
     void GraphicsDevice_Vulkan::createTextureImage() {
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\crate.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\sprite.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels) {
@@ -194,7 +198,7 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createTextureImageView() {
-        m_TextureImageView = Graphics::VkUtil::createImageView(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB);
+        m_TextureImageView = Graphics::VkUtil::createImageView(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 
     void GraphicsDevice_Vulkan::createTextureSampler() {
@@ -222,6 +226,14 @@ namespace Yarezo {
 
     }
 
+    void GraphicsDevice_Vulkan::createDepthResources() {
+        VkFormat depthFormat = Graphics::VkUtil::findDepthFormat();
+        createImage(m_YzSwapchain.getExtent().width, m_YzSwapchain.getExtent().height,
+                    depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_DepthImage, m_DepthImageMemory);
+        m_DepthImageView = Graphics::VkUtil::createImageView(m_DepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+    }
+
     void GraphicsDevice_Vulkan::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
         VkImageCreateInfo imageInfo = {};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -238,23 +250,25 @@ namespace Yarezo {
         imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
         imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateImage(Graphics::YzVkDevice::instance()->getDevice(), &imageInfo, nullptr, &m_TextureImage) != VK_SUCCESS) {
+        if (vkCreateImage(Graphics::YzVkDevice::instance()->getDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
             YZ_CRITICAL("Failed to create an image.");
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetImageMemoryRequirements(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, &memRequirements);
+        vkGetImageMemoryRequirements(Graphics::YzVkDevice::instance()->getDevice(), image, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = Graphics::VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        if (vkAllocateMemory(Graphics::YzVkDevice::instance()->getDevice(), &allocInfo, nullptr, &m_TextureImageMemory) != VK_SUCCESS) {
+        if (vkAllocateMemory(Graphics::YzVkDevice::instance()->getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
             YZ_CRITICAL("failed to allocate image memory!");
         }
 
-        vkBindImageMemory(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, m_TextureImageMemory, 0);
+        if (vkBindImageMemory(Graphics::YzVkDevice::instance()->getDevice(), image, imageMemory, 0) != VK_SUCCESS) {
+            YZ_ERROR("Failed to bind image memory");
+        }
     }
 
     void GraphicsDevice_Vulkan::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
@@ -420,6 +434,7 @@ namespace Yarezo {
         Graphics::RenderPassInfo renderPassInfo{ m_YzSwapchain.getImageFormat() };
         m_YzRenderPass.init(renderPassInfo);
         createGraphicsPipeline();
+        createDepthResources();
         createFramebuffers();
         createUniformBuffers();
         createDescriptorSets();

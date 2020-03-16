@@ -6,6 +6,8 @@
 #include "src/Application.h"
 #include "Utilities/YzLogger.h"
 
+#include <stb_image.h>
+
 std::shared_ptr<Yarezo::Window> Yarezo::Window::createNewWindow(Yarezo::WindowProperties& properties) {
     return std::make_shared<Yarezo::Windows::GlfwWindow>(properties);
 }
@@ -55,6 +57,7 @@ namespace Yarezo {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             m_Window = glfwCreateWindow(m_Properties.width, m_Properties.height, "YareZo!", nullptr, nullptr);
             glfwSetWindowUserPointer(m_Window, this);
+            setIcon("..\\..\\..\\..\\YareZo\\Resources\\Textures\\engineLogo.png");
             setFrameBufferResizeCallback();
             setKeyInputCallback();
             glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
@@ -88,6 +91,15 @@ namespace Yarezo {
 
         void GlfwWindow::setFrameBufferResizeCallback() {
             glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
+        }
+        void GlfwWindow::setIcon(const std::string& filePath) {
+            GLFWimage image;
+            int imgWidth, imgHeight, imgChannels;
+            stbi_uc* pixels = stbi_load(filePath.data(), &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);
+            image.height = imgHeight;
+            image.width = imgWidth;
+            image.pixels = pixels;
+            glfwSetWindowIcon(m_Window, 1, &image);
         }
     }
 }
