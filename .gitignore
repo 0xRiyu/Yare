@@ -24,6 +24,8 @@ build/
 [Bb]in/
 [Oo]bj/
 [Ll]og/
+libs/tinyobjloader/models/*
+libs/tinyobjloader/tests
 cmake-build-debug/
 cmake-build-release/
 
@@ -66,7 +68,6 @@ StyleCopReport.xml
 *_i.h
 *.ilk
 *.meta
-*.obj
 *.iobj
 *.pch
 *.pdb
