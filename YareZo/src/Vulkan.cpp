@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include <stb_image.h>
+#include <tiny_obj_loader.h>
 
 #include "Utilities/YzLogger.h"
 #include "Utilities/IOHelper.h"
@@ -27,8 +28,8 @@ namespace Yarezo {
     GraphicsDevice_Vulkan::GraphicsDevice_Vulkan() {
         glm::mat4 model = glm::mat4(1.0f);
 
-        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         m_ModelPos = model;
 
@@ -179,7 +180,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createTextureImage() {
         int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\sprite.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\chalet.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         if (!pixels) {
@@ -321,18 +322,19 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createBuffers() {
+        Utilities::loadModel("..\\..\\..\\..\\YareZo\\Resources\\Models\\chalet.obj", m_Vertices, m_Indices);
 
         // Vertex Buffers
-        VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+        VkDeviceSize bufferSize = sizeof(Vertex) * m_Vertices.size();
         VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        m_VertexBuffer.init(usageFlags, (size_t)bufferSize, vertices.data());
+        m_VertexBuffer.init(usageFlags, (size_t)bufferSize, m_Vertices.data());
 
         // Index Buffers
-        bufferSize = sizeof(indices[0]) * indices.size();
+        bufferSize = sizeof(m_Indices[0]) * m_Indices.size();
         usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
-        m_IndexBuffer.init(usageFlags, (size_t)bufferSize, indices.data());
+        m_IndexBuffer.init(usageFlags, (size_t)bufferSize, m_Indices.data());
     }
 
     void GraphicsDevice_Vulkan::createUniformBuffers() {
@@ -388,7 +390,7 @@ namespace Yarezo {
             m_IndexBuffer.bind(m_YzCommandBuffers[i]);
 
             vkCmdBindDescriptorSets(m_YzCommandBuffers[i].getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0, 1, &m_YzDescriptorSets.getDescriptorSet(i), 0, nullptr);
-            vkCmdDrawIndexed(m_YzCommandBuffers[i].getCommandBuffer(), static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(m_YzCommandBuffers[i].getCommandBuffer(), static_cast<uint32_t>(m_Indices.size()), 1, 0, 0, 0);
 
             m_YzRenderPass.endRenderPass(&m_YzCommandBuffers[i]);
 
@@ -444,7 +446,7 @@ namespace Yarezo {
     void GraphicsDevice_Vulkan::updateUniformBuffer(uint32_t currentImage) {
 
         auto rotationAmount = m_DeltaTime * glm::radians(90.0f);
-        m_ModelPos = glm::rotate(m_ModelPos, float(rotationAmount * m_RotationDir), glm::vec3(0.0f, 0.0f, 1.0f));
+        //m_ModelPos = glm::rotate(m_ModelPos, float(rotationAmount * m_RotationDir), glm::vec3(0.0f, 0.0f, 1.0f));
 
         if (m_ModelPos[0][1] > 0.4f) {
             m_RotationDir = 1;

@@ -77,7 +77,7 @@ namespace Yarezo {
 				vkCmdBindVertexBuffers(commandBuffer.getCommandBuffer(), 0, 1, &m_Buffer, &offset);
 			}
 			if (m_Usage == indexBufferFlags) {
-				vkCmdBindIndexBuffer(commandBuffer.getCommandBuffer(), m_Buffer, 0, VK_INDEX_TYPE_UINT16);
+				vkCmdBindIndexBuffer(commandBuffer.getCommandBuffer(), m_Buffer, 0, VK_INDEX_TYPE_UINT32);
 			}
 		}
 

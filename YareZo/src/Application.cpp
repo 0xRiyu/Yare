@@ -7,10 +7,10 @@
 #include "src/Window.h"
 #include "src/Vulkan.h"
 // Define the header once here before anywhere else
-#ifndef STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
-#endif // !STB_IMAGE_IMPLEMENTATION
+#define TINYOBJLOADER_IMPLEMENTATION
 #include <stb_image.h>
+#include <tiny_obj_loader.h>
 
 #include <exception>
 

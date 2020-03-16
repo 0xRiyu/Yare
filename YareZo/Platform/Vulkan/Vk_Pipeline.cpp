@@ -73,8 +73,8 @@ namespace Yarezo {
             }
         }
         void YzVkPipeline::createGraphicsPipeline(PipelineInfo& pipelineInfo) {
-            auto bindingDescription = Vertex::getBindingDescription();
-            auto attributeDescriptions = Vertex::getAttributeDescriptions();
+            auto bindingDescription = VulkanVertex::getBindingDescription();
+            auto attributeDescriptions = VulkanVertex::getAttributeDescriptions();
 
             VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

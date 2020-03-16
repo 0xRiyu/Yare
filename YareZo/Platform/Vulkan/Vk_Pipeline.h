@@ -6,6 +6,7 @@
 #include "Platform/Vulkan/Vk_Swapchain.h"
 #include "Platform/Vulkan/Vk_CommandBuffer.h"
 #include "Platform/Vulkan/Vk_Shader.h"
+#include "src/DataStructures.h"
 
 #include <glm.hpp>
 #include <array>
@@ -14,15 +15,13 @@
 namespace Yarezo {
     namespace Graphics {
 
-        struct Vertex {
-            glm::vec3 pos;
-            glm::vec3 color;
-            glm::vec2 texCoord;
+        struct VulkanVertex {
+            Vertex vertex;
 
             static VkVertexInputBindingDescription getBindingDescription() {
                 VkVertexInputBindingDescription bindingDescription = {};
                 bindingDescription.binding = 0;
-                bindingDescription.stride = sizeof(Vertex);
+                bindingDescription.stride = sizeof(VulkanVertex);
                 bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
                 return bindingDescription;
             }
@@ -32,17 +31,17 @@ namespace Yarezo {
                 attributeDescriptions[0].binding = 0;
                 attributeDescriptions[0].location = 0;
                 attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attributeDescriptions[0].offset = offsetof(Vertex, pos);
+                attributeDescriptions[0].offset = offsetof(VulkanVertex, vertex) + offsetof(Vertex, pos);
 
                 attributeDescriptions[1].binding = 0;
                 attributeDescriptions[1].location = 1;
                 attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-                attributeDescriptions[1].offset = offsetof(Vertex, color);
+                attributeDescriptions[1].offset = offsetof(VulkanVertex, vertex) + offsetof(Vertex, color);
 
                 attributeDescriptions[2].binding = 0;
                 attributeDescriptions[2].location = 2;
                 attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-                attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+                attributeDescriptions[2].offset = offsetof(VulkanVertex, vertex) + offsetof(Vertex, texCoord);
 
                 return attributeDescriptions;
             }

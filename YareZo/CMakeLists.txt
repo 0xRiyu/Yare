@@ -54,6 +54,7 @@ set (YAREZOENGINE_HEADERS
         src/Handlers/YzKeyHandler.h
         src/Handlers/YzMouseHandler.h
         src/YzCamera.h
+        src/DataStructures.h
 
         # Utilities
         Utilities/YzLogger.h
@@ -64,7 +65,9 @@ set (YAREZOENGINE_HEADERS
         Windows/GlfwWindow.h
 
         # Compiling some libs
-         ${CMAKE_SOURCE_DIR}/libs/stb/stb_image.h
+        ${CMAKE_SOURCE_DIR}/libs/stb/stb_image.h
+        ${CMAKE_SOURCE_DIR}/libs/tinyobjloader/tiny_obj_loader.h
+
 
         # Vulkan
         Platform/Vulkan/Vk.h
@@ -95,7 +98,8 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
         PUBLIC ${CMAKE_SOURCE_DIR}/libs/glm
         PUBLIC ${CMAKE_SOURCE_DIR}/libs/imgui
-        PUBLIC ${CMAKE_SOURCE_DIR}/libs/stb)
+        PUBLIC ${CMAKE_SOURCE_DIR}/libs/stb
+        PUBLIC ${CMAKE_SOURCE_DIR}/libs/tinyobjloader)
 
 #--------------------------------------------------------------------
 # Find static libraries that are required

@@ -8,9 +8,16 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include "src/DataStructures.h"
 
-namespace Yarezo::Utilities {
-    std::vector<std::string> readFile(const std::string& filename);
+namespace Yarezo {
+
+    namespace Utilities {
+
+        std::vector<std::string> readFile(const std::string& filename);
+        void loadModel(const std::string& modelFilePath, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices);
+    }
 }
+
 
 #endif //YAREZO_IOHELPER_H

@@ -64,24 +64,6 @@ namespace Yarezo {
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
-        // Demo Rectangle
-        const std::vector<Graphics::Vertex> vertices = {
-            {{-0.5f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f},        {1.0f, 0.0f}},
-            {{0.5f, -0.5f, 0.0f},  {0.556f, 0.164f, 0.321f},  {0.0f, 0.0f}},
-            {{0.5f, 0.5f, 0.0f},   {0.0f, 0.203f, 0.584f},    {0.0f, 1.0f}},
-            {{-0.5f, 0.5f, 0.0f},  {0.521f, 0.490f, 0.215f},  {1.0f, 1.0f}},
-
-            {{-0.0f, -0.0f, -0.5f}, {1.0f, 1.0f, 1.0f},        {1.0f, 0.0f}},
-            {{1.0f, -0.0f, -0.5f},  {0.556f, 0.164f, 0.321f},  {0.0f, 0.0f}},
-            {{1.0f, 1.0f, -0.5f},   {0.0f, 0.203f, 0.584f},    {0.0f, 1.0f}},
-            {{-0.0f, 1.0f, -0.5f},  {0.521f, 0.490f, 0.215f},  {1.0f, 1.0f}}
-        };
-
-        const std::vector<uint16_t> indices = {
-            0, 1, 2, 2, 3, 0,
-            4, 5, 6, 6, 7, 4
-        };
-
         int m_RotationDir = 1;
         double m_DeltaTime = 0;
         glm::mat4 m_ModelPos;
@@ -94,11 +76,15 @@ namespace Yarezo {
         Graphics::YzVkPipeline                      m_YzPipeline;
         std::vector<Graphics::YzVkFramebuffer>      m_YzFramebuffers;
         Graphics::YzVkDescriptorSet                 m_YzDescriptorSets;
-        Graphics::YzVkBuffer m_VertexBuffer;
-        Graphics::YzVkBuffer m_IndexBuffer;
         std::vector<Graphics::YzVkBuffer>           m_UniformBuffers;
         std::vector<Graphics::YzVkCommandBuffer>    m_YzCommandBuffers;
 
+
+        std::vector<Vertex> m_Vertices = {};
+        std::vector<uint32_t> m_Indices = {};
+
+        Graphics::YzVkBuffer m_VertexBuffer;
+        Graphics::YzVkBuffer m_IndexBuffer;
 
         VkImage                                     m_TextureImage;
         VkDeviceMemory                              m_TextureImageMemory;
