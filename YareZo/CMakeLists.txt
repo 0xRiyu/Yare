@@ -30,6 +30,7 @@ set (YAREZOENGINE_SOURCES
         Platform/Vulkan/Vk_Pipeline.cpp
         Platform/Vulkan/Vk_Swapchain.cpp
         Platform/Vulkan/Vk_Utilities.cpp
+        Platform/Vulkan/Vk_Semaphore.cpp
         Platform/Vulkan/Vk_Renderpass.cpp
         Platform/Vulkan/Vk_Framebuffer.cpp
         Platform/Vulkan/Vk_CommandPool.cpp
@@ -78,6 +79,7 @@ set (YAREZOENGINE_HEADERS
         Platform/Vulkan/Vk_Instance.h
         Platform/Vulkan/Vk_Swapchain.h
         Platform/Vulkan/Vk_Utilities.h
+        Platform/Vulkan/Vk_Semaphore.h
         Platform/Vulkan/Vk_Renderpass.h
         Platform/Vulkan/Vk_Framebuffer.h
         Platform/Vulkan/Vk_CommandPool.h

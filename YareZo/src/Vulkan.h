@@ -23,6 +23,7 @@
 #include "Platform/Vulkan/Vk_Buffer.h"
 #include "Platform/Vulkan/Vk_DescriptorSet.h"
 #include "Platform/Vulkan/Vk_CommandBuffer.h"
+#include "Platform/Vulkan/Vk_Semaphore.h"
 
 namespace Yarezo {
 
@@ -55,7 +56,6 @@ namespace Yarezo {
         void createUniformBuffers();
         void createDescriptorSets();
         void createCommandBuffers();
-        void createSyncObjects();
         void recreateSwapChain();
         void updateUniformBuffer(uint32_t currentImage);
 
@@ -94,8 +94,8 @@ namespace Yarezo {
         VkDeviceMemory                              m_DepthImageMemory;
         VkImageView                                 m_DepthImageView;
 
-        std::vector<VkSemaphore>                    m_ImageAvailableSemaphore;
-        std::vector<VkSemaphore>                    m_RenderFinishedSemaphore;
+        std::vector<Graphics::YzVkSemaphore>        m_ImageAvailableSemaphores;
+        std::vector<Graphics::YzVkSemaphore>        m_RenderFinishedSemaphores;
         size_t m_CurrentFrame = 0;
 
     };

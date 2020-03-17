@@ -25,12 +25,13 @@
 namespace Yarezo {
 
 
-    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan() {
-        glm::mat4 model = glm::mat4(1.0f);
+    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan()
+        :m_ImageAvailableSemaphores(MAX_FRAMES_IN_FLIGHT),
+         m_RenderFinishedSemaphores(MAX_FRAMES_IN_FLIGHT) {
 
+        glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
         m_ModelPos = model;
 
         initVulkan();
@@ -41,7 +42,6 @@ namespace Yarezo {
         
         vkDestroySampler(Graphics::YzVkDevice::instance()->getDevice(), m_TextureSampler, nullptr);
         vkDestroyImageView(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImageView, nullptr);
-
         vkDestroyImage(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, nullptr);
         vkFreeMemory(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImageMemory, nullptr);
 
@@ -51,9 +51,10 @@ namespace Yarezo {
         m_IndexBuffer.cleanUp();
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(Graphics::YzVkDevice::instance()->getDevice(), m_RenderFinishedSemaphore[i], nullptr);
-            vkDestroySemaphore(Graphics::YzVkDevice::instance()->getDevice(), m_ImageAvailableSemaphore[i], nullptr);
+            m_ImageAvailableSemaphores[i].cleanUp();
+            m_RenderFinishedSemaphores[i].cleanUp();
         }
+
         // Cleans up command pool
         m_YzInstance.cleanUp();
 
@@ -128,13 +129,15 @@ namespace Yarezo {
         createDescriptorSets();
         // Create a command buffer which will record commands that are submitted for execution on the GPU
         createCommandBuffers();
-        // Create some semophores/fences to manage workloads in flight to the gpu
-        createSyncObjects();
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            m_ImageAvailableSemaphores[i].init();
+            m_RenderFinishedSemaphores[i].init();
+        }
     }
 
     void GraphicsDevice_Vulkan::drawFrame(double deltaTime) {
         m_DeltaTime = deltaTime;
-        VkResult result = m_YzSwapchain.acquireNextImage(m_ImageAvailableSemaphore[m_CurrentFrame]);
+        VkResult result = m_YzSwapchain.acquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore());
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             recreateSwapChain();
@@ -146,9 +149,12 @@ namespace Yarezo {
 
         updateUniformBuffer(m_YzSwapchain.getCurrentImage());
 
-        m_YzCommandBuffers[m_YzSwapchain.getCurrentImage()].submitGfxQueue(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, m_ImageAvailableSemaphore[m_CurrentFrame], m_RenderFinishedSemaphore[m_CurrentFrame], true);
+        m_YzCommandBuffers[m_YzSwapchain.getCurrentImage()].submitGfxQueue(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                                                                           m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore(),
+                                                                           m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore(),
+                                                                           true);
 
-        result = m_YzSwapchain.present(m_RenderFinishedSemaphore[m_CurrentFrame]);
+        result = m_YzSwapchain.present(m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore());
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             recreateSwapChain();
@@ -395,21 +401,6 @@ namespace Yarezo {
             m_YzRenderPass.endRenderPass(&m_YzCommandBuffers[i]);
 
             m_YzCommandBuffers[i].endRecording();
-        }
-    }
-
-    void GraphicsDevice_Vulkan::createSyncObjects() {
-        m_ImageAvailableSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
-        m_RenderFinishedSemaphore.resize(MAX_FRAMES_IN_FLIGHT);
-
-        VkSemaphoreCreateInfo semaphoreInfo = {};
-        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            if (vkCreateSemaphore(Graphics::YzVkDevice::instance()->getDevice(), &semaphoreInfo, nullptr, &m_ImageAvailableSemaphore[i]) != VK_SUCCESS ||
-                vkCreateSemaphore(Graphics::YzVkDevice::instance()->getDevice(), &semaphoreInfo, nullptr, &m_RenderFinishedSemaphore[i]) != VK_SUCCESS) {
-                YZ_CRITICAL("Vulkan failed to create sync objects. (Semaphores)");
-            }
         }
     }
 
