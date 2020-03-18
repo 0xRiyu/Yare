@@ -23,6 +23,7 @@ set (YAREZOENGINE_SOURCES
         ${CMAKE_SOURCE_DIR}/libs/imgui/imgui_widgets.cpp
 
         # Vulkan
+        Platform/Vulkan/Vk_Image.cpp
         Platform/Vulkan/Vk_Buffer.cpp
         Platform/Vulkan/Vk_Shader.cpp
         Platform/Vulkan/Vk_Devices.cpp
@@ -72,6 +73,7 @@ set (YAREZOENGINE_HEADERS
 
         # Vulkan
         Platform/Vulkan/Vk.h
+        Platform/Vulkan/Vk_Image.h
         Platform/Vulkan/Vk_Buffer.h
         Platform/Vulkan/Vk_Shader.h
         Platform/Vulkan/Vk_Devices.h

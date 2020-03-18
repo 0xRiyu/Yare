@@ -39,11 +39,9 @@ namespace Yarezo {
 
     GraphicsDevice_Vulkan::~GraphicsDevice_Vulkan() {
         cleanupSwapChain();
-        
-        vkDestroySampler(Graphics::YzVkDevice::instance()->getDevice(), m_TextureSampler, nullptr);
-        vkDestroyImageView(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImageView, nullptr);
-        vkDestroyImage(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImage, nullptr);
-        vkFreeMemory(Graphics::YzVkDevice::instance()->getDevice(), m_TextureImageMemory, nullptr);
+
+        m_TextureImage->cleanUp();
+        delete m_TextureImage;
 
         m_YzPipeline.cleanupDescSetLayout();
 
@@ -62,10 +60,10 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::cleanupSwapChain() {
-        vkDestroyImageView(Graphics::YzVkDevice::instance()->getDevice(), m_DepthImageView, nullptr);
-        vkDestroyImage(Graphics::YzVkDevice::instance()->getDevice(), m_DepthImage, nullptr);
-        vkFreeMemory(Graphics::YzVkDevice::instance()->getDevice(), m_DepthImageMemory, nullptr);
         
+        m_DepthBuffer->cleanUp();
+        delete m_DepthBuffer;
+
         for (int i = m_YzFramebuffers.size() - 1; i >= 0; i--) {
             m_YzFramebuffers[i].cleanUp();
             m_YzFramebuffers.pop_back();
@@ -114,9 +112,7 @@ namespace Yarezo {
         // Create a command pool which will manage the memory to store command buffers.
         m_YzInstance.createCommandPool();
         // Texture stuff
-        createTextureImage();
-        createTextureImageView();
-        createTextureSampler();
+        m_TextureImage = Graphics::YzVkImage::createTexture2D( "..\\..\\..\\..\\YareZo\\Resources\\Textures\\chalet.jpg");
         // Create the Vertex/Indices/Uniform buffers;
         // A vertex data will store arbitrary triangle data to be read by the GPU
         // The indices data will connect the vertices data suc that we can re-use some vertices
@@ -179,153 +175,18 @@ namespace Yarezo {
         framebufferInfo.layers = 1;
 
         for (uint32_t i = 0; i < m_YzSwapchain.getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_YzSwapchain.getImageView(i), m_DepthImageView };
+            framebufferInfo.attachments = { m_YzSwapchain.getImageView(i), m_DepthBuffer->m_ImageView };
              m_YzFramebuffers.emplace_back(framebufferInfo);
         }
     }
 
-    void GraphicsDevice_Vulkan::createTextureImage() {
-        int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load("..\\..\\..\\..\\YareZo\\Resources\\Textures\\chalet.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-        VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-        if (!pixels) {
-            YZ_CRITICAL("failed to load texture image");
-        }
-
-        Graphics::YzVkBuffer stagingBuffer{VK_BUFFER_USAGE_TRANSFER_SRC_BIT, imageSize, pixels};
-
-        stbi_image_free(pixels);
-
-        createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_TextureImage, m_TextureImageMemory);
-
-        transitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        Graphics::VkUtil::copyBufferToImage(stagingBuffer.getBuffer(), m_TextureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-        transitionImageLayout(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-    }
-
-    void GraphicsDevice_Vulkan::createTextureImageView() {
-        m_TextureImageView = Graphics::VkUtil::createImageView(m_TextureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
-    }
-
-    void GraphicsDevice_Vulkan::createTextureSampler() {
-        VkSamplerCreateInfo samplerInfo = {};
-        samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        samplerInfo.magFilter = VK_FILTER_LINEAR;
-        samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.anisotropyEnable = VK_TRUE;
-        samplerInfo.maxAnisotropy = 16;
-        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-        samplerInfo.unnormalizedCoordinates = VK_FALSE;
-        samplerInfo.compareEnable = VK_FALSE;
-        samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
-        samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerInfo.mipLodBias = 0.0f;
-        samplerInfo.minLod = 0.0f;
-        samplerInfo.maxLod = 0.0f;
-
-        if (vkCreateSampler(Graphics::YzVkDevice::instance()->getDevice(), &samplerInfo, nullptr, &m_TextureSampler) != VK_SUCCESS) {
-            YZ_CRITICAL("Vulkan failed to create a texture sampler.");
-        }
-
-    }
-
     void GraphicsDevice_Vulkan::createDepthResources() {
+
         VkFormat depthFormat = Graphics::VkUtil::findDepthFormat();
-        createImage(m_YzSwapchain.getExtent().width, m_YzSwapchain.getExtent().height,
-                    depthFormat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_DepthImage, m_DepthImageMemory);
-        m_DepthImageView = Graphics::VkUtil::createImageView(m_DepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
+        m_DepthBuffer = Graphics::YzVkImage::createDepthStencilBuffer(depthFormat, m_YzSwapchain.getExtent().width, m_YzSwapchain.getExtent().height);
     }
 
-    void GraphicsDevice_Vulkan::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory) {
-        VkImageCreateInfo imageInfo = {};
-        imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        imageInfo.imageType = VK_IMAGE_TYPE_2D;
-        imageInfo.extent.width = width;
-        imageInfo.extent.height = height;
-        imageInfo.extent.depth = 1;
-        imageInfo.mipLevels = 1;
-        imageInfo.arrayLayers = 1;
-        imageInfo.format = format;
-        imageInfo.tiling = tiling;
-        imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        imageInfo.usage = usage;
-        imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-        imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        if (vkCreateImage(Graphics::YzVkDevice::instance()->getDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS) {
-            YZ_CRITICAL("Failed to create an image.");
-        }
-
-        VkMemoryRequirements memRequirements;
-        vkGetImageMemoryRequirements(Graphics::YzVkDevice::instance()->getDevice(), image, &memRequirements);
-
-        VkMemoryAllocateInfo allocInfo = {};
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = Graphics::VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-        if (vkAllocateMemory(Graphics::YzVkDevice::instance()->getDevice(), &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
-            YZ_CRITICAL("failed to allocate image memory!");
-        }
-
-        if (vkBindImageMemory(Graphics::YzVkDevice::instance()->getDevice(), image, imageMemory, 0) != VK_SUCCESS) {
-            YZ_ERROR("Failed to bind image memory");
-        }
-    }
-
-    void GraphicsDevice_Vulkan::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
-        VkCommandBuffer commandBuffer = Graphics::VkUtil::beginSingleTimeCommands();
-
-        VkImageMemoryBarrier barrier = {};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.oldLayout = oldLayout;
-        barrier.newLayout = newLayout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        VkPipelineStageFlags sourceStage;
-        VkPipelineStageFlags destinationStage;
-
-        if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-
-            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-        else {
-            YZ_CRITICAL("unsupported layout transition!");
-        }
-
-        vkCmdPipelineBarrier(
-            commandBuffer,
-            sourceStage, destinationStage,
-            0,
-            0, nullptr,
-            0, nullptr,
-            1, &barrier
-        );
-
-        Graphics::VkUtil::endSingleTimeCommands(commandBuffer);
-    }
 
     void GraphicsDevice_Vulkan::createBuffers() {
         Utilities::loadModel("..\\..\\..\\..\\YareZo\\Resources\\Models\\chalet.obj", m_Vertices, m_Indices);
@@ -372,8 +233,8 @@ namespace Yarezo {
             bufferInfo.offset = 0;
             bufferInfo.size = sizeof(UniformBufferObject);
             bufferInfo.binding = i;
-            bufferInfo.imageSampler = m_TextureSampler;
-            bufferInfo.imageView = m_TextureImageView;
+            bufferInfo.imageSampler = m_TextureImage->m_YzSampler.getSampler();
+            bufferInfo.imageView = m_TextureImage->m_ImageView;
 
             m_YzDescriptorSets.update(bufferInfo);
         }

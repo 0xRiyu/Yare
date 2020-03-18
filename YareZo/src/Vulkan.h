@@ -24,6 +24,7 @@
 #include "Platform/Vulkan/Vk_DescriptorSet.h"
 #include "Platform/Vulkan/Vk_CommandBuffer.h"
 #include "Platform/Vulkan/Vk_Semaphore.h"
+#include "Platform/Vulkan/Vk_Image.h"
 
 namespace Yarezo {
 
@@ -48,9 +49,6 @@ namespace Yarezo {
         void cleanupSwapChain();
         void createGraphicsPipeline();
         void createFramebuffers();
-        void createTextureImage();
-        void createTextureImageView();
-        void createTextureSampler();
         void createDepthResources();
         void createBuffers();
         void createUniformBuffers();
@@ -59,8 +57,6 @@ namespace Yarezo {
         void recreateSwapChain();
         void updateUniformBuffer(uint32_t currentImage);
 
-        void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
         const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -86,13 +82,8 @@ namespace Yarezo {
         Graphics::YzVkBuffer m_VertexBuffer;
         Graphics::YzVkBuffer m_IndexBuffer;
 
-        VkImage                                     m_TextureImage;
-        VkDeviceMemory                              m_TextureImageMemory;
-        VkImageView                                 m_TextureImageView;
-        VkSampler                                   m_TextureSampler;
-        VkImage                                     m_DepthImage;
-        VkDeviceMemory                              m_DepthImageMemory;
-        VkImageView                                 m_DepthImageView;
+        Graphics::YzVkImage* m_TextureImage;
+        Graphics::YzVkImage* m_DepthBuffer;
 
         std::vector<Graphics::YzVkSemaphore>        m_ImageAvailableSemaphores;
         std::vector<Graphics::YzVkSemaphore>        m_RenderFinishedSemaphores;

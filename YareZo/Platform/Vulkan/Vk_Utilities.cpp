@@ -37,6 +37,7 @@ namespace Yarezo {
                 return buffer;
 
             }
+
 			VkCommandBuffer beginSingleTimeCommands() {
                 VkCommandBufferAllocateInfo allocInfo = {};
                 allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -136,9 +137,11 @@ namespace Yarezo {
                     VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
                 );
             }
+
             bool hasStencilComponent(VkFormat format) {
                 return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
             }
+
             void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout) {
                 VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
