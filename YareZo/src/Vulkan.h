@@ -25,6 +25,7 @@
 #include "Platform/Vulkan/Vk_CommandBuffer.h"
 #include "Platform/Vulkan/Vk_Semaphore.h"
 #include "Platform/Vulkan/Vk_Image.h"
+#include "Platform/Vulkan/Vk_Renderer.h"
 
 namespace Yarezo {
 
@@ -58,7 +59,6 @@ namespace Yarezo {
         void updateUniformBuffer(uint32_t currentImage);
 
 
-        const int MAX_FRAMES_IN_FLIGHT = 2;
 
         int m_RotationDir = 1;
         double m_DeltaTime = 0;
@@ -67,13 +67,13 @@ namespace Yarezo {
         // Class members created by GraphicsDevice_Vulkan class
         Graphics::YzVkInstance                      m_YzInstance;
         Graphics::YzVkDevice*                       m_YzDevice;
-        Graphics::YzVkSwapchain                     m_YzSwapchain;
         Graphics::YzVkRenderPass                    m_YzRenderPass;
         Graphics::YzVkPipeline                      m_YzPipeline;
+        std::unique_ptr<Graphics::YzVkRenderer>     m_YzRenderer;
         std::vector<Graphics::YzVkFramebuffer>      m_YzFramebuffers;
-        Graphics::YzVkDescriptorSet                 m_YzDescriptorSets;
         std::vector<Graphics::YzVkBuffer>           m_UniformBuffers;
         std::vector<Graphics::YzVkCommandBuffer>    m_YzCommandBuffers;
+        Graphics::YzVkDescriptorSet m_YzDescriptorSets;
 
 
         std::vector<Vertex> m_Vertices = {};
@@ -85,9 +85,6 @@ namespace Yarezo {
         Graphics::YzVkImage* m_TextureImage;
         Graphics::YzVkImage* m_DepthBuffer;
 
-        std::vector<Graphics::YzVkSemaphore>        m_ImageAvailableSemaphores;
-        std::vector<Graphics::YzVkSemaphore>        m_RenderFinishedSemaphores;
-        size_t m_CurrentFrame = 0;
 
     };
 }

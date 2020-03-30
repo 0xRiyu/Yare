@@ -11,7 +11,7 @@ namespace Yarezo {
 
 
         YzVkDevice::YzVkDevice() {
-            m_YzVkInstance = YzVkInstance::getYzVkInstancePtr();
+            m_YzVkInstance = YzVkInstance::getYzVkInstance();
             init();
         }
 

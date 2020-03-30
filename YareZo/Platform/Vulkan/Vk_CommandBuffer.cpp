@@ -17,7 +17,7 @@ namespace Yarezo {
 		void YzVkCommandBuffer::init() {
 			VkCommandBufferAllocateInfo allocInfo = {};
 			allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-			allocInfo.commandPool = YzVkInstance::getYzVkInstancePtr()->getYzCommandPool().getCommandPool();
+			allocInfo.commandPool = YzVkInstance::getYzVkInstance()->getYzCommandPool().getCommandPool();
 			allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 			allocInfo.commandBufferCount = 1;
 
@@ -40,7 +40,7 @@ namespace Yarezo {
 				vkDestroyFence(YzVkDevice::instance()->getDevice(), m_Fence, nullptr);
 			}
 			if (m_CommandBuffer) {
-				vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkInstance::getYzVkInstancePtr()->getYzCommandPool().getCommandPool(), 1, &m_CommandBuffer);
+				vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkInstance::getYzVkInstance()->getYzCommandPool().getCommandPool(), 1, &m_CommandBuffer);
 			}
 		}
 

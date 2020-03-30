@@ -10,6 +10,7 @@ namespace Yarezo {
         YzVkSwapchain::YzVkSwapchain() {
         }
         YzVkSwapchain::~YzVkSwapchain() {
+            cleanUp();
         }
 
         void YzVkSwapchain::init() {

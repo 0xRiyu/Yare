@@ -17,7 +17,7 @@ namespace Yarezo {
             void createCommandPool();
             const VkInstance& getVKInstance() const { return m_Instance; }
             const YzVkCommandPool& getYzCommandPool() const { return m_YzCommandPool; }
-            static inline YzVkInstance* getYzVkInstancePtr(){ return s_YzVkInstance; }
+            static inline YzVkInstance* getYzVkInstance(){ return s_YzVkInstance; }
 
         private:
             void createInstance();

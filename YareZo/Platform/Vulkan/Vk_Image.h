@@ -28,8 +28,7 @@ namespace Yarezo {
 			YzVkImage();
 			~YzVkImage();
 
-			void init(uint32_t width, uint32_t height, VkBuffer buffer);
-
+			void createTexture(uint32_t width, uint32_t height, VkBuffer buffer);
 			void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
 			void createImageView(VkFormat format, VkImageAspectFlags flags);
 			void createSampler();

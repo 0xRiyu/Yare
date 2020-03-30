@@ -25,9 +25,7 @@
 namespace Yarezo {
 
 
-    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan()
-        :m_ImageAvailableSemaphores(MAX_FRAMES_IN_FLIGHT),
-         m_RenderFinishedSemaphores(MAX_FRAMES_IN_FLIGHT) {
+    GraphicsDevice_Vulkan::GraphicsDevice_Vulkan() {
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -48,13 +46,10 @@ namespace Yarezo {
         m_VertexBuffer.cleanUp();
         m_IndexBuffer.cleanUp();
 
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            m_ImageAvailableSemaphores[i].cleanUp();
-            m_RenderFinishedSemaphores[i].cleanUp();
-        }
-
         // Cleans up command pool
         m_YzInstance.cleanUp();
+
+        m_YzRenderer.reset();
 
         Graphics::YzVkDevice::release();
     }
@@ -75,9 +70,8 @@ namespace Yarezo {
 
         m_YzPipeline.cleanUp();
         m_YzRenderPass.cleanUp();
-        m_YzSwapchain.cleanUp();
 
-        for (size_t i = 0; i < m_YzSwapchain.getImagesSize(); i++) {
+        for (size_t i = 0; i < m_YzRenderer->getYzSwapchain()->getImagesSize(); i++) {
             m_UniformBuffers[i].cleanUp();
         }
 
@@ -87,7 +81,7 @@ namespace Yarezo {
 
         Graphics::YzVkShader shader("..\\..\\..\\..\\YareZo\\Resources\\Shaders", "texture.shader");
 
-        Graphics::PipelineInfo pipelineInfo = { &shader,  &m_YzRenderPass, &m_YzSwapchain };
+        Graphics::PipelineInfo pipelineInfo = { &shader,  &m_YzRenderPass, m_YzRenderer->getYzSwapchain().get() };
         m_YzPipeline.init(pipelineInfo);
     }
 
@@ -97,12 +91,11 @@ namespace Yarezo {
         m_YzInstance.init();
         // Create our static device singleton
         m_YzDevice = Graphics::YzVkDevice::instance();
-        // Create a swapchain, a swapchain is responsible for maintaining the images
-        // that will be presented to the user. 
-        m_YzSwapchain.init();
+        m_YzRenderer = std::make_unique<Graphics::YzVkRenderer>();
+        m_YzRenderer->init();
         // Create the Renderpass, the render pass is responsible for the draw calls.
         // It creates a description/map of a graphics job.
-        Graphics::RenderPassInfo renderPassInfo{ m_YzSwapchain.getImageFormat() };
+        Graphics::RenderPassInfo renderPassInfo{ m_YzRenderer->getYzSwapchain()->getImageFormat() };
         m_YzRenderPass.init(renderPassInfo);
         // Graphics Pipeline
         createGraphicsPipeline();
@@ -125,41 +118,23 @@ namespace Yarezo {
         createDescriptorSets();
         // Create a command buffer which will record commands that are submitted for execution on the GPU
         createCommandBuffers();
-        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            m_ImageAvailableSemaphores[i].init();
-            m_RenderFinishedSemaphores[i].init();
-        }
     }
 
     void GraphicsDevice_Vulkan::drawFrame(double deltaTime) {
         m_DeltaTime = deltaTime;
-        VkResult result = m_YzSwapchain.acquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore());
 
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-            recreateSwapChain();
-            return;
-        }
-        else if (result != VK_SUCCESS) {
-            YZ_ERROR("Vulkan failed to aquire a swapchain image.");
-        }
-
-        updateUniformBuffer(m_YzSwapchain.getCurrentImage());
-
-        m_YzCommandBuffers[m_YzSwapchain.getCurrentImage()].submitGfxQueue(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                                                           m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore(),
-                                                                           m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore(),
-                                                                           true);
-
-        result = m_YzSwapchain.present(m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore());
-
-        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+        if (!m_YzRenderer->begin()) {
             recreateSwapChain();
         }
-        else if (result != VK_SUCCESS) {
-            YZ_ERROR("Vulkan failed to present a swapchain image.");
+
+        uint32_t currentimage = m_YzRenderer->getYzSwapchain()->getCurrentImage();
+
+        updateUniformBuffer(currentimage);
+
+        if (!m_YzRenderer->present(&m_YzCommandBuffers[currentimage])) {
+            recreateSwapChain();
         }
 
-        m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
     void GraphicsDevice_Vulkan::waitIdle() {
@@ -170,12 +145,12 @@ namespace Yarezo {
         Graphics::FramebufferInfo framebufferInfo;
         framebufferInfo.type = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         framebufferInfo.renderPass = &m_YzRenderPass;
-        framebufferInfo.width = m_YzSwapchain.getExtent().width;
-        framebufferInfo.height = m_YzSwapchain.getExtent().height;
+        framebufferInfo.width = m_YzRenderer->getYzSwapchain()->getExtent().width;
+        framebufferInfo.height = m_YzRenderer->getYzSwapchain()->getExtent().height;
         framebufferInfo.layers = 1;
 
-        for (uint32_t i = 0; i < m_YzSwapchain.getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_YzSwapchain.getImageView(i), m_DepthBuffer->m_ImageView };
+        for (uint32_t i = 0; i < m_YzRenderer->getYzSwapchain()->getImageViewSize(); i++) {
+            framebufferInfo.attachments = { m_YzRenderer->getYzSwapchain()->getImageView(i), m_DepthBuffer->m_ImageView };
              m_YzFramebuffers.emplace_back(framebufferInfo);
         }
     }
@@ -183,7 +158,7 @@ namespace Yarezo {
     void GraphicsDevice_Vulkan::createDepthResources() {
 
         VkFormat depthFormat = Graphics::VkUtil::findDepthFormat();
-        m_DepthBuffer = Graphics::YzVkImage::createDepthStencilBuffer(depthFormat, m_YzSwapchain.getExtent().width, m_YzSwapchain.getExtent().height);
+        m_DepthBuffer = Graphics::YzVkImage::createDepthStencilBuffer(depthFormat, m_YzRenderer->getYzSwapchain()->getExtent().width, m_YzRenderer->getYzSwapchain()->getExtent().height);
     }
 
 
@@ -208,7 +183,7 @@ namespace Yarezo {
         // Uniform Buffers
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
         VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        size_t swapchainImagesSize = m_YzSwapchain.getImagesSize();
+        size_t swapchainImagesSize = m_YzRenderer->getYzSwapchain()->getImagesSize();
         m_UniformBuffers.resize(swapchainImagesSize);
 
         for (size_t i = 0; i < swapchainImagesSize; i++) {
@@ -217,7 +192,7 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::createDescriptorSets() {
-        size_t swapchainImagesSize = m_YzSwapchain.getImagesSize();
+        size_t swapchainImagesSize = m_YzRenderer->getYzSwapchain()->getImagesSize();
 
         Graphics::DescriptorSetInfo descriptorSetInfo;
         descriptorSetInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImagesSize);
@@ -249,7 +224,7 @@ namespace Yarezo {
 
             m_YzCommandBuffers[i].beginRecording();
 
-            m_YzRenderPass.beginRenderPass(&m_YzCommandBuffers[i], &m_YzFramebuffers[i], &m_YzSwapchain);
+            m_YzRenderPass.beginRenderPass(&m_YzCommandBuffers[i], &m_YzFramebuffers[i], m_YzRenderer->getYzSwapchain().get());
 
             m_YzPipeline.setActive(m_YzCommandBuffers[i]);
 
@@ -266,26 +241,8 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::recreateSwapChain() {
-        int width = 0;
-        int height = 0;
-        GLFWwindow* window = static_cast<GLFWwindow*>(Application::getAppInstance()->getWindow()->getNativeWindow());
-
-        glfwGetFramebufferSize(window, &width, &height);
-
-        if (width == 0 || height == 0) {
-            YZ_INFO("Application was minimized.");
-            while (width == 0 || height == 0) {
-                glfwGetFramebufferSize(window, &width, &height);
-                glfwWaitEvents();
-            }
-            YZ_INFO("Application is no longer minimized.");
-        }
-        YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: " + std::to_string(width) + ", " + std::to_string(height));
-
-        m_YzDevice->waitIdle();
         cleanupSwapChain();
-        m_YzSwapchain.init();
-        Graphics::RenderPassInfo renderPassInfo{ m_YzSwapchain.getImageFormat() };
+        Graphics::RenderPassInfo renderPassInfo{ m_YzRenderer->getYzSwapchain()->getImageFormat() };
         m_YzRenderPass.init(renderPassInfo);
         createGraphicsPipeline();
         createDepthResources();
