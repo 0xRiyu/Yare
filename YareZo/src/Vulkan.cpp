@@ -79,7 +79,7 @@ namespace Yarezo {
 
     void GraphicsDevice_Vulkan::createGraphicsPipeline() {
 
-        Graphics::YzVkShader shader("..\\..\\..\\..\\YareZo\\Resources\\Shaders", "texture.shader");
+        Graphics::YzVkShader shader("..\\YareZo\\Resources\\Shaders", "texture.shader");
 
         Graphics::PipelineInfo pipelineInfo = { &shader,  &m_YzRenderPass, m_YzRenderer->getYzSwapchain().get() };
         m_YzPipeline.init(pipelineInfo);
@@ -105,7 +105,7 @@ namespace Yarezo {
         // Create a command pool which will manage the memory to store command buffers.
         m_YzInstance.createCommandPool();
         // Texture stuff
-        m_TextureImage = Graphics::YzVkImage::createTexture2D( "..\\..\\..\\..\\YareZo\\Resources\\Textures\\chalet.jpg");
+        m_TextureImage = Graphics::YzVkImage::createTexture2D( "..\\YareZo\\Resources\\Textures\\chalet.jpg");
         // Create the Vertex/Indices/Uniform buffers;
         // A vertex data will store arbitrary triangle data to be read by the GPU
         // The indices data will connect the vertices data suc that we can re-use some vertices
@@ -164,7 +164,7 @@ namespace Yarezo {
 
 
     void GraphicsDevice_Vulkan::createBuffers() {
-        Utilities::loadModel("..\\..\\..\\..\\YareZo\\Resources\\Models\\chalet.obj", m_Vertices, m_Indices);
+        Utilities::loadModel("..\\YareZo\\Resources\\Models\\chalet.obj", m_Vertices, m_Indices);
 
         // Vertex Buffers
         VkDeviceSize bufferSize = sizeof(Vertex) * m_Vertices.size();

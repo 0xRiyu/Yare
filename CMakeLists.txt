@@ -12,3 +12,5 @@ add_compile_definitions(YZ_PLATFORM_WINDOWS
 
 add_subdirectory(YareZo)
 add_subdirectory(Sandbox)
+
+file(COPY Yarezo/Resources DESTINATION YareZo)

@@ -50,6 +50,7 @@ namespace Yarezo {
         GlfwWindow::~GlfwWindow() {
             glfwDestroyWindow(m_Window);
             glfwTerminate();
+
         }
 
         void GlfwWindow::init() {
