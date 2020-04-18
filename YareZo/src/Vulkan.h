@@ -40,7 +40,7 @@ namespace Yarezo {
     public:
         GraphicsDevice_Vulkan();
 
-        ~GraphicsDevice_Vulkan();
+        virtual ~GraphicsDevice_Vulkan();
 
         void initVulkan();
         void drawFrame(double deltaTime);

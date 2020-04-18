@@ -48,16 +48,17 @@ set (YAREZOENGINE_HEADERS
         YareZo.h
 
         # Source
+        src/yzh.h
         src/Core.h
-        src/EntryPoint.h
-        src/Application.h
         src/Window.h
         src/Vulkan.h
-        src/Handlers/YzInputHandler.h
-        src/Handlers/YzKeyHandler.h
-        src/Handlers/YzMouseHandler.h
         src/YzCamera.h
+        src/EntryPoint.h
+        src/Application.h
         src/DataStructures.h
+        src/Handlers/YzKeyHandler.h
+        src/Handlers/YzInputHandler.h
+        src/Handlers/YzMouseHandler.h
 
         # Utilities
         Utilities/YzLogger.h

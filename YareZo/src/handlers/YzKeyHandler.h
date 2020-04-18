@@ -3,9 +3,9 @@
 
 #include "src/Handlers/YzInputHandler.h"
 #include "src/YzCamera.h"
+#include "src/yzh.h"
 
 #include <memory>
-#include <GLFW/glfw3.h>
 
 #define MAX_BUTTONS GLFW_MOUSE_BUTTON_LAST
 #define MAX_KEYS GLFW_KEY_LAST

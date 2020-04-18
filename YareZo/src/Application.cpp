@@ -51,7 +51,7 @@ namespace Yarezo {
             frameCount++;
             double deltaFrameTime = currentTime - previousFrameTime;
             double deltaFPSTime = currentTime - previousFPSTime;
-            m_Window->getCamera()->setCameraSpeed(deltaFrameTime * 5);
+            m_Window->getCamera()->setCameraSpeed((float)deltaFrameTime * 5);
             // Output some fps info every 5s to determine if we nuke performace
             if (deltaFPSTime >= 1.0) {
                 if (logFPS) YZ_INFO("FPS: " + std::to_string(frameCount));

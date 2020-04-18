@@ -26,7 +26,7 @@ namespace Yarezo {
 		}
 
 		void YzVkShader::unloadModules() {
-			for (int i = 0; i < m_StageCount; i++) {
+			for (uint8_t i = 0; i < m_StageCount; i++) {
 				vkDestroyShaderModule(YzVkDevice::instance()->getDevice(), m_ShaderStages[i].module, nullptr);
 			}
 		}
@@ -34,7 +34,7 @@ namespace Yarezo {
 		void YzVkShader::readShaderFiles() {
 			m_StageCount = 0;
 			uint32_t currentShaderStage = 0;
-			
+
 			std::map<ShaderType, std::string> shaderFiles;
 
 			for (auto iter = m_ShaderSource.begin(); iter < m_ShaderSource.end(); iter++) {

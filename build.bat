@@ -1,30 +1,62 @@
 @echo off
-REM This script will build Yarezo using the MSVC, it requires the vcvarsall.bat to be in the path
+REM This script will build Yarezo using the MSVC and ninja, it requires vcvarsall.bat/ninja to be in the path
 REM Example location to find vcvarsall - Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build
 
-if "%2"=="regen" (
+if not exist build (
+	mkdir build
+)
+REM default build in debug
+set RELEASE_MODE=FALSE
+set REGEN=FALSE
+set RUN=FALSE
+
+if "%1"=="regen" set REGEN=TRUE
+if "%2"=="regen" set REGEN=TRUE
+if "%3"=="regen" set REGEN=TRUE
+
+if "%1"=="release" set RELEASE_MODE=TRUE
+if "%2"=="release" set RELEASE_MODE=TRUE
+if "%3"=="release" set RELEASE_MODE=TRUE
+
+if "%1"=="run" set RUN=TRUE
+if "%2"=="run" set RUN=TRUE
+if "%3"=="run" set RUN=TRUE
+
+if %REGEN%==TRUE (
     rm -rf build
     mkdir build
 )
 
 cd build
+
 if not defined DevEnvDir (
   vcvarsall.bat x64
 )
 
-if "%1"=="debug" goto :Debug
-if "%1"=="release" goto :Release
-echo Please provide a build type, debug/release
-goto :End
+if %RELEASE_MODE%==FALSE goto :Debug
+if %RELEASE_MODE%==TRUE goto :Release
 
 :Release
+echo Building in Release Mode...
 cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
-ninja
-goto :End
+goto :Ninja
 
 :Debug
+echo Building in Debug Mode...
 cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+goto :Ninja
+
+:Ninja
 ninja
+if %RUN%==TRUE goto :Run
+goto :End
+
+:Run
+echo.
+echo Starting Sandbox.exe...
+cd Sandbox
+Sandbox.exe
+cd ..
 goto :End
 
 :End

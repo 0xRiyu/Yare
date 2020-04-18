@@ -46,7 +46,7 @@ namespace Yarezo {
         m_VertexBuffer.cleanUp();
         m_IndexBuffer.cleanUp();
 
-        // Cleans up command pool
+        //Cleans up command pool
         m_YzInstance.cleanUp();
 
         m_YzRenderer.reset();
@@ -55,13 +55,13 @@ namespace Yarezo {
     }
 
     void GraphicsDevice_Vulkan::cleanupSwapChain() {
-        
-        m_DepthBuffer->cleanUp();
-        delete m_DepthBuffer;
 
-        for (int i = m_YzFramebuffers.size() - 1; i >= 0; i--) {
-            m_YzFramebuffers[i].cleanUp();
-            m_YzFramebuffers.pop_back();
+         m_DepthBuffer->cleanUp();
+         delete m_DepthBuffer;
+
+         for (int i = (int)m_YzFramebuffers.size() - 1; i >= 0; i--) {
+             m_YzFramebuffers[i].cleanUp();
+             m_YzFramebuffers.pop_back();
         }
 
         for (Graphics::YzVkCommandBuffer& commandBuffer : m_YzCommandBuffers) {
@@ -202,7 +202,7 @@ namespace Yarezo {
         m_YzDescriptorSets.init(descriptorSetInfo);
 
         // For each of our swapchain images, load the associated buffer into the descriptor set
-        for (size_t i = 0; i < swapchainImagesSize; i++) {
+        for (int i = 0; i < swapchainImagesSize; i++) {
             Graphics::BufferInfo bufferInfo;
             bufferInfo.buffer = m_UniformBuffers[i].getBuffer();
             bufferInfo.offset = 0;
@@ -218,7 +218,7 @@ namespace Yarezo {
     void GraphicsDevice_Vulkan::createCommandBuffers() {
         m_YzCommandBuffers.resize(m_YzFramebuffers.size());
 
-        for (size_t i = 0; i < m_YzCommandBuffers.size(); i++) {
+        for (unsigned int i = 0; i < m_YzCommandBuffers.size(); i++) {
 
             m_YzCommandBuffers[i].init();
 
@@ -231,7 +231,7 @@ namespace Yarezo {
             m_VertexBuffer.bind(m_YzCommandBuffers[i]);
             m_IndexBuffer.bind(m_YzCommandBuffers[i]);
 
-            vkCmdBindDescriptorSets(m_YzCommandBuffers[i].getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0, 1, &m_YzDescriptorSets.getDescriptorSet(i), 0, nullptr);
+            vkCmdBindDescriptorSets(m_YzCommandBuffers[i].getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0u, 1u, &m_YzDescriptorSets.getDescriptorSet(i), 0u, nullptr);
             vkCmdDrawIndexed(m_YzCommandBuffers[i].getCommandBuffer(), static_cast<uint32_t>(m_Indices.size()), 1, 0, 0, 0);
 
             m_YzRenderPass.endRenderPass(&m_YzCommandBuffers[i]);

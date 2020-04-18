@@ -17,6 +17,7 @@ namespace Yarezo {
                     }
                 }
                 YZ_ERROR("Vulkan failed to find a suitable memory type.");
+                return 0;
 			}
 
 
