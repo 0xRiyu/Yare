@@ -30,7 +30,7 @@ if %REGEN%==TRUE (
 cd build
 
 if not defined DevEnvDir (
-  vcvarsall.bat x64
+    call vcvarsall.bat x64
 )
 
 if %RELEASE_MODE%==FALSE goto :Debug
