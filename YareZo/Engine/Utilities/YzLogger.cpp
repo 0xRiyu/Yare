@@ -20,20 +20,23 @@ namespace Yarezo {
 
     void YzLogger::init() {
         // Get the Date/Time stamp to generate a new logfile
-        tm current_time;
-        time_t ltime  = std::time(nullptr);
+        time_t timeinfo  = std::time(nullptr);
         char buff[50];
+        tm* ltime;
 
         // Get local time then appent the logname to the end
-        localtime_r(&ltime, &current_time);
-        std::strftime(buff, sizeof(buff), "%Y-%m-%d_%H-%M-%S", &current_time);
+// MSVC disable warning of non-secure localtime and strcat
+// localtime_s and strcat_s aren't available on unix gcc
+#pragma warning( disable : 4996 )
+        ltime = localtime(&timeinfo);
+        std::strftime(buff, sizeof(buff), "%Y-%m-%d_%H-%M-%S", ltime);
         strcat(buff, "-YareZo_Engine_Log.txt");
+#pragma warning ( default : 4996 )
         m_currentLogFileName = buff;
 
         std::vector<spdlog::sink_ptr> sinks;
         sinks.push_back(std::make_shared<spdlog::sinks::basic_file_sink_st>("Logs/" + m_currentLogFileName));
         sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_st>());
-
         m_EngineLogger = std::make_shared<spdlog::logger>("YareZo", begin(sinks), end(sinks));
     }
 

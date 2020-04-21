@@ -16,7 +16,7 @@ namespace Yarezo {
 
 		YzVkShader::YzVkShader(const std::string& filePath, const std::string& shaderName)
 		:m_ShaderStages(nullptr), m_ShaderName(shaderName), m_FilePath(filePath) {
-			m_ShaderSource = Utilities::readFile(filePath + "\\" + shaderName);
+			m_ShaderSource = Utilities::readFile(filePath + "/" + shaderName);
 			readShaderFiles();
 		}
 

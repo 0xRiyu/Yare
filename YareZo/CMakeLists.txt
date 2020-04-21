@@ -131,7 +131,8 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC Libs/imgui
     PUBLIC Libs/stb
     PUBLIC Libs/tinyobjloader
-    PUBLIC Libs/spdlog/include)
+    PUBLIC Libs/spdlog/include
+    PUBLIC Libs/glfw/include)
 
 #--------------------------------------------------------------------
 # Find static libraries that are required
@@ -144,31 +145,24 @@ find_package(Vulkan REQUIRED)
 #--------------------------------------------------------------------
 target_link_libraries(${PROJECT_NAME}
     PUBLIC Vulkan::Vulkan)
+
 if (WIN32)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 	      target_link_libraries(${PROJECT_NAME}
-		        PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/lib-vc2019/glfw3.lib
+		        PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/Windows/lib-vc2019/glfw3.lib
             PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/spdlog/msvc/x64-Release/lib/spdlog.lib)
 
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_libraries(${PROJECT_NAME}
-        PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/lib-mingw-w64/libglfw3.a
+        PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/Windows/lib-mingw-w64/libglfw3.a
 		    PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/spdlog/mingw/libspdlog.a)
     endif()
-
-    # I made a mistake and compiled two different versions of glfw for Windows/Unix (oops)
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC Libs/glfw/include)
-
 endif()
 
 if (UNIX)
     target_link_libraries(${PROJECT_NAME}
         PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/Unix/lib-gcc/libglfw3.a dl -lpthread -lm
         PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/spdlog/Unix/gcc/libspdlog.a)
-        
-    target_include_directories(${PROJECT_NAME}
-        PUBLIC Libs/glfw/Unix/include)
 endif()
 
 
