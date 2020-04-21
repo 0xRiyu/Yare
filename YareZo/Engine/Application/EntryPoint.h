@@ -7,13 +7,13 @@
 
 #ifdef YZ_PLATFORM_WINDOWS
 
-#include <windows.h>
+//#include <windows.h>
 
 extern Yarezo::Application* Yarezo::createApplication();
 
 int main() {
-    HWND consoleWindow = GetConsoleWindow();
-    SetWindowPos(consoleWindow, 0 , 950, 200, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+    //  HWND consoleWindow = GetConsoleWindow();
+    //SetWindowPos(consoleWindow, 0 , 950, 200, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 
     auto app = Yarezo::createApplication();
     app->run();

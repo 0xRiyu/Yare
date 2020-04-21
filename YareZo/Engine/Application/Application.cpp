@@ -5,7 +5,7 @@
 #include "Application/Application.h"
 #include "Utilities/YzLogger.h"
 #include "Graphics/Vulkan.h"
-#include "Core/glfw.h"
+#include "Core/Glfw.h"
 
 // Define the header once here before anywhere else
 #define STB_IMAGE_IMPLEMENTATION

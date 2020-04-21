@@ -2,7 +2,7 @@
 #define YAREZO_KEYHANDLER_H
 
 #include "Core/YzInputHandler.h"
-#include "Core/glfw.h"
+#include "Core/Glfw.h"
 #include "Core/YzCamera.h"
 
 #include <memory>

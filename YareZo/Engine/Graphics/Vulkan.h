@@ -18,7 +18,7 @@
 #include "Platform/Vulkan/Vk_Instance.h"
 #include "Platform/Vulkan/Vk_Devices.h"
 #include "Platform/Vulkan/Vk_Swapchain.h"
-#include "Platform/Vulkan/Vk_RenderPass.h"
+#include "Platform/Vulkan/Vk_Renderpass.h"
 #include "Platform/Vulkan/Vk_Pipeline.h"
 #include "Platform/Vulkan/Vk_Framebuffer.h"
 #include "Platform/Vulkan/Vk_CommandPool.h"

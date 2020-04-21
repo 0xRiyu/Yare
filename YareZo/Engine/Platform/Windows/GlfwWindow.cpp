@@ -6,7 +6,7 @@
 #include "Handlers/KeyHandler.h"
 #include "Handlers/MouseHandler.h"
 #include "Graphics/Camera/Camera.h"
-#include "Core/yzh.h"
+#include "Core/Yzh.h"
 
 #include <stb/stb_image.h>
 

@@ -1,8 +1,8 @@
 #include "Platform/Vulkan/Vk_Swapchain.h"
 #include "Platform/Vulkan/Vk_Devices.h"
 #include "Platform/Vulkan/Vk_Utilities.h"
-#include "Core/yzh.h"
-#include "Core/glfw.h"
+#include "Core/Yzh.h"
+#include "Core/Glfw.h"
 
 namespace Yarezo {
     namespace Graphics {

@@ -17,7 +17,7 @@
 #include "Platform/Vulkan/Vk.h"
 #include "Platform/Vulkan/Vk_Shader.h"
 #include "Platform/Vulkan/Vk_Utilities.h"
-#include "Core/yzh.h"
+#include "Core/Yzh.h"
 
 namespace Yarezo {
 

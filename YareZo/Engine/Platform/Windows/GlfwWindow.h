@@ -5,8 +5,7 @@
 #ifndef YAREZO_GLFWWINDOW_H
 #define YAREZO_GLFWWINDOW_H
 
-#include "Core/yzh.h"
-#include "Core/glfw.h"
+#include "Core/Glfw.h"
 #include "Core/YzWindow.h"
 
 namespace Yarezo {

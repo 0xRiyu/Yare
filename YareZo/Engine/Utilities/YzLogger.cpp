@@ -9,6 +9,8 @@
 
 #include <ctime>
 #include <iostream>
+#include <string>
+#include <ctime>
 
 namespace Yarezo {
 
@@ -18,14 +20,14 @@ namespace Yarezo {
 
     void YzLogger::init() {
         // Get the Date/Time stamp to generate a new logfile
-        time_t current_time = std::time(nullptr);
-        tm ltime;
+        tm current_time;
+        time_t ltime  = std::time(nullptr);
         char buff[50];
 
         // Get local time then appent the logname to the end
-        localtime_s(&ltime, &current_time);
-        std::strftime(buff, sizeof(buff), "%Y-%m-%d_%H-%M-%S", &ltime);
-        strcat_s(buff, sizeof(buff) / sizeof(buff[0]), "-YareZo_Engine_Log.txt");
+        localtime_r(&ltime, &current_time);
+        std::strftime(buff, sizeof(buff), "%Y-%m-%d_%H-%M-%S", &current_time);
+        strcat(buff, "-YareZo_Engine_Log.txt");
         m_currentLogFileName = buff;
 
         std::vector<spdlog::sink_ptr> sinks;

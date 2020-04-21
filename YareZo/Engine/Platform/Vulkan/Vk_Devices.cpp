@@ -1,7 +1,7 @@
 #include "Platform/Vulkan/Vk_Devices.h"
 #include "Application/Application.h"
-#include "Core/yzh.h"
-#include "Core/glfw.h"
+#include "Core/Yzh.h"
+#include "Core/Glfw.h"
 
 #include <set>
 

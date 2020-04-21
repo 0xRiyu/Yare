@@ -1,6 +1,6 @@
 #include "Platform/Vulkan/Vk_Pipeline.h"
 #include "Platform/Vulkan/Vk_Devices.h"
-#include "Core/yzh.h"
+#include "Core/Yzh.h"
 
 namespace Yarezo {
     namespace Graphics {

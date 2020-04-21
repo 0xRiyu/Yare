@@ -2,7 +2,7 @@
 // Created by Drew on 11/27/2019.
 //
 #include "Utilities/IOHelper.h"
-#include "Core/yzh.h"
+#include "Core/Yzh.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
