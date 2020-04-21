@@ -4,7 +4,7 @@
 
 #include "Core/YzCamera.h"
 
-namespace Yarezo {
+namespace Yarezo::Graphics {
 
     class Camera : public YzCamera {
 

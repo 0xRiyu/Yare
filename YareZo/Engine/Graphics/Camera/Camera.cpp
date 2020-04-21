@@ -4,7 +4,7 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace Yarezo {
+namespace Yarezo::Graphics {
 
     Camera::Camera(const float screenWidth, const float screenHeight) {
         m_Aspect = screenWidth / screenHeight;

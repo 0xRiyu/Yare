@@ -30,7 +30,7 @@ if %REGEN%==TRUE (
 cd build
 
 if not defined DevEnvDir (
-    call vcvarsall.bat x64
+   call vcvarsall.bat x64
 )
 
 if %RELEASE_MODE%==FALSE goto :Debug
@@ -48,16 +48,15 @@ goto :Ninja
 
 :Ninja
 ninja
-if %RUN%==TRUE goto :Run
-goto :End
-
-:Run
-echo.
-echo Starting Sandbox.exe...
-cd Sandbox
-Sandbox.exe
-cd ..
 goto :End
 
 :End
 cd ..
+if %RUN%==TRUE goto :Run
+
+:Run
+echo.
+echo Starting Sandbox.exe...
+cd build\Sandbox
+Sandbox.exe
+cd ..\..

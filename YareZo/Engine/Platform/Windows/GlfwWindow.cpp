@@ -43,7 +43,7 @@ namespace Yarezo {
 
         GlfwWindow::GlfwWindow(WindowProperties& properties) {
             m_Properties = properties;
-            m_Camera = std::make_shared<Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
+            m_Camera = std::make_shared<Graphics::Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
             m_KeyHandler = std::make_shared<KeyHandler>(m_Camera);
             m_MouseHandler = std::make_shared<MouseHandler>(m_Camera);
             init();
