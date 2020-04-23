@@ -26,8 +26,7 @@ namespace Yarezo {
 			std::shared_ptr<YzVkSwapchain> getYzSwapchain() const { return m_YzSwapchain; }
 
 		private:
-
-			const int MAX_FRAMES_IN_FLIGHT = 2;
+			const int MAX_FRAMES_IN_FLIGHT = 3;
 
 			YzVkInstance* m_YzInstance;
 			std::shared_ptr<YzVkSwapchain> m_YzSwapchain;

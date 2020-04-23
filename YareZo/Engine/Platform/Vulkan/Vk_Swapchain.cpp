@@ -126,7 +126,8 @@ namespace Yarezo {
 
         VkPresentModeKHR YzVkSwapchain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
             for (const auto& availablePresentMode : availablePresentModes) {
-                if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR) {
+                if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR ||
+                    availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
                     return availablePresentMode;
                 }
             }
