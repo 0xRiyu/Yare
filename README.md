@@ -1,27 +1,30 @@
 ![YareZoEngineGraphic](https://i.imgur.com/y3som7P.png)
 
 # YareZo [![Build status](https://ci.appveyor.com/api/projects/status/ibi6um09v5j03068?svg=true)](https://ci.appveyor.com/project/Resoona/yarezo)  
-Vulkan Renderer  
-Collaborative project between Resoona (Drew Cornfield) & PhaseRush  
+A Vulkan Rendering Engine  
+A Collaborative project between Resoona & PhaseRush   
 
-This project is a WIP.
+This project is under very slow development :)
+
+Cross platform support for Linux/Windows
 
 ### Dependencies
-- Vulkan SDK Installed
-- C++17 compatible compiler (MSVC, MinGW)
+- Vulkan SDK - https://www.lunarg.com/vulkan-sdk/  
+- C++17 compiler (MSVC, MinGW-w64, GCC)  
+- CMake  
 
 ### External Libraries
+See LICENCE
 - GLM
 - GLFW
-- SPDLOG
+- Spdlog
 - IMGUI
+- TinyObjLoader
+- STB (stb_image)
 
-### Potential Issues:
-
-- Could not find Vulkan
-
-    Error: `CMake Error at C:/path/to/bin/cmake/win/share/cmake-3.14/Modules/FindPackageHandleStandardArgs.cmake:137 (message):
-    Could NOT find Vulkan (missing: Vulkan_INCLUDE_DIR)`
+### Build
+Windows - build.bat - Requires Ninja, vcvarsall.bat, and CMake in system path.  
+build.bat release run regen  
   
-    Solution: Add `Vulkan_INCLUDE_DIR` as a system environmental variable with the value `<VulkanInstallDir>\x.x.xxx.x\Include\vulkan`,
-    or VulkanSDK's include directory.
+Linux - buildlinux.sh - Requires g++ compiler, Ninja, and CMake.  
+./buildlinux.sh release run regen
