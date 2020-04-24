@@ -40,8 +40,7 @@ namespace Yarezo {
 
         m_YzPipeline.cleanupDescSetLayout();
 
-        m_VertexBuffer.cleanUp();
-        m_IndexBuffer.cleanUp();
+        delete m_ChaletModel;
 
         //Cleans up command pool
         m_YzInstance.cleanUp();
@@ -103,12 +102,9 @@ namespace Yarezo {
         m_YzInstance.createCommandPool();
         // Texture stuff
         m_TextureImage = Graphics::YzVkImage::createTexture2D( "../YareZo/Resources/Textures/chalet.jpg");
-        // Create the Vertex/Indices/Uniform buffers;
-        // A vertex data will store arbitrary triangle data to be read by the GPU
-        // The indices data will connect the vertices data suc that we can re-use some vertices
-        // instead of redefining them
-        // The uniform buffers are for storing the projection matrices
-        createBuffers();
+
+        m_ChaletModel = new Graphics::Model("../YareZo/Resources/Models/chalet.obj");
+
         createUniformBuffers();
         // Create a set of descriptors for the shader to receive,
         // A descriptor set is called a "set" because it can refer to an array of homogenous resources that can be described with the same layout binding. 
@@ -156,24 +152,6 @@ namespace Yarezo {
 
         VkFormat depthFormat = Graphics::VkUtil::findDepthFormat();
         m_DepthBuffer = Graphics::YzVkImage::createDepthStencilBuffer(depthFormat, m_YzRenderer->getYzSwapchain()->getExtent().width, m_YzRenderer->getYzSwapchain()->getExtent().height);
-    }
-
-
-
-    void GraphicsDevice_Vulkan::createBuffers() {
-        Utilities::loadModel("../YareZo/Resources/Models/chalet.obj", m_Vertices, m_Indices);
-
-        // Vertex Buffers
-        VkDeviceSize bufferSize = sizeof(Vertex) * m_Vertices.size();
-        VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-
-        m_VertexBuffer.init(usageFlags, (size_t)bufferSize, m_Vertices.data());
-
-        // Index Buffers
-        bufferSize = sizeof(m_Indices[0]) * m_Indices.size();
-        usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-
-        m_IndexBuffer.init(usageFlags, (size_t)bufferSize, m_Indices.data());
     }
 
     void GraphicsDevice_Vulkan::createUniformBuffers() {
@@ -225,11 +203,11 @@ namespace Yarezo {
 
             m_YzPipeline.setActive(m_YzCommandBuffers[i]);
 
-            m_VertexBuffer.bind(m_YzCommandBuffers[i]);
-            m_IndexBuffer.bind(m_YzCommandBuffers[i]);
+            m_ChaletModel->getMesh()->getVertexBuffer()->bind(m_YzCommandBuffers[i]);
+            m_ChaletModel->getMesh()->getIndexBuffer()->bind(m_YzCommandBuffers[i]);
 
             vkCmdBindDescriptorSets(m_YzCommandBuffers[i].getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_YzPipeline.getPipelineLayout(), 0u, 1u, &m_YzDescriptorSets.getDescriptorSet(i), 0u, nullptr);
-            vkCmdDrawIndexed(m_YzCommandBuffers[i].getCommandBuffer(), static_cast<uint32_t>(m_Indices.size()), 1, 0, 0, 0);
+            vkCmdDrawIndexed(m_YzCommandBuffers[i].getCommandBuffer(), static_cast<uint32_t>(m_ChaletModel->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
 
             m_YzRenderPass.endRenderPass(&m_YzCommandBuffers[i]);
 

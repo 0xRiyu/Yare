@@ -29,6 +29,8 @@
 #include "Platform/Vulkan/Vk_Image.h"
 #include "Platform/Vulkan/Vk_Renderer.h"
 
+#include "Graphics/Model.h"
+
 namespace Yarezo {
 
     struct UniformBufferObject {
@@ -53,14 +55,13 @@ namespace Yarezo {
         void createGraphicsPipeline();
         void createFramebuffers();
         void createDepthResources();
-        void createBuffers();
         void createUniformBuffers();
         void createDescriptorSets();
         void createCommandBuffers();
         void recreateSwapChain();
         void updateUniformBuffer(uint32_t currentImage);
 
-
+        Graphics::Model* m_ChaletModel;
 
         int m_RotationDir = 1;
         double m_DeltaTime = 0;
@@ -77,12 +78,6 @@ namespace Yarezo {
         std::vector<Graphics::YzVkCommandBuffer>    m_YzCommandBuffers;
         Graphics::YzVkDescriptorSet m_YzDescriptorSets;
 
-
-        std::vector<Vertex> m_Vertices = {};
-        std::vector<uint32_t> m_Indices = {};
-
-        Graphics::YzVkBuffer m_VertexBuffer;
-        Graphics::YzVkBuffer m_IndexBuffer;
 
         Graphics::YzVkImage* m_TextureImage;
         Graphics::YzVkImage* m_DepthBuffer;

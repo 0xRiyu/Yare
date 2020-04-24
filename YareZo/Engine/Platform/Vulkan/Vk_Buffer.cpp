@@ -8,32 +8,35 @@ namespace Yarezo {
 		YzVkBuffer::YzVkBuffer() {
 		}
 
-		YzVkBuffer::YzVkBuffer(VkBufferUsageFlags usageFlags, size_t size, const void* data) {
-			init(usageFlags, size, data);
-		}
+      YzVkBuffer::YzVkBuffer(VkBufferUsageFlags usageFlags, size_t size, const void* data):
+          m_Size(size) {
+          init(usageFlags, size, data);
+      }
 
-		YzVkBuffer::~YzVkBuffer() {
-		}
+      YzVkBuffer::~YzVkBuffer() {
+      }
 
-		void YzVkBuffer::cleanUp() {
-			if (m_Buffer) {
-				vkDestroyBuffer(YzVkDevice::instance()->getDevice(), m_Buffer, nullptr);
-				if (m_BufferMemory) {
-					vkFreeMemory(YzVkDevice::instance()->getDevice(), m_BufferMemory, nullptr);
-				}
-			}
-		}
+      void YzVkBuffer::cleanUp() {
+          if (m_Buffer) {
+              vkDestroyBuffer(YzVkDevice::instance()->getDevice(), m_Buffer, nullptr);
+              if (m_BufferMemory) {
+                  vkFreeMemory(YzVkDevice::instance()->getDevice(), m_BufferMemory, nullptr);
+              }
+          }
+      }
 
-		void YzVkBuffer::init(VkBufferUsageFlags usageFlags, size_t size, const void* data) {
-			VkBufferCreateInfo bufferInfo = {};
-			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			bufferInfo.size = size;
-			bufferInfo.usage = usageFlags;
-			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+      void YzVkBuffer::init(VkBufferUsageFlags usageFlags, size_t size, const void* data) {
+          m_Size = size;
 
-			if (vkCreateBuffer(YzVkDevice::instance()->getDevice(), &bufferInfo, nullptr, &m_Buffer) != VK_SUCCESS) {
-				YZ_CRITICAL("Vulkan was unable to create a buffer.");
-			}
+          VkBufferCreateInfo bufferInfo = {};
+          bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+          bufferInfo.size = size;
+          bufferInfo.usage = usageFlags;
+          bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+          if (vkCreateBuffer(YzVkDevice::instance()->getDevice(), &bufferInfo, nullptr, &m_Buffer) != VK_SUCCESS) {
+              YZ_CRITICAL("Vulkan was unable to create a buffer.");
+          }
 
 			VkMemoryRequirements memRequirements;
 			vkGetBufferMemoryRequirements(YzVkDevice::instance()->getDevice(), m_Buffer, &memRequirements);

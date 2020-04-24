@@ -25,6 +25,8 @@ set (YAREZO_SOURCES
     Engine/Application/Application.cpp
 
     # Graphics
+    Engine/Graphics/Mesh.cpp
+    Engine/Graphics/Model.cpp
     Engine/Graphics/Vulkan.cpp
     Engine/Graphics/Camera/Camera.cpp
     Engine/Graphics/Renderers/ForwardRenderer.cpp
@@ -79,6 +81,8 @@ set (YAREZO_HEADERS
     Engine/Core/YzInputHandler.h
 
     # Graphics
+    Engine/Graphics/Mesh.h
+    Engine/Graphics/Model.h
     Engine/Graphics/Vulkan.h
     Engine/Graphics/Camera/Camera.h
     Engine/Graphics/Renderers/ForwardRenderer.h

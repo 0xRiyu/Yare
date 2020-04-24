@@ -39,22 +39,14 @@ if %RELEASE_MODE%==TRUE goto :Release
 :Release
 echo Building in Release Mode...
 cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
-goto :Ninja
 
 :Debug
 echo Building in Debug Mode...
 cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-goto :Ninja
 
-:Ninja
-ninja
-goto :End
-
-:End
+ninja 
 cd ..
-if %RUN%==TRUE goto :Run
-
-:Run
+if %RUN%==FALSE goto :eof
 echo.
 echo Starting Sandbox.exe...
 cd build\Sandbox
