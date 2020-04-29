@@ -61,7 +61,6 @@ namespace Yarezo {
             ~YzVkPipeline();
             void init(PipelineInfo& pipelineInfo);
             void cleanUp();
-            void cleanupDescSetLayout();
             void setActive(const YzVkCommandBuffer& commandBuffer);
 
             const VkDescriptorPool& getDescriptorPool()            const { return m_DescriptorPool; }

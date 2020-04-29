@@ -79,7 +79,7 @@ namespace Yarezo {
             }
         }
 
-		void YzVkRenderPass::beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain) {
+        void YzVkRenderPass::beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain) {
             VkRenderPassBeginInfo renderPassInfo = {};
             renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
             renderPassInfo.renderPass = m_RenderPass;
@@ -93,7 +93,7 @@ namespace Yarezo {
             renderPassInfo.pClearValues = clearValues.data();
 
             vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		}
+        }
 
         void YzVkRenderPass::endRenderPass(YzVkCommandBuffer* const commandBuffer) {
             vkCmdEndRenderPass(commandBuffer->getCommandBuffer());

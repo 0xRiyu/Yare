@@ -19,7 +19,6 @@ namespace Yarezo {
 
         class YzVkFramebuffer {
 
-
         public:
             YzVkFramebuffer(const FramebufferInfo& framebufferInfo);
             ~YzVkFramebuffer();

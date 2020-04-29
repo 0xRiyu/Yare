@@ -4,7 +4,7 @@
 
 #include "Application/Application.h"
 #include "Utilities/YzLogger.h"
-#include "Graphics/Vulkan.h"
+#include "Graphics/Renderers/ForwardRenderer.h"
 #include "Core/Glfw.h"
 
 // Define the header once here before anywhere else
@@ -30,9 +30,8 @@ namespace Yarezo {
     Application::~Application() {
     }
 
-  
-    void Application::run() {
 
+    void Application::run() {
         Yarezo::YzLogger::init();
         YZ_INFO("Logger Initialized");
 
@@ -41,7 +40,9 @@ namespace Yarezo {
         m_Window = YzWindow::createNewWindow(props);
 
         // Create the vulkan pipeline
-        GraphicsDevice_Vulkan vulkanDevice;
+        // GraphicsDevice_Vulkan vulkanDevice;
+        Graphics::ForwardRenderer forwardRenderer;
+
 
         double previousFPSTime = glfwGetTime();
         double previousFrameTime = glfwGetTime();
@@ -61,11 +62,9 @@ namespace Yarezo {
             }
             previousFrameTime = currentTime;
 
-            vulkanDevice.drawFrame(deltaFrameTime);
+            forwardRenderer.present();
             m_Window->onUpdate();
         }
-
-        vulkanDevice.waitIdle();
-
+        forwardRenderer.waitIdle();
     }
 }

@@ -13,6 +13,13 @@ namespace Yarezo {
             return pos == other.pos && color == other.color && texCoord == other.texCoord;
         }
     };
+
+    struct UniformBufferObject {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
 }
 
 #endif

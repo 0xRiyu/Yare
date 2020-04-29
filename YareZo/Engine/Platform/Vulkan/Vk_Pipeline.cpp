@@ -24,6 +24,9 @@ namespace Yarezo {
         }
 
         void YzVkPipeline::cleanUp() {
+            if (m_DescriptorSetLayout) {
+                vkDestroyDescriptorSetLayout(YzVkDevice::instance()->getDevice(), m_DescriptorSetLayout, nullptr);
+            }
             if (m_PipelineLayout) {
                 vkDestroyPipelineLayout(YzVkDevice::instance()->getDevice(), m_PipelineLayout, nullptr);
             }
@@ -35,15 +38,9 @@ namespace Yarezo {
             }
         }
 
-        void YzVkPipeline::cleanupDescSetLayout() {
-            if (m_DescriptorSetLayout) {
-                vkDestroyDescriptorSetLayout(YzVkDevice::instance()->getDevice(), m_DescriptorSetLayout, nullptr);
-            }
-        }
-
-		void YzVkPipeline::setActive(const YzVkCommandBuffer& commandBuffer) {
+        void YzVkPipeline::setActive(const YzVkCommandBuffer& commandBuffer) {
             vkCmdBindPipeline(commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
-		}
+        }
 
         void YzVkPipeline::createDescriptorSetLayout() {
 

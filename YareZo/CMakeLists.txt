@@ -27,7 +27,6 @@ set (YAREZO_SOURCES
     # Graphics
     Engine/Graphics/Mesh.cpp
     Engine/Graphics/Model.cpp
-    Engine/Graphics/Vulkan.cpp
     Engine/Graphics/Camera/Camera.cpp
     Engine/Graphics/Renderers/ForwardRenderer.cpp
 
@@ -83,7 +82,6 @@ set (YAREZO_HEADERS
     # Graphics
     Engine/Graphics/Mesh.h
     Engine/Graphics/Model.h
-    Engine/Graphics/Vulkan.h
     Engine/Graphics/Camera/Camera.h
     Engine/Graphics/Renderers/ForwardRenderer.h
     Engine/Graphics/Renderers/YzRenderer.h
@@ -152,14 +150,14 @@ target_link_libraries(${PROJECT_NAME}
 
 if (WIN32)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-	      target_link_libraries(${PROJECT_NAME}
-		        PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/Windows/lib-vc2019/glfw3.lib
+          target_link_libraries(${PROJECT_NAME}
+                PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/Windows/lib-vc2019/glfw3.lib
             PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/spdlog/msvc/x64-Release/lib/spdlog.lib)
 
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_libraries(${PROJECT_NAME}
         PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/Windows/lib-mingw-w64/libglfw3.a
-		    PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/spdlog/mingw/libspdlog.a)
+            PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/spdlog/mingw/libspdlog.a)
     endif()
 endif()
 
