@@ -82,6 +82,7 @@ set (YAREZO_HEADERS
     # Graphics
     Engine/Graphics/Mesh.h
     Engine/Graphics/Model.h
+    Engine/Graphics/RenderCommand.h
     Engine/Graphics/Camera/Camera.h
     Engine/Graphics/Renderers/ForwardRenderer.h
     Engine/Graphics/Renderers/YzRenderer.h

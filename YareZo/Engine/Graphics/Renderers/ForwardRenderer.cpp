@@ -7,29 +7,20 @@
 namespace Yarezo::Graphics {
 
     ForwardRenderer::ForwardRenderer() {
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        m_ModelPos = model;
-
         init();
     }
 
     ForwardRenderer::~ForwardRenderer() {
         cleanupSwapChain();
 
+        m_DefaultTextureImage->cleanUp();
+        delete m_DefaultTextureImage;
         m_TextureImage->cleanUp();
         delete m_TextureImage;
 
         delete m_ChaletModel;
 
-        //Cleans up command pool
-        m_Instance->cleanUp();
         delete m_Renderer;
-
-        Graphics::YzVkDevice::release();
-
-        delete m_Instance;
     }
 
     void ForwardRenderer::cleanupSwapChain() {
@@ -61,12 +52,6 @@ namespace Yarezo::Graphics {
     }
 
     void ForwardRenderer::init() {
-
-        m_Instance = new YzVkInstance();
-        m_Instance->init();
-        // Create our static device singleton
-        m_Device = Graphics::YzVkDevice::instance();
-
         m_Renderer = new YzVkRenderer();
         m_Renderer->init();
 
@@ -80,11 +65,6 @@ namespace Yarezo::Graphics {
         createGraphicsPipeline();
 
         createFrameBuffers();
-
-        m_Instance->createCommandPool();
-
-        m_TextureImage = Graphics::YzVkImage::createTexture2D( "../YareZo/Resources/Textures/chalet.jpg");
-        m_ChaletModel = new Graphics::Model("../YareZo/Resources/Models/chalet.obj");
 
         // Uniform Buffers
         VkDeviceSize bufferSize = sizeof(UniformBufferObject);
@@ -100,36 +80,70 @@ namespace Yarezo::Graphics {
         createDescriptorSets();
 
         createCommandBuffers();
+
+        m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj");
+        m_TextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/chalet.jpg");
+
     }
 
     void ForwardRenderer::waitIdle() {
-        m_Device->waitIdle();
+        YzVkDevice::instance()->waitIdle();
     }
 
     void ForwardRenderer::renderScene() {
-
-    }
-
-    void ForwardRenderer::submitModel(Model* model, const glm::vec4& transform){
-
-    }
-
-    void ForwardRenderer::present() {
         if (!m_Renderer->begin()) {
             recreateSwapChain();
         }
 
         m_CurrentBufferID = m_Renderer->getYzSwapchain()->getCurrentImage();
 
+        begin();
 
-        updateUniformBuffer(m_CurrentBufferID);
+        //auto cubeModel = new Model("../YareZo/Resources/Models/cube.obj");
 
-        if (!m_Renderer->present(m_CommandBuffers[m_CurrentBufferID])) {
-            recreateSwapChain();
+        glm::mat4 model_transform = glm::mat4(1.0f);
+        model_transform = glm::rotate(model_transform, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        model_transform = glm::rotate(model_transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        submitModel(m_ChaletModel, model_transform);
+
+        present();
+
+        end();
+    }
+
+    void ForwardRenderer::submitModel(Model* model, const glm::mat4& transform) {
+        RenderCommand renderCommand;
+        renderCommand.model = model;
+        renderCommand.texture = m_TextureImage;
+        renderCommand.transform = transform;
+
+        m_CommandQueue.push_back(renderCommand);
+    }
+
+    void ForwardRenderer::present() {
+
+        for (auto& command : m_CommandQueue) {
+
+            updateUniformBuffer(m_CurrentBufferID);
+
+            YzVkCommandBuffer* currentCommandBuffer = m_CommandBuffers[m_CurrentBufferID];
+
+            m_Pipeline->setActive(*currentCommandBuffer);
+
+            command.model->getMesh()->getVertexBuffer()->bind(*currentCommandBuffer);
+            command.model->getMesh()->getIndexBuffer()->bind(*currentCommandBuffer);
+            m_ModelPos = command.transform;
+
+            vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u, 1u, &m_DescriptorSet->getDescriptorSet(m_CurrentBufferID), 0u, nullptr);
+            vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
+
         }
     }
 
     void ForwardRenderer::begin() {
+        m_CommandQueue.clear();
+
         m_CommandBuffers[m_CurrentBufferID]->beginRecording();
 
         m_RenderPass->beginRenderPass(m_CommandBuffers[m_CurrentBufferID], m_FrameBuffers[m_CurrentBufferID], m_Renderer->getYzSwapchain().get());
@@ -139,6 +153,10 @@ namespace Yarezo::Graphics {
         m_RenderPass->endRenderPass(m_CommandBuffers[m_CurrentBufferID]);
 
         m_CommandBuffers[m_CurrentBufferID]->endRecording();
+
+        if (!m_Renderer->present(m_CommandBuffers[m_CurrentBufferID])) {
+            recreateSwapChain();
+        }
     }
 
     void ForwardRenderer::recreateSwapChain() {
@@ -203,6 +221,8 @@ namespace Yarezo::Graphics {
         m_DescriptorSet = new YzVkDescriptorSet();
         m_DescriptorSet->init(descriptorSetInfo);
 
+        m_DefaultTextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/sprite.jpg");
+
         // For each of our swapchain images, load the associated buffer into the descriptor set
         for (int i = 0; i < swapchainImagesSize; i++) {
             BufferInfo bufferInfo;
@@ -210,8 +230,8 @@ namespace Yarezo::Graphics {
             bufferInfo.offset = 0;
             bufferInfo.size = sizeof(UniformBufferObject);
             bufferInfo.binding = i;
-            bufferInfo.imageSampler = m_TextureImage->m_YzSampler.getSampler();
-            bufferInfo.imageView = m_TextureImage->m_ImageView;
+            bufferInfo.imageSampler = m_DefaultTextureImage->m_YzSampler.getSampler();
+            bufferInfo.imageView = m_DefaultTextureImage->m_ImageView;
 
             m_DescriptorSet->update(bufferInfo);
         }
@@ -225,18 +245,6 @@ namespace Yarezo::Graphics {
 
             m_CommandBuffers[i] = new YzVkCommandBuffer();
             m_CommandBuffers[i]->init();
-
-            begin();
-
-            m_Pipeline->setActive(*m_CommandBuffers[i]);
-
-            m_ChaletModel->getMesh()->getVertexBuffer()->bind(*m_CommandBuffers[i]);
-            m_ChaletModel->getMesh()->getIndexBuffer()->bind(*m_CommandBuffers[i]);
-
-            vkCmdBindDescriptorSets(m_CommandBuffers[i]->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u, 1u, &m_DescriptorSet->getDescriptorSet(i), 0u, nullptr);
-            vkCmdDrawIndexed(m_CommandBuffers[i]->getCommandBuffer(), static_cast<uint32_t>(m_ChaletModel->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
-
-            end();
         }
     }
 

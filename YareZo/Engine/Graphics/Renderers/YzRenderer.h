@@ -2,6 +2,7 @@
 #define YAREZO_YZ_RENDERER_H
 
 #include "Graphics/Model.h"
+#include "Graphics/RenderCommand.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -10,7 +11,8 @@
 #include <glm/ext.hpp>
 
 namespace Yarezo::Graphics {
-    
+
+    typedef std::vector<RenderCommand> CommandQueue;
 
     class YzRenderer {
     public:
@@ -18,10 +20,13 @@ namespace Yarezo::Graphics {
 
         virtual void init() = 0;
         virtual void renderScene() = 0;
-        virtual void submitModel(Model* model, const glm::vec4& transform) = 0;
+        virtual void submitModel(Model* model, const glm::mat4& transform) = 0;
         virtual void present() = 0;
         virtual void begin() = 0;
         virtual void end() = 0;
+
+    protected:
+        CommandQueue m_CommandQueue;
     };
 
 }

@@ -39,7 +39,7 @@ namespace Yarezo {
             VkExtent2D m_SwapchainExtent;
             std::vector<VkImage> m_SwapchainImages;
             std::vector<VkImageView> m_SwapchainImageViews;
-            uint32_t m_CurrentImage;
+            uint32_t m_CurrentImage = 0;
         };
     }
 }

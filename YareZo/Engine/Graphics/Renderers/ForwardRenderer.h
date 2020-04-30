@@ -28,7 +28,7 @@ namespace Yarezo::Graphics {
 
         virtual void init() override;
         virtual void renderScene() override;
-        virtual void submitModel(Model* model, const glm::vec4& transform) override;
+        virtual void submitModel(Model* model, const glm::mat4& transform) override;
         virtual void present() override;
         virtual void begin() override;
         virtual void end() override;
@@ -45,12 +45,11 @@ namespace Yarezo::Graphics {
 
     private:
         // TODO Move this out of here
-        Graphics::Model* m_ChaletModel;
-        Graphics::YzVkImage* m_TextureImage;
+        Model* m_ChaletModel;
+        YzVkImage* m_DefaultTextureImage;
+        YzVkImage* m_TextureImage;
         glm::mat4 m_ModelPos;
 
-        YzVkInstance*                       m_Instance;
-        YzVkDevice*                         m_Device;
         YzVkRenderer*                       m_Renderer;
         YzVkPipeline*                       m_Pipeline;
         YzVkRenderPass*                     m_RenderPass;

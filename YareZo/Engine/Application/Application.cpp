@@ -62,7 +62,7 @@ namespace Yarezo {
             }
             previousFrameTime = currentTime;
 
-            forwardRenderer.present();
+            forwardRenderer.renderScene();
             m_Window->onUpdate();
         }
         forwardRenderer.waitIdle();
