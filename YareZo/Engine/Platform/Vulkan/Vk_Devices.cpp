@@ -65,6 +65,8 @@ namespace Yarezo {
             if (m_PhysicalDevice == VK_NULL_HANDLE) {
                 YZ_CRITICAL("Failed to find a suitable GPU");
             }
+
+            vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_PhysicalDeviceProperties);
         }
 
         void YzVkDevice::createLogicalDevice() {

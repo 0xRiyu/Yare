@@ -40,6 +40,7 @@ namespace Yarezo {
             const VkQueue& getGraphicsQueue()       const { return m_GraphicsQueue; }
             const VkQueue& getPresentQueue()        const { return m_PresentQueue; }
             const YzVkInstance* getYzVkInstance()   const { return m_YzVkInstance; }
+            const VkPhysicalDeviceProperties& getGPUProperties() const { return m_PhysicalDeviceProperties; }
 
             QueueFamilyIndices getQueueFamilyIndicies();
             SwapChainSupportDetails getSwapChainSupport();
@@ -57,6 +58,7 @@ namespace Yarezo {
             VkSurfaceKHR m_Surface              = VK_NULL_HANDLE;
             VkDevice m_Device                   = VK_NULL_HANDLE;
             VkPhysicalDevice m_PhysicalDevice   = VK_NULL_HANDLE;
+            VkPhysicalDeviceProperties m_PhysicalDeviceProperties{};
             VkQueue m_GraphicsQueue             = VK_NULL_HANDLE;
             VkQueue m_PresentQueue              = VK_NULL_HANDLE;
 

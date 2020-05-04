@@ -7,18 +7,18 @@
 #include <stb/stb_image.h>
 
 namespace Yarezo {
-	namespace Graphics {
+    namespace Graphics {
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         // YzVkSampler::
         ///////////////////////////////////////////////////////////////////////////////////////////
 
-		YzVkSampler::YzVkSampler() {
-		}
-		YzVkSampler::~YzVkSampler() {
-		}
+        YzVkSampler::YzVkSampler() {
+        }
+        YzVkSampler::~YzVkSampler() {
+        }
 
-		void YzVkSampler::init() {
+        void YzVkSampler::init() {
             VkSamplerCreateInfo samplerInfo = {};
             samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
             samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -40,13 +40,13 @@ namespace Yarezo {
             if (vkCreateSampler(Graphics::YzVkDevice::instance()->getDevice(), &samplerInfo, nullptr, &m_Sampler) != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan failed to create a sampler.");
             }
-		}
+        }
 
-		void YzVkSampler::cleanUp() {
+        void YzVkSampler::cleanUp() {
             if (m_Sampler != VK_NULL_HANDLE) {
                 vkDestroySampler(Graphics::YzVkDevice::instance()->getDevice(), m_Sampler, nullptr);
             }
-		}
+        }
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         // YzVkImage::
@@ -205,13 +205,11 @@ namespace Yarezo {
                 YZ_CRITICAL("failed to load texture image");
             }
 
-            YzVkBuffer stagingBuffer {VK_BUFFER_USAGE_TRANSFER_SRC_BIT, imageSize, pixels};
+            YzVkBuffer stagingBuffer {VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,  imageSize, pixels};
 
             stbi_image_free(pixels);
 
             image->createTexture(texWidth, texHeight, stagingBuffer.getBuffer());
-
-            stagingBuffer.cleanUp();
 
             return image;
         }

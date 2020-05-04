@@ -44,22 +44,28 @@ namespace Yarezo {
 
         void YzVkPipeline::createDescriptorSetLayout() {
 
-            VkDescriptorSetLayoutBinding uboLayoutBinding = {};
-            uboLayoutBinding.binding = 0;
-            uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            uboLayoutBinding.descriptorCount = 1;
+            VkDescriptorSetLayoutBinding viewUboLayoutBinding = {};
+            viewUboLayoutBinding.binding = 0;
+            viewUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            viewUboLayoutBinding.descriptorCount = 1;
             // We are only using this in the vertex shader
-            uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-            uboLayoutBinding.pImmutableSamplers = nullptr; // Optional Param
+            viewUboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+            VkDescriptorSetLayoutBinding dynamicUboLayoutBinding = {};
+            dynamicUboLayoutBinding.binding = 1;
+            dynamicUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            dynamicUboLayoutBinding.descriptorCount = 1;
+            // We are only using this in the vertex shader
+            dynamicUboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
             VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-            samplerLayoutBinding.binding = 1;
-            samplerLayoutBinding.descriptorCount = 1;
+            samplerLayoutBinding.binding = 2;
             samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            samplerLayoutBinding.descriptorCount = 1;
             samplerLayoutBinding.pImmutableSamplers = nullptr;
             samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-            std::array<VkDescriptorSetLayoutBinding, 2> bindings = { uboLayoutBinding, samplerLayoutBinding };
+            std::array<VkDescriptorSetLayoutBinding, 3> bindings = { viewUboLayoutBinding, dynamicUboLayoutBinding, samplerLayoutBinding };
             VkDescriptorSetLayoutCreateInfo layoutInfo = {};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
             layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
@@ -69,6 +75,7 @@ namespace Yarezo {
                 YZ_CRITICAL("Vulkan was unable to create a descriptor set layout.");
             }
         }
+
         void YzVkPipeline::createGraphicsPipeline(PipelineInfo& pipelineInfo) {
             auto bindingDescription = VulkanVertex::getBindingDescription();
             auto attributeDescriptions = VulkanVertex::getAttributeDescriptions();
@@ -192,11 +199,13 @@ namespace Yarezo {
         void YzVkPipeline::createDescriptorPool(PipelineInfo& pipelineInfo) {
             size_t swapchainImagesSize = pipelineInfo.swapchain->getImagesSize();
 
-            std::array<VkDescriptorPoolSize, 2> poolSizes = {};
+            std::array<VkDescriptorPoolSize, 3> poolSizes = {};
             poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             poolSizes[0].descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
-            poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             poolSizes[1].descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
+            poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            poolSizes[2].descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
 
             VkDescriptorPoolCreateInfo poolInfo = {};
             poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
