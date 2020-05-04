@@ -3,7 +3,7 @@ REM This script will build Yarezo using the MSVC and ninja, it requires vcvarsal
 REM Example location to find vcvarsall - Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build
 
 if not exist build (
-	mkdir build
+    mkdir build
 )
 REM default build in debug
 set RELEASE_MODE=FALSE
@@ -39,14 +39,18 @@ if %RELEASE_MODE%==TRUE goto :Release
 :Release
 echo Building in Release Mode...
 cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
+goto :ninja
 
 :Debug
 echo Building in Debug Mode...
 cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
+goto :ninja
 
+:ninja
 ninja 
 cd ..
 if %RUN%==FALSE goto :eof
+if %errorlevel% NEQ 0 GOTO :eof
 echo.
 echo Starting Sandbox.exe...
 cd build\Sandbox

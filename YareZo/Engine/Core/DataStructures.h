@@ -20,6 +20,14 @@ namespace Yarezo {
         glm::mat4 proj;
     };
 
+    struct UboDataDynamic {
+        glm::mat4* model = nullptr;
+    };
+
+    struct UniformVS {
+        glm::mat4 projection;
+        glm::mat4 view;
+    };
 }
 
 #endif

@@ -10,6 +10,7 @@ namespace Yarezo::Graphics {
         init();
     }
 
+
     ForwardRenderer::~ForwardRenderer() {
         cleanupSwapChain();
 
@@ -18,7 +19,9 @@ namespace Yarezo::Graphics {
         m_TextureImage->cleanUp();
         delete m_TextureImage;
 
-        delete m_ChaletModel;
+        //delete m_ChaletModel;
+        delete m_VikingModel;
+        delete m_CubeModel;
 
         delete m_Renderer;
     }
@@ -45,10 +48,9 @@ namespace Yarezo::Graphics {
         m_RenderPass->cleanUp();
         delete m_RenderPass;
 
-        for (size_t i = 0; i < m_Renderer->getYzSwapchain()->getImagesSize(); i++) {
-            m_UniformBuffers[i]->cleanUp();
-            delete m_UniformBuffers[i];
-        }
+        delete m_UniformBuffers.view;
+        delete m_UniformBuffers.dynamic;
+
     }
 
     void ForwardRenderer::init() {
@@ -66,22 +68,16 @@ namespace Yarezo::Graphics {
 
         createFrameBuffers();
 
-        // Uniform Buffers
-        VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-        VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        size_t swapchainImagesSize = m_Renderer->getYzSwapchain()->getImagesSize();
-        m_UniformBuffers.resize(swapchainImagesSize);
-
-        for (size_t i = 0; i < swapchainImagesSize; i++) {
-            m_UniformBuffers[i] = new YzVkBuffer();
-            m_UniformBuffers[i]->init(usageFlags, (size_t)bufferSize, nullptr);
-        }
+        prepareUniformBuffers();
 
         createDescriptorSets();
 
         createCommandBuffers();
 
-        m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj");
+        // m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj");
+        m_VikingModel = new Model("../YareZo/Resources/Models/viking_room.obj");
+        m_CubeModel = new Model("../YareZo/Resources/Models/cube.obj");
+
         m_TextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/chalet.jpg");
 
     }
@@ -99,13 +95,14 @@ namespace Yarezo::Graphics {
 
         begin();
 
-        //auto cubeModel = new Model("../YareZo/Resources/Models/cube.obj");
-
         glm::mat4 model_transform = glm::mat4(1.0f);
-        model_transform = glm::rotate(model_transform, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        //model_transform = glm::rotate(model_transform, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model_transform = glm::rotate(model_transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-        submitModel(m_ChaletModel, model_transform);
+        submitModel(m_VikingModel, model_transform);
+
+        glm::mat4 model_transform2 = glm::translate(model_transform, glm::vec3(0.0f, 3.0f, 0.0f));
+        // submitModel(m_ChaletModel, model_transform2);
 
         present();
 
@@ -122,22 +119,24 @@ namespace Yarezo::Graphics {
     }
 
     void ForwardRenderer::present() {
-
+        int index = 0;
         for (auto& command : m_CommandQueue) {
 
+            m_ModelPos = command.transform;
             updateUniformBuffer(m_CurrentBufferID);
 
             YzVkCommandBuffer* currentCommandBuffer = m_CommandBuffers[m_CurrentBufferID];
 
+            uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
+
             m_Pipeline->setActive(*currentCommandBuffer);
+            vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u, 1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
             command.model->getMesh()->getVertexBuffer()->bind(*currentCommandBuffer);
             command.model->getMesh()->getIndexBuffer()->bind(*currentCommandBuffer);
-            m_ModelPos = command.transform;
 
-            vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u, 1u, &m_DescriptorSet->getDescriptorSet(m_CurrentBufferID), 0u, nullptr);
             vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
-
+            index++;
         }
     }
 
@@ -169,18 +168,7 @@ namespace Yarezo::Graphics {
         m_RenderPass->init(renderPassInfo);
         createGraphicsPipeline();
         createFrameBuffers();
-
-        // Uniform Buffers
-        VkDeviceSize bufferSize = sizeof(UniformBufferObject);
-        VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        size_t swapchainImagesSize = m_Renderer->getYzSwapchain()->getImagesSize();
-        m_UniformBuffers.resize(swapchainImagesSize);
-
-        for (size_t i = 0; i < swapchainImagesSize; i++) {
-            m_UniformBuffers[i] = new YzVkBuffer();
-            m_UniformBuffers[i]->init(usageFlags, (size_t)bufferSize, nullptr);
-        }
-
+        prepareUniformBuffers();
         createDescriptorSets();
         createCommandBuffers();
     }
@@ -214,27 +202,48 @@ namespace Yarezo::Graphics {
         size_t swapchainImagesSize = m_Renderer->getYzSwapchain()->getImagesSize();
 
         Graphics::DescriptorSetInfo descriptorSetInfo;
-        descriptorSetInfo.descriptorSetCount = static_cast<uint32_t>(swapchainImagesSize);
+        descriptorSetInfo.descriptorSetCount = 1;
         descriptorSetInfo.pipeline = m_Pipeline;
 
         // First create the descriptor set, but the buffers are empty
         m_DescriptorSet = new YzVkDescriptorSet();
         m_DescriptorSet->init(descriptorSetInfo);
 
-        m_DefaultTextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/sprite.jpg");
+        m_DefaultTextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/viking_room.png");
 
-        // For each of our swapchain images, load the associated buffer into the descriptor set
-        for (int i = 0; i < swapchainImagesSize; i++) {
-            BufferInfo bufferInfo;
-            bufferInfo.buffer = m_UniformBuffers[i]->getBuffer();
-            bufferInfo.offset = 0;
-            bufferInfo.size = sizeof(UniformBufferObject);
-            bufferInfo.binding = i;
-            bufferInfo.imageSampler = m_DefaultTextureImage->m_YzSampler.getSampler();
-            bufferInfo.imageView = m_DefaultTextureImage->m_ImageView;
+        std::vector<BufferInfo> bufferInfos = {};
+        BufferInfo viewBufferInfo = {};
+        viewBufferInfo.buffer = m_UniformBuffers.view->getBuffer();
+        viewBufferInfo.offset = 0;
+        viewBufferInfo.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        viewBufferInfo.size = sizeof(UniformVS);
+        viewBufferInfo.binding = 0;
+        viewBufferInfo.imageSampler = nullptr;
+        viewBufferInfo.imageView = nullptr;
 
-            m_DescriptorSet->update(bufferInfo);
-        }
+        BufferInfo dynamicBufferInfo = {};
+        dynamicBufferInfo.buffer = m_UniformBuffers.dynamic->getBuffer();
+        dynamicBufferInfo.offset = 0;
+        dynamicBufferInfo.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        dynamicBufferInfo.size = sizeof(glm::mat4);
+        dynamicBufferInfo.binding = 1;
+        dynamicBufferInfo.imageSampler = nullptr;
+        dynamicBufferInfo.imageView = nullptr;
+
+        BufferInfo imageBufferInfo = {};
+        imageBufferInfo.buffer = nullptr;
+        imageBufferInfo.offset = 0;
+        imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        imageBufferInfo.size = 0;
+        imageBufferInfo.binding = 2;
+        imageBufferInfo.imageSampler = m_DefaultTextureImage->m_YzSampler.getSampler();
+        imageBufferInfo.imageView = m_DefaultTextureImage->m_ImageView;
+
+        bufferInfos.push_back(viewBufferInfo);
+        bufferInfos.push_back(dynamicBufferInfo);
+        bufferInfos.push_back(imageBufferInfo);
+
+        m_DescriptorSet->update(bufferInfos);
     }
 
     void ForwardRenderer::createCommandBuffers() {
@@ -248,14 +257,39 @@ namespace Yarezo::Graphics {
         }
     }
 
-    void ForwardRenderer::updateUniformBuffer(uint32_t currentImage) {
-        UniformBufferObject ubo = {};
-        ubo.model = m_ModelPos;
-        ubo.view = Application::getAppInstance()->getWindow()->getCamera()->getViewMatrix();
-        ubo.proj = Application::getAppInstance()->getWindow()->getCamera()->getProjectionMatrix();
-        ubo.proj[1][1] *= -1;
+    void ForwardRenderer::prepareUniformBuffers() {
 
-        m_UniformBuffers[currentImage]->setData(sizeof(ubo), &ubo);
+        VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+        VkDeviceSize viewBufferSize = sizeof(UniformVS);
+        VkMemoryPropertyFlags viewPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+
+        m_DynamicAlignment = sizeof(glm::mat4);
+        size_t minUboAlignment = YzVkDevice::instance()->getGPUProperties().limits.minUniformBufferOffsetAlignment;
+        if (minUboAlignment > 0) {
+            m_DynamicAlignment = (m_DynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+        }
+
+        VkDeviceSize dynamicBufferSize = /* MAX_OBJECTS * */m_DynamicAlignment;
+        VkMemoryPropertyFlags dynamicPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+
+        m_UniformBuffers.view = new YzVkBuffer(usageFlags, viewPropertyFlags, viewBufferSize, nullptr);
+        m_UniformBuffers.dynamic = new YzVkBuffer(usageFlags, dynamicPropertyFlags, dynamicBufferSize, nullptr);
+    }
+
+    void ForwardRenderer::updateUniformBuffer(uint32_t currentImage) {
+        // TODO, store UBOs for each model we want to display in one UBO, separated by an offset
+        // then bind based on that offset in the present call
+        UboDataDynamic uboDynamic = {};
+        uboDynamic.model = &m_ModelPos;
+        m_UniformBuffers.dynamic->setDynamicData(m_DynamicAlignment, uboDynamic.model);
+
+        UniformVS uboVS = {};
+        uboVS.view = Application::getAppInstance()->getWindow()->getCamera()->getViewMatrix();
+        uboVS.projection = Application::getAppInstance()->getWindow()->getCamera()->getProjectionMatrix();
+        uboVS.projection[1][1] *= -1;
+
+        m_UniformBuffers.view->setData(sizeof(uboVS), &uboVS);
     }
 
 }
