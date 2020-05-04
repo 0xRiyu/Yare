@@ -7,37 +7,38 @@
 #include <vector>
 
 namespace Yarezo {
-	namespace Graphics {
+    namespace Graphics {
 
-		struct DescriptorSetInfo {
-			YzVkPipeline* pipeline;
-			size_t descriptorSetCount;
-		};
+        struct DescriptorSetInfo {
+            YzVkPipeline* pipeline;
+            size_t descriptorSetCount;
+        };
 
-		struct BufferInfo {
-			VkBuffer buffer;
-			VkImageView imageView;
-			VkSampler imageSampler;
-			uint32_t offset;
-			uint32_t size;
-			int binding;
-		};
+        struct BufferInfo {
+            VkBuffer buffer;
+            VkDescriptorType type;
+            VkImageView imageView;
+            VkSampler imageSampler;
+            uint32_t offset;
+            uint32_t size;
+            int binding;
+        };
 
-		class YzVkDescriptorSet {
-		public:
-			YzVkDescriptorSet();
-			~YzVkDescriptorSet();
+        class YzVkDescriptorSet {
+        public:
+            YzVkDescriptorSet();
+            ~YzVkDescriptorSet();
 
-			void init(const DescriptorSetInfo& descriptorSetInfo);
-			void update(BufferInfo& newBufferInfo);
+            void init(const DescriptorSetInfo& descriptorSetInfo);
+            void update(std::vector<BufferInfo>& newBufferInfo);
 
-			const VkDescriptorSet& getDescriptorSet(unsigned int index) const { return m_DescriptorSets[index]; }
+            const VkDescriptorSet& getDescriptorSet(unsigned int index) const { return m_DescriptorSets; }
 
-		private:
-			std::vector<VkDescriptorSet> m_DescriptorSets;
+        private:
+           VkDescriptorSet m_DescriptorSets;
 
-		};
-	}
+        };
+    }
 }
 
 

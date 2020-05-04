@@ -18,8 +18,10 @@
 #include "Platform/Vulkan/Vk_Semaphore.h"
 #include "Platform/Vulkan/Vk_Image.h"
 #include "Platform/Vulkan/Vk_Renderer.h"
+#define MAX_OBJECTS 2048
 
 namespace Yarezo::Graphics {
+
 
     class ForwardRenderer  : public YzRenderer {
     public:
@@ -41,14 +43,18 @@ namespace Yarezo::Graphics {
         void createFrameBuffers();
         void createDescriptorSets();
         void createCommandBuffers();
+        void prepareUniformBuffers();
         void updateUniformBuffer(uint32_t currentImage);
 
     private:
         // TODO Move this out of here
         Model* m_ChaletModel;
+        Model* m_CubeModel;
+        Model* m_VikingModel;
         YzVkImage* m_DefaultTextureImage;
         YzVkImage* m_TextureImage;
         glm::mat4 m_ModelPos;
+        size_t m_DynamicAlignment = 0;
 
         YzVkRenderer*                       m_Renderer;
         YzVkPipeline*                       m_Pipeline;
@@ -57,13 +63,16 @@ namespace Yarezo::Graphics {
         YzVkImage*                          m_DepthBuffer;
         std::vector<YzVkCommandBuffer*>     m_CommandBuffers;
         std::vector<YzVkFramebuffer*>       m_FrameBuffers;
-        std::vector<YzVkBuffer*>            m_UniformBuffers;
+        //        std::vector<YzVkBuffer*>            m_UniformBuffers;
 
         uint32_t m_WindowWidth, m_WindowHeight;
 
         uint32_t m_CurrentBufferID;
 
-
+        struct UniformBuffers {
+            YzVkBuffer* view;
+            YzVkBuffer* dynamic;
+        } m_UniformBuffers;
 };
 
 }
