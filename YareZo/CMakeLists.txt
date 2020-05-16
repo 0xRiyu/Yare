@@ -37,7 +37,7 @@ set (YAREZO_SOURCES
     # Utilities
     Engine/Utilities/YzLogger.cpp
     Engine/Utilities/IOHelper.cpp
-    
+
     # Windows OS Specific
     Engine/Platform/Windows/GlfwWindow.cpp
 
@@ -74,6 +74,7 @@ set (YAREZO_HEADERS
     Engine/Core/Yzh.h
     Engine/Core/Glfw.h
     Engine/Core/Core.h
+    Engine/Core/Memory.h
     Engine/Core/YzWindow.h
     Engine/Core/YzCamera.h
     Engine/Core/DataStructures.h
@@ -167,5 +168,3 @@ if (UNIX)
         PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/glfw/Unix/lib-gcc/libglfw3.a dl -lpthread -lm
         PUBLIC ${CMAKE_SOURCE_DIR}/YareZo/Libs/spdlog/Unix/gcc/libspdlog.a)
 endif()
-
-

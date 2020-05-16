@@ -3,26 +3,11 @@
 #include "Platform/Vulkan/Vk_Utilities.h"
 
 #include "Core/Yzh.h"
-
+#include "Core/Memory.h"
 
 #include <glm/gtx/string_cast.hpp>
 
 namespace Yarezo::Graphics {
-
-    // Wrapper functions for aligned memory allocation
-    // There is currently no standard for this in C++ that works across all platforms and vendors, so we abstract this
-    void* alignedAlloc(size_t size, size_t alignment)
-    {
-        void *data = nullptr;
-#if defined(_MSC_VER) || defined(__MINGW32__)
-        data = _aligned_malloc(size, alignment);
-#else
-        int res = posix_memalign(&data, alignment, size);
-        if (res != 0)
-            data = nullptr;
-#endif
-        return data;
-    }
 
     ForwardRenderer::ForwardRenderer() {
         init();
@@ -61,6 +46,10 @@ namespace Yarezo::Graphics {
             delete commandBuffer;
         }
 
+        if (m_UboDynamicData.model) {
+            alignedFree(m_UboDynamicData.model);
+        }
+
         m_Pipeline->cleanUp();
         delete m_Pipeline;
 
@@ -87,17 +76,19 @@ namespace Yarezo::Graphics {
 
         createFrameBuffers();
 
+        // m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj");
+        m_VikingModel = new Model("../YareZo/Resources/Models/viking_room.obj");
+        m_CubeModel = new Model("../YareZo/Resources/Models/cube.obj");
+
+        m_TextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/chalet.jpg");
+        m_DefaultTextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/viking_room.png");
+
         prepareUniformBuffers();
 
         createDescriptorSets();
 
         createCommandBuffers();
 
-        // m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj");
-        m_VikingModel = new Model("../YareZo/Resources/Models/viking_room.obj");
-        m_CubeModel = new Model("../YareZo/Resources/Models/cube.obj");
-
-        m_TextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/chalet.jpg");
 
     }
 
@@ -229,8 +220,6 @@ namespace Yarezo::Graphics {
         // First create the descriptor set, but the buffers are empty
         m_DescriptorSet = new YzVkDescriptorSet();
         m_DescriptorSet->init(descriptorSetInfo);
-
-        m_DefaultTextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/viking_room.png");
 
         std::vector<BufferInfo> bufferInfos = {};
         BufferInfo viewBufferInfo = {};
