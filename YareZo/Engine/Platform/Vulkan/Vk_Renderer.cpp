@@ -34,7 +34,7 @@ namespace Yarezo {
             m_Instance->createCommandPool();
 
             // Create a swapchain, a swapchain is responsible for maintaining the images
-            // that will be presented to the user. 
+            // that will be presented to the user.
             m_YzSwapchain = std::make_shared<YzVkSwapchain>();
             m_YzSwapchain->init();
 
