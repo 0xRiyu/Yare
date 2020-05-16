@@ -29,6 +29,7 @@ namespace Yarezo::Graphics {
         m_ModelPos = glm::mat4(1.0f);
     }
 
+
     ForwardRenderer::~ForwardRenderer() {
         cleanupSwapChain();
 
