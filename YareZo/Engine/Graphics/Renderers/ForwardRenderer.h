@@ -44,7 +44,7 @@ namespace Yarezo::Graphics {
         void createDescriptorSets();
         void createCommandBuffers();
         void prepareUniformBuffers();
-        void updateUniformBuffer(uint32_t currentImage);
+        void updateUniformBuffers(uint32_t index);
 
     private:
         // TODO Move this out of here
@@ -73,6 +73,8 @@ namespace Yarezo::Graphics {
             YzVkBuffer* view;
             YzVkBuffer* dynamic;
         } m_UniformBuffers;
+
+        UboDataDynamic m_UboDynamicData;
 };
 
 }
