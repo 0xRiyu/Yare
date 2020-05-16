@@ -201,17 +201,25 @@ namespace Yarezo {
 
             std::array<VkDescriptorPoolSize, 3> poolSizes = {};
             poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+<<<<<<< HEAD
             poolSizes[0].descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
             poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             poolSizes[1].descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
             poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             poolSizes[2].descriptorCount = static_cast<uint32_t>(swapchainImagesSize);
+=======
+            poolSizes[0].descriptorCount = static_cast<uint32_t>(1);
+            poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            poolSizes[1].descriptorCount = static_cast<uint32_t>(1);
+            poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            poolSizes[2].descriptorCount = static_cast<uint32_t>(1);
+>>>>>>> Development
 
             VkDescriptorPoolCreateInfo poolInfo = {};
             poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
             poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
             poolInfo.pPoolSizes = poolSizes.data();
-            poolInfo.maxSets = static_cast<uint32_t>(swapchainImagesSize);
+            poolInfo.maxSets = static_cast<uint32_t>(2);
 
             if (vkCreateDescriptorPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan creation of descriptor pool failed.");

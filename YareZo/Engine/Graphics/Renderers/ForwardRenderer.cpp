@@ -2,12 +2,31 @@
 
 #include "Platform/Vulkan/Vk_Utilities.h"
 
-#include "Application/Application.h"
+#include "Core/Yzh.h"
+
+
+#include <glm/gtx/string_cast.hpp>
 
 namespace Yarezo::Graphics {
 
+    // Wrapper functions for aligned memory allocation
+    // There is currently no standard for this in C++ that works across all platforms and vendors, so we abstract this
+    void* alignedAlloc(size_t size, size_t alignment)
+    {
+        void *data = nullptr;
+#if defined(_MSC_VER) || defined(__MINGW32__)
+        data = _aligned_malloc(size, alignment);
+#else
+        int res = posix_memalign(&data, alignment, size);
+        if (res != 0)
+            data = nullptr;
+#endif
+        return data;
+    }
+
     ForwardRenderer::ForwardRenderer() {
         init();
+        m_ModelPos = glm::mat4(1.0f);
     }
 
 
@@ -96,13 +115,13 @@ namespace Yarezo::Graphics {
         begin();
 
         glm::mat4 model_transform = glm::mat4(1.0f);
-        //model_transform = glm::rotate(model_transform, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         model_transform = glm::rotate(model_transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         submitModel(m_VikingModel, model_transform);
 
-        glm::mat4 model_transform2 = glm::translate(model_transform, glm::vec3(0.0f, 3.0f, 0.0f));
-        // submitModel(m_ChaletModel, model_transform2);
+        glm::mat4 model_transform2 = model_transform;
+        model_transform2 = glm::translate(model_transform, glm::vec3(0,2,0));
+        submitModel(m_VikingModel, model_transform2);
 
         present();
 
@@ -123,14 +142,16 @@ namespace Yarezo::Graphics {
         for (auto& command : m_CommandQueue) {
 
             m_ModelPos = command.transform;
-            updateUniformBuffer(m_CurrentBufferID);
+            updateUniformBuffers(index);
 
             YzVkCommandBuffer* currentCommandBuffer = m_CommandBuffers[m_CurrentBufferID];
 
             uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
 
             m_Pipeline->setActive(*currentCommandBuffer);
-            vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u, 1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
+            vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
+                                    VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u,
+                                    1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
             command.model->getMesh()->getVertexBuffer()->bind(*currentCommandBuffer);
             command.model->getMesh()->getIndexBuffer()->bind(*currentCommandBuffer);
@@ -270,19 +291,22 @@ namespace Yarezo::Graphics {
             m_DynamicAlignment = (m_DynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
         }
 
-        VkDeviceSize dynamicBufferSize = /* MAX_OBJECTS * */m_DynamicAlignment;
+        VkDeviceSize dynamicBufferSize = MAX_OBJECTS * m_DynamicAlignment;
         VkMemoryPropertyFlags dynamicPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+
+        m_UboDynamicData.model = (glm::mat4*)alignedAlloc(dynamicBufferSize, m_DynamicAlignment);
 
         m_UniformBuffers.view = new YzVkBuffer(usageFlags, viewPropertyFlags, viewBufferSize, nullptr);
         m_UniformBuffers.dynamic = new YzVkBuffer(usageFlags, dynamicPropertyFlags, dynamicBufferSize, nullptr);
     }
 
-    void ForwardRenderer::updateUniformBuffer(uint32_t currentImage) {
+    void ForwardRenderer::updateUniformBuffers(uint32_t index) {
         // TODO, store UBOs for each model we want to display in one UBO, separated by an offset
         // then bind based on that offset in the present call
-        UboDataDynamic uboDynamic = {};
-        uboDynamic.model = &m_ModelPos;
-        m_UniformBuffers.dynamic->setDynamicData(m_DynamicAlignment, uboDynamic.model);
+        glm::mat4* uboDynamicModelPtr = (glm::mat4*)((uint64_t)m_UboDynamicData.model + (index * m_DynamicAlignment));
+        *uboDynamicModelPtr = m_ModelPos;
+
+        m_UniformBuffers.dynamic->setDynamicData(MAX_OBJECTS * m_DynamicAlignment, &*m_UboDynamicData.model);
 
         UniformVS uboVS = {};
         uboVS.view = Application::getAppInstance()->getWindow()->getCamera()->getViewMatrix();
@@ -293,7 +317,3 @@ namespace Yarezo::Graphics {
     }
 
 }
-
-
-
-

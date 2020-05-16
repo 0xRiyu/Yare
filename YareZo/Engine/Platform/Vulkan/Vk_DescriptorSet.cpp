@@ -13,12 +13,11 @@ namespace Yarezo {
 
         void YzVkDescriptorSet::init(const DescriptorSetInfo& descriptorSetInfo) {
 
-            std::vector<VkDescriptorSetLayout> layouts(descriptorSetInfo.descriptorSetCount, descriptorSetInfo.pipeline->getDescriptorSetLayout());
             VkDescriptorSetAllocateInfo allocInfo = {};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
             allocInfo.descriptorPool = descriptorSetInfo.pipeline->getDescriptorPool();
             allocInfo.descriptorSetCount = static_cast<uint32_t>(descriptorSetInfo.descriptorSetCount);
-            allocInfo.pSetLayouts = layouts.data();
+            allocInfo.pSetLayouts = &descriptorSetInfo.pipeline->getDescriptorSetLayout();
 
             // m_DescriptorSets.resize(descriptorSetInfo.descriptorSetCount);
 
@@ -32,6 +31,12 @@ namespace Yarezo {
         void YzVkDescriptorSet::update(std::vector<BufferInfo>& newBufferInfo) {
 
             std::vector<VkWriteDescriptorSet> descriptorWrites = {};
+
+            // 32 is a magic number that we use for the max number of buffer infos
+            std::vector<VkDescriptorBufferInfo> bInfo;
+            bInfo.resize(32);
+
+            uint32_t bufferIndex = 0;
 
             for (const auto& bufferInfo : newBufferInfo) {
                 if (bufferInfo.type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
@@ -51,10 +56,9 @@ namespace Yarezo {
                     descriptorWrites.push_back(descriptorWrite);
                 }
                 else {
-                    VkDescriptorBufferInfo bInfo = {};
-                    bInfo.buffer = bufferInfo.buffer;
-                    bInfo.offset = bufferInfo.offset;
-                    bInfo.range = bufferInfo.size;
+                    bInfo[bufferIndex].buffer = bufferInfo.buffer;
+                    bInfo[bufferIndex].offset = bufferInfo.offset;
+                    bInfo[bufferIndex].range = bufferInfo.size;
 
                     VkWriteDescriptorSet descriptorWrite = {};
                     descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -62,9 +66,10 @@ namespace Yarezo {
                     descriptorWrite.dstBinding = bufferInfo.binding;
                     descriptorWrite.descriptorType = bufferInfo.type;
                     descriptorWrite.descriptorCount = 1;
-                    descriptorWrite.pBufferInfo = &bInfo;
+                    descriptorWrite.pBufferInfo = &bInfo[bufferIndex];
 
                     descriptorWrites.push_back(descriptorWrite);
+                    bufferIndex++;
                 }
             }
             vkUpdateDescriptorSets(YzVkDevice::instance()->getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
