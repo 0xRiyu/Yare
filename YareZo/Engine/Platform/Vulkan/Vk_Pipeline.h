@@ -12,6 +12,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
 
+#define MAX_NUM_TEXTURES 256
+
 namespace Yarezo {
     namespace Graphics {
 

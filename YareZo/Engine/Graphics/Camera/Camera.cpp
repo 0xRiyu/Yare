@@ -8,12 +8,13 @@ namespace Yarezo::Graphics {
 
     Camera::Camera(const float screenWidth, const float screenHeight) {
         m_Aspect = screenWidth / screenHeight;
-        m_Position = glm::vec3(3.0f, 0.0f, 0.0f);
+        m_Position = glm::vec3(3.0f, 2.0f, 0.0f);
         m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
         m_Fov = 50.0f;
 
+        // TODO: World has X coming into the camera rather than Z
         float yaw = 0.0f;
-        float pitch = 0.0f;
+        float pitch = 32.5f;
         float roll = 0.0f;
         m_Rotation = glm::vec3(yaw, pitch, roll);
 

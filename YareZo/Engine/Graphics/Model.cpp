@@ -5,13 +5,16 @@ namespace Yarezo::Graphics {
 
     Model::Model(const std::string& filePath, const std::string& textureFilePath)
         :m_MeshFilePath(filePath), m_TextureFilePath(textureFilePath) {
-        loadMesh();
-        loadMaterial();
     }
 
     Model::~Model() {
         delete m_Mesh;
         delete m_Material;
+    }
+
+    void Model::load(){
+        loadMesh();
+        loadMaterial();
     }
 
     void Model::loadMesh() {
@@ -24,12 +27,7 @@ namespace Yarezo::Graphics {
     }
 
     void Model::loadMaterial() {
-        m_Material = new Material();
-        if (m_TextureFilePath != "") {
-            m_Material->loadTexture(m_TextureFilePath);
-        } else {
-            m_Material->loadTexture("../YareZo/Resources/Textures/default.jpg");
-        }
+        m_Material = new Material(m_TextureFilePath);
 
     }
 

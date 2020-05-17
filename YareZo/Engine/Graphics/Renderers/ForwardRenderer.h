@@ -18,6 +18,9 @@
 #include "Platform/Vulkan/Vk_Semaphore.h"
 #include "Platform/Vulkan/Vk_Image.h"
 #include "Platform/Vulkan/Vk_Renderer.h"
+
+#include <memory>
+
 #define MAX_OBJECTS 2048
 
 namespace Yarezo::Graphics {
@@ -44,14 +47,13 @@ namespace Yarezo::Graphics {
         void createDescriptorSets();
         void createCommandBuffers();
         void prepareUniformBuffers();
-        void updateUniformBuffers(uint32_t index);
+        void updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix);
 
     private:
-        // TODO Move this out of here
-        Model* m_ChaletModel;
-        Model* m_CubeModel;
-        Model* m_VikingModel;
-        glm::mat4 m_ModelPos;
+        // TODO Move this into some content management class, I have no clue what that would look like
+        std::vector<Model*> m_Models;
+        Material* m_DefaultMaterial;
+
         size_t m_DynamicAlignment = 0;
 
         YzVkRenderer*                       m_Renderer;
@@ -61,7 +63,6 @@ namespace Yarezo::Graphics {
         YzVkImage*                          m_DepthBuffer;
         std::vector<YzVkCommandBuffer*>     m_CommandBuffers;
         std::vector<YzVkFramebuffer*>       m_FrameBuffers;
-        //        std::vector<YzVkBuffer*>            m_UniformBuffers;
 
         uint32_t m_WindowWidth, m_WindowHeight;
 

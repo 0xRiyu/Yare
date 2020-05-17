@@ -10,17 +10,20 @@
 namespace Yarezo::Graphics {
 
     ForwardRenderer::ForwardRenderer() {
+        m_Models.emplace_back(new Model("../YareZo/Resources/Models/chalet.obj", "../YareZo/Resources/Textures/chalet.jpg"));
+        m_Models.emplace_back(new Model("../YareZo/Resources/Models/viking_room.obj",  "../YareZo/Resources/Textures/viking_room.png"));
+        m_Models.emplace_back(new Model("../YareZo/Resources/Models/cube.obj", "../YareZo/Resources/Textures/chalet.jpg"));
         init();
-        m_ModelPos = glm::mat4(1.0f);
     }
 
 
     ForwardRenderer::~ForwardRenderer() {
         cleanupSwapChain();
 
-        //delete m_ChaletModel;
-        delete m_VikingModel;
-        delete m_CubeModel;
+        for (auto model : m_Models){
+            delete model;
+        }
+        delete m_DefaultMaterial;
 
         delete m_Renderer;
     }
@@ -60,6 +63,12 @@ namespace Yarezo::Graphics {
         m_Renderer = new YzVkRenderer();
         m_Renderer->init();
 
+        for (auto model: m_Models) {
+            model->load();
+        }
+
+        m_DefaultMaterial = new Material();
+
         m_WindowWidth =  m_Renderer->getYzSwapchain()->getExtent().width;
         m_WindowHeight = m_Renderer->getYzSwapchain()->getExtent().height;
 
@@ -70,11 +79,6 @@ namespace Yarezo::Graphics {
         createGraphicsPipeline();
 
         createFrameBuffers();
-
-        // m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj", "../YareZo/Resources/Textures/chalet.jpg");
-        m_VikingModel = new Model("../YareZo/Resources/Models/viking_room.obj",  "../YareZo/Resources/Textures/viking_room.png");
-
-        m_CubeModel = new Model("../YareZo/Resources/Models/cube.obj", "../YareZo/Resources/Textures/chalet.jpg");
 
         prepareUniformBuffers();
 
@@ -99,13 +103,17 @@ namespace Yarezo::Graphics {
         begin();
 
         glm::mat4 model_transform = glm::mat4(1.0f);
+        model_transform = glm::translate(model_transform, glm::vec3(0.0f, -0.15f, -1.0f));
         model_transform = glm::rotate(model_transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model_transform = glm::rotate(model_transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-        submitModel(m_VikingModel, model_transform);
+        submitModel(m_Models[0], model_transform);
 
-        glm::mat4 model_transform2 = model_transform;
-        model_transform2 = glm::translate(model_transform, glm::vec3(0,2,0));
-        submitModel(m_VikingModel, model_transform2);
+        glm::mat4 model_transform2 = glm::mat4(1.0f);
+        model_transform2 = glm::translate(model_transform2, glm::vec3(0.0f, 0.0f, 1.0f));
+        model_transform2 = glm::rotate(model_transform2, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+        submitModel(m_Models[1], model_transform2);
 
         present();
 
@@ -124,14 +132,17 @@ namespace Yarezo::Graphics {
         int index = 0;
         for (auto& command : m_CommandQueue) {
 
-            m_ModelPos = command.transform;
-            updateUniformBuffers(index);
+            updateUniformBuffers(index, command.transform);
 
             YzVkCommandBuffer* currentCommandBuffer = m_CommandBuffers[m_CurrentBufferID];
 
             uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
 
             m_Pipeline->setActive(*currentCommandBuffer);
+
+            int imageIdx = command.model->getImageIdx();
+            vkCmdPushConstants(currentCommandBuffer->getCommandBuffer(), m_Pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
+
             vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
                                     VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u,
                                     1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
@@ -178,7 +189,7 @@ namespace Yarezo::Graphics {
     }
 
     void ForwardRenderer::createGraphicsPipeline() {
-        Graphics::YzVkShader shader("../YareZo/Resources/Shaders", "texture.shader");
+        Graphics::YzVkShader shader("../YareZo/Resources/Shaders", "texture_array.shader");
 
         Graphics::PipelineInfo pipelineInfo = { &shader,  m_RenderPass, m_Renderer->getYzSwapchain().get() };
         m_Pipeline = new YzVkPipeline();
@@ -234,19 +245,28 @@ namespace Yarezo::Graphics {
         dynamicBufferInfo.imageView = nullptr;
         dynamicBufferInfo.descriptorCount = 1;
 
-        BufferInfo imageBufferInfo = {};
-        imageBufferInfo.buffer = nullptr;
-        imageBufferInfo.offset = 0;
-        imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        imageBufferInfo.size = 0;
-        imageBufferInfo.binding = 2;
-        imageBufferInfo.imageSampler = m_VikingModel->getMaterial()->getTextureImage()->m_YzSampler.getSampler();
-        imageBufferInfo.imageView = m_VikingModel->getMaterial()->getTextureImage()->m_ImageView;
-        imageBufferInfo.descriptorCount = 1;
-
         bufferInfos.push_back(viewBufferInfo);
         bufferInfos.push_back(dynamicBufferInfo);
-        bufferInfos.push_back(imageBufferInfo);
+
+        BufferInfo imageBufferInfo = {};
+        imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        imageBufferInfo.binding = 2;
+        imageBufferInfo.descriptorCount = MAX_NUM_TEXTURES;
+
+        int imageIdx = 0;
+        for (auto model : m_Models) {
+            imageBufferInfo.imageSampler = model->getMaterial()->getTextureImage()->m_YzSampler.getSampler();
+            imageBufferInfo.imageView = model->getMaterial()->getTextureImage()->m_ImageView;
+            bufferInfos.push_back(imageBufferInfo);
+            model->setImageIdx(imageIdx++);
+        }
+
+        for (size_t i = m_Models.size(); i < MAX_NUM_TEXTURES; i++) {
+
+            imageBufferInfo.imageSampler = m_DefaultMaterial->getTextureImage()->m_YzSampler.getSampler();
+            imageBufferInfo.imageView = m_DefaultMaterial->getTextureImage()->m_ImageView;
+            bufferInfos.push_back(imageBufferInfo);
+        }
 
         m_DescriptorSet->update(bufferInfos);
     }
@@ -284,11 +304,11 @@ namespace Yarezo::Graphics {
         m_UniformBuffers.dynamic = new YzVkBuffer(usageFlags, dynamicPropertyFlags, dynamicBufferSize, nullptr);
     }
 
-    void ForwardRenderer::updateUniformBuffers(uint32_t index) {
+    void ForwardRenderer::updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix) {
         // TODO, store UBOs for each model we want to display in one UBO, separated by an offset
         // then bind based on that offset in the present call
         glm::mat4* uboDynamicModelPtr = (glm::mat4*)((uint64_t)m_UboDynamicData.model + (index * m_DynamicAlignment));
-        *uboDynamicModelPtr = m_ModelPos;
+        *uboDynamicModelPtr = modelMatrix;
 
         m_UniformBuffers.dynamic->setDynamicData(MAX_OBJECTS * m_DynamicAlignment, &*m_UboDynamicData.model);
 

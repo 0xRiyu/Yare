@@ -2,8 +2,12 @@
 
 namespace Yarezo::Graphics {
 
-    Material::Material() {
-
+    Material::Material(const std::string& textureFilePath) {
+        if (!textureFilePath.empty()) {
+            loadTexture(textureFilePath);
+        } else {
+            loadTexture("../YareZo/Resources/Textures/default.jpg");
+        }
     }
 
     Material::~Material() {

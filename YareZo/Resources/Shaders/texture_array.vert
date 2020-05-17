@@ -18,16 +18,9 @@ layout(location = 2) in vec2 inTexCoord;
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
 
-out gl_PerVertex 
-{
-    vec4 gl_Position;   
-};
 
 void main() {
-    mat4 modelView = uboView.view * uboInstance.model;
-    vec3 worldPos = vec3(modelView * vec4(inPosition, 1.0));
-    gl_Position = uboView.proj * modelView * vec4(inPosition.xyz, 1.0);
-
+    gl_Position = uboView.proj * uboView.view * uboInstance.model * vec4(inPosition, 1.0);
     fragColor = inColor;
     fragTexCoord = inTexCoord;
 }

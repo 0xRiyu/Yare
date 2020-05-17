@@ -9,7 +9,7 @@ namespace Yarezo::Graphics {
 
     class Material {
     public:
-        Material();
+        Material(const std::string& textureFilePath = "");
         virtual ~Material();
 
         void loadTexture(const std::string& textureFilePath);

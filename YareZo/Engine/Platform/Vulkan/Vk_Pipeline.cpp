@@ -61,7 +61,7 @@ namespace Yarezo {
             VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
             samplerLayoutBinding.binding = 2;
             samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            samplerLayoutBinding.descriptorCount = 1;
+            samplerLayoutBinding.descriptorCount = MAX_NUM_TEXTURES;
             samplerLayoutBinding.pImmutableSamplers = nullptr;
             samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
@@ -164,10 +164,17 @@ namespace Yarezo {
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
+            VkPushConstantRange pushConstantRange = {};
+            pushConstantRange.offset = 0;
+            pushConstantRange.size = sizeof(int);
+            pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
             VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo.setLayoutCount = 1;
             pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
+            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+            pipelineLayoutInfo.pushConstantRangeCount = 1;
 
             if (vkCreatePipelineLayout(YzVkDevice::instance()->getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan Pipeline Layout was unable to be created.");
@@ -205,7 +212,7 @@ namespace Yarezo {
             poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             poolSizes[1].descriptorCount = static_cast<uint32_t>(1);
             poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            poolSizes[2].descriptorCount = static_cast<uint32_t>(1);
+            poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_NUM_TEXTURES);
 
             VkDescriptorPoolCreateInfo poolInfo = {};
             poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -220,4 +227,3 @@ namespace Yarezo {
         }
     }
 }
-
