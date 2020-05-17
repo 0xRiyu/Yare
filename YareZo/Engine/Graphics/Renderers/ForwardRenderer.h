@@ -51,8 +51,6 @@ namespace Yarezo::Graphics {
         Model* m_ChaletModel;
         Model* m_CubeModel;
         Model* m_VikingModel;
-        YzVkImage* m_DefaultTextureImage;
-        YzVkImage* m_TextureImage;
         glm::mat4 m_ModelPos;
         size_t m_DynamicAlignment = 0;
 

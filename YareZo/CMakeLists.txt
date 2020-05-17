@@ -27,6 +27,7 @@ set (YAREZO_SOURCES
     # Graphics
     Engine/Graphics/Mesh.cpp
     Engine/Graphics/Model.cpp
+    Engine/Graphics/Material.cpp
     Engine/Graphics/Camera/Camera.cpp
     Engine/Graphics/Renderers/ForwardRenderer.cpp
 
@@ -83,6 +84,7 @@ set (YAREZO_HEADERS
     # Graphics
     Engine/Graphics/Mesh.h
     Engine/Graphics/Model.h
+    Engine/Graphics/Material.h
     Engine/Graphics/RenderCommand.h
     Engine/Graphics/Camera/Camera.h
     Engine/Graphics/Renderers/ForwardRenderer.h

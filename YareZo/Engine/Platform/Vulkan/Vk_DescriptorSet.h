@@ -22,6 +22,7 @@ namespace Yarezo {
             uint32_t offset;
             uint32_t size;
             int binding;
+            uint32_t descriptorCount;
         };
 
         class YzVkDescriptorSet {

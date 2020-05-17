@@ -18,11 +18,6 @@ namespace Yarezo::Graphics {
     ForwardRenderer::~ForwardRenderer() {
         cleanupSwapChain();
 
-        m_DefaultTextureImage->cleanUp();
-        delete m_DefaultTextureImage;
-        m_TextureImage->cleanUp();
-        delete m_TextureImage;
-
         //delete m_ChaletModel;
         delete m_VikingModel;
         delete m_CubeModel;
@@ -76,12 +71,10 @@ namespace Yarezo::Graphics {
 
         createFrameBuffers();
 
-        // m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj");
-        m_VikingModel = new Model("../YareZo/Resources/Models/viking_room.obj");
-        m_CubeModel = new Model("../YareZo/Resources/Models/cube.obj");
+        // m_ChaletModel = new Model("../YareZo/Resources/Models/chalet.obj", "../YareZo/Resources/Textures/chalet.jpg");
+        m_VikingModel = new Model("../YareZo/Resources/Models/viking_room.obj",  "../YareZo/Resources/Textures/viking_room.png");
 
-        m_TextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/chalet.jpg");
-        m_DefaultTextureImage = YzVkImage::createTexture2D( "../YareZo/Resources/Textures/viking_room.png");
+        m_CubeModel = new Model("../YareZo/Resources/Models/cube.obj", "../YareZo/Resources/Textures/chalet.jpg");
 
         prepareUniformBuffers();
 
@@ -122,7 +115,6 @@ namespace Yarezo::Graphics {
     void ForwardRenderer::submitModel(Model* model, const glm::mat4& transform) {
         RenderCommand renderCommand;
         renderCommand.model = model;
-        renderCommand.texture = m_TextureImage;
         renderCommand.transform = transform;
 
         m_CommandQueue.push_back(renderCommand);
@@ -230,6 +222,7 @@ namespace Yarezo::Graphics {
         viewBufferInfo.binding = 0;
         viewBufferInfo.imageSampler = nullptr;
         viewBufferInfo.imageView = nullptr;
+        viewBufferInfo.descriptorCount = 1;
 
         BufferInfo dynamicBufferInfo = {};
         dynamicBufferInfo.buffer = m_UniformBuffers.dynamic->getBuffer();
@@ -239,6 +232,7 @@ namespace Yarezo::Graphics {
         dynamicBufferInfo.binding = 1;
         dynamicBufferInfo.imageSampler = nullptr;
         dynamicBufferInfo.imageView = nullptr;
+        dynamicBufferInfo.descriptorCount = 1;
 
         BufferInfo imageBufferInfo = {};
         imageBufferInfo.buffer = nullptr;
@@ -246,8 +240,9 @@ namespace Yarezo::Graphics {
         imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         imageBufferInfo.size = 0;
         imageBufferInfo.binding = 2;
-        imageBufferInfo.imageSampler = m_DefaultTextureImage->m_YzSampler.getSampler();
-        imageBufferInfo.imageView = m_DefaultTextureImage->m_ImageView;
+        imageBufferInfo.imageSampler = m_VikingModel->getMaterial()->getTextureImage()->m_YzSampler.getSampler();
+        imageBufferInfo.imageView = m_VikingModel->getMaterial()->getTextureImage()->m_ImageView;
+        imageBufferInfo.descriptorCount = 1;
 
         bufferInfos.push_back(viewBufferInfo);
         bufferInfos.push_back(dynamicBufferInfo);

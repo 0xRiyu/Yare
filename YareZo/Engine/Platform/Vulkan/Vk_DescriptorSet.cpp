@@ -50,7 +50,7 @@ namespace Yarezo {
                     descriptorWrite.dstSet = m_DescriptorSets;
                     descriptorWrite.dstBinding = bufferInfo.binding;
                     descriptorWrite.descriptorType = bufferInfo.type;
-                    descriptorWrite.descriptorCount = 1;
+                    descriptorWrite.descriptorCount = bufferInfo.descriptorCount;
                     descriptorWrite.pImageInfo = &imageInfo;
 
                     descriptorWrites.push_back(descriptorWrite);
@@ -65,7 +65,7 @@ namespace Yarezo {
                     descriptorWrite.dstSet = m_DescriptorSets;
                     descriptorWrite.dstBinding = bufferInfo.binding;
                     descriptorWrite.descriptorType = bufferInfo.type;
-                    descriptorWrite.descriptorCount = 1;
+                    descriptorWrite.descriptorCount = bufferInfo.descriptorCount;
                     descriptorWrite.pBufferInfo = &bInfo[bufferIndex];
 
                     descriptorWrites.push_back(descriptorWrite);
