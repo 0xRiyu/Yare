@@ -60,7 +60,7 @@ namespace Yarezo {
             glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
             m_Window = glfwCreateWindow(m_Properties.width, m_Properties.height, "YareZo!", nullptr, nullptr);
             glfwSetWindowUserPointer(m_Window, this);
-            setIcon("..\\..\\..\\..\\YareZo\\Resources\\Textures\\engineLogo.png");
+            setIcon("..\\YareZo\\Resources\\Textures\\engineLogo.png");
             setFrameBufferResizeCallback();
             setKeyInputCallback();
             glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
