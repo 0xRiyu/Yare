@@ -12,9 +12,9 @@ namespace Yarezo::Graphics {
         delete m_Material;
     }
 
-    void Model::load(){
+    void Model::load(MaterialTexType textureType){
         loadMesh();
-        loadMaterial();
+        loadMaterial(textureType);
     }
 
     void Model::loadMesh() {
@@ -26,8 +26,8 @@ namespace Yarezo::Graphics {
         m_Mesh = new Mesh(vertices, indices);
     }
 
-    void Model::loadMaterial() {
-        m_Material = new Material(m_TextureFilePath);
+    void Model::loadMaterial(MaterialTexType textureType) {
+        m_Material = new Material(m_TextureFilePath, textureType);
 
     }
 

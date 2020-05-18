@@ -53,7 +53,11 @@ namespace Yarezo {
             YzVkShader* shader;
             YzVkRenderPass* renderpass;
             YzVkSwapchain* swapchain;
-
+            bool depthWriteEnable;
+            bool depthTestEnable;
+            VkCullModeFlags cullMode;
+            std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
+            uint32_t maxObjects;
         };
 
         class YzVkPipeline {
@@ -72,10 +76,12 @@ namespace Yarezo {
 
         private:
             void createDescriptorSetLayout();
-            void createGraphicsPipeline(PipelineInfo& pipelineInfo);
-            void createDescriptorPool(PipelineInfo& pipelineInfo);
+            void createGraphicsPipeline();
+            void createDescriptorPool();
 
         private:
+            PipelineInfo m_PipelineInfo;
+
             VkDescriptorPool m_DescriptorPool;
             VkDescriptorSetLayout m_DescriptorSetLayout;
             VkPipelineLayout m_PipelineLayout;

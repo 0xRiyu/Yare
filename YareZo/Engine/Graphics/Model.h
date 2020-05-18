@@ -13,7 +13,7 @@ namespace Yarezo::Graphics {
         Model(const std::string& meshFilePath, const std::string& textureFilePath = "");
         ~Model();
 
-        void load();
+        void load(MaterialTexType textureType);
 
         const Mesh* getMesh() const { return m_Mesh; }
         const Material* getMaterial() const { return m_Material; }
@@ -22,7 +22,7 @@ namespace Yarezo::Graphics {
 
     private:
         void loadMesh();
-        void loadMaterial();
+        void loadMaterial(MaterialTexType textureType);
 
         Mesh* m_Mesh;
         Material* m_Material;

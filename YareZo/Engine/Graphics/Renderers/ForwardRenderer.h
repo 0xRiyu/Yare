@@ -19,8 +19,6 @@
 #include "Platform/Vulkan/Vk_Image.h"
 #include "Platform/Vulkan/Vk_Renderer.h"
 
-#include <memory>
-
 #define MAX_OBJECTS 2048
 
 namespace Yarezo::Graphics {
@@ -52,14 +50,24 @@ namespace Yarezo::Graphics {
     private:
         // TODO Move this into some content management class, I have no clue what that would look like
         std::vector<Model*> m_Models;
+        Model* m_SkyboxModel;
         Material* m_DefaultMaterial;
 
         size_t m_DynamicAlignment = 0;
 
         YzVkRenderer*                       m_Renderer;
-        YzVkPipeline*                       m_Pipeline;
+
+        struct {
+            YzVkPipeline*  pipeline;
+            YzVkPipeline*  skybox;
+        } m_Pipelines;
+
+        struct {
+            YzVkDescriptorSet* descriptorSet;
+            YzVkDescriptorSet* skybox;
+        } m_DescriptorSets;
+
         YzVkRenderPass*                     m_RenderPass;
-        YzVkDescriptorSet*                  m_DescriptorSet;
         YzVkImage*                          m_DepthBuffer;
         std::vector<YzVkCommandBuffer*>     m_CommandBuffers;
         std::vector<YzVkFramebuffer*>       m_FrameBuffers;
@@ -71,9 +79,11 @@ namespace Yarezo::Graphics {
         struct UniformBuffers {
             YzVkBuffer* view;
             YzVkBuffer* dynamic;
+            YzVkBuffer* skybox;
         } m_UniformBuffers;
 
         UboDataDynamic m_UboDynamicData;
+        bool showSkybox = true;
 };
 
 }

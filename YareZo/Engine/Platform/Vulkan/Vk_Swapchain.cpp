@@ -14,7 +14,7 @@ namespace Yarezo {
 
         void YzVkSwapchain::init() {
             // Create a swapchain, a swapchain is responsible for maintaining the images
-            // that will be presented to the user. 
+            // that will be presented to the user.
             createSwapchain();
             // Create and image-view, which will represent a 'view' of an image,
             // this way we can interface with images without modifying the underlying image
@@ -110,7 +110,7 @@ namespace Yarezo {
             m_SwapchainImageViews.resize(getImagesSize());
 
             for (uint32_t i = 0; i < getImagesSize(); i++) {
-                m_SwapchainImageViews[i] = VkUtil::createImageView(m_SwapchainImages[i], m_SwapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+                m_SwapchainImageViews[i] = VkUtil::createImageView(m_SwapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, m_SwapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
             }
         }
 

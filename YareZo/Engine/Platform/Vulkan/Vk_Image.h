@@ -2,55 +2,55 @@
 #define YAREZO_VK_IMAGE_H
 
 #include "Platform/Vulkan/Vk.h"
+#include "Platform/Vulkan/Vk_Buffer.h"
+
 #include <string>
 
-namespace Yarezo {
-	namespace Graphics {
+namespace Yarezo::Graphics {
+    class YzVkImage {
+    protected:
+        // Only allow the static constructors
+        YzVkImage();
 
-		class YzVkSampler {
-		public:
-			YzVkSampler();
-			~YzVkSampler();
+    public:
+        ~YzVkImage();
 
-			void init();
-			void cleanUp();
+        void createTexture2DFromFile(const std::string& filePath);
+        void createTextureCubeFromFile(const std::string& filePath);
+        void createEmptyTexture(size_t width, size_t height, VkFormat format,
+                                VkImageTiling tiling, VkImageUsageFlags usage,
+                                VkMemoryPropertyFlags properties, VkImageAspectFlagBits flagBits);
 
-			const VkSampler& getSampler() const { return m_Sampler; }
+        const VkImage&         getImage()     const { return m_Image; }
+        const VkDeviceMemory&  getMemory()    const { return m_ImageMemory; }
+        const VkImageView&     getImageView() const { return m_ImageView; }
+        const VkSampler&       getSampler()   const { return m_Sampler; }
 
-		private:
-			VkSampler m_Sampler = VK_NULL_HANDLE;
+    private:
+        void loadTextureFromFileIntoBuffer(const std::string& filePath, YzVkBuffer& buffer);
+        void createTexture2D(const YzVkBuffer& buffer);
+        void createTextureCube(const YzVkBuffer& buffer);
+        void transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void copyBufferToImage(const YzVkBuffer& buffer, uint32_t faces, uint32_t mipLevels);
 
-		};
+        void createImage(VkImageType type, VkFormat format, VkImageTiling tiling,
+                         VkImageUsageFlags usage, VkImageCreateFlags flags,
+                         VkMemoryPropertyFlags properties);
+        void createSampler();
 
+        VkImage         m_Image       = VK_NULL_HANDLE;
+        VkDeviceMemory  m_ImageMemory = VK_NULL_HANDLE;
+        VkImageView     m_ImageView   = VK_NULL_HANDLE;
+        VkSampler       m_Sampler     = VK_NULL_HANDLE;
 
-		class YzVkImage {
-		public:
-			YzVkImage();
-			~YzVkImage();
+        size_t m_TextureWidth;
+        size_t m_TextureHeight;
 
-			void createTexture(uint32_t width, uint32_t height, VkBuffer buffer);
-			void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties);
-			void createImageView(VkFormat format, VkImageAspectFlags flags);
-			void createSampler();
-
-			void transitionImageLayout(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-			void cleanUp();
-
-		public:
-			static YzVkImage* createEmptyTexture(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImageAspectFlagBits flagBits);
-			static YzVkImage* createDepthStencilBuffer(VkFormat format, uint32_t width, uint32_t height);
-
-			static YzVkImage* createTexture2D(const std::string& filePath);
-
-		public:
-			VkImage			m_Image;
-			VkDeviceMemory	m_ImageMemory;
-			VkImageView		m_ImageView;
-			YzVkSampler		m_YzSampler;
-		};
-
-	}
+    public:
+        static YzVkImage* createDepthStencilBuffer(size_t width, size_t height, VkFormat format);
+        static YzVkImage* createTexture2D(const std::string& filePath);
+        static YzVkImage* createTextureCube(const std::string& filePath);
+    };
 }
 
-
-#endif // !YAREZO_VK_IMAGE_H
+#endif // YAREZO_VK_IMAGE_H

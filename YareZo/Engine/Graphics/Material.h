@@ -7,12 +7,14 @@
 
 namespace Yarezo::Graphics {
 
+    enum class MaterialTexType { TextureCube, Texture2D };
+
     class Material {
     public:
-        Material(const std::string& textureFilePath = "");
+        Material(const std::string& textureFilePath = "", MaterialTexType type = MaterialTexType::Texture2D);
         virtual ~Material();
 
-        void loadTexture(const std::string& textureFilePath);
+        void loadTexture(const std::string& textureFilePath, MaterialTexType type);
         const YzVkImage* getTextureImage() const { return m_Texture; }
 
     private:

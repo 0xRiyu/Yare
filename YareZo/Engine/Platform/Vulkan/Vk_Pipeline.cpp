@@ -11,16 +11,17 @@ namespace Yarezo {
         }
 
         void YzVkPipeline::init(PipelineInfo& pipelineInfo) {
+            m_PipelineInfo = pipelineInfo;
             // A descriptor is a special opaque shader variable that shaders use to access buffer and image
             // resources in an indirect fashion. It can be thought of as a "pointer" to a resource.
             // The layout is used to describe the content of a list of descriptor sets
             createDescriptorSetLayout();
 
             // Pipeline yay
-            createGraphicsPipeline(pipelineInfo);
+            createGraphicsPipeline();
 
             // Descriptor sets can't be created directly, they must be allocated from a pool like command buffers. We create those here.
-            createDescriptorPool(pipelineInfo);
+            createDescriptorPool();
         }
 
         void YzVkPipeline::cleanUp() {
@@ -44,39 +45,17 @@ namespace Yarezo {
 
         void YzVkPipeline::createDescriptorSetLayout() {
 
-            VkDescriptorSetLayoutBinding viewUboLayoutBinding = {};
-            viewUboLayoutBinding.binding = 0;
-            viewUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            viewUboLayoutBinding.descriptorCount = 1;
-            // We are only using this in the vertex shader
-            viewUboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-            VkDescriptorSetLayoutBinding dynamicUboLayoutBinding = {};
-            dynamicUboLayoutBinding.binding = 1;
-            dynamicUboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-            dynamicUboLayoutBinding.descriptorCount = 1;
-            // We are only using this in the vertex shader
-            dynamicUboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-            VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
-            samplerLayoutBinding.binding = 2;
-            samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            samplerLayoutBinding.descriptorCount = MAX_NUM_TEXTURES;
-            samplerLayoutBinding.pImmutableSamplers = nullptr;
-            samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-            std::array<VkDescriptorSetLayoutBinding, 3> bindings = { viewUboLayoutBinding, dynamicUboLayoutBinding, samplerLayoutBinding };
             VkDescriptorSetLayoutCreateInfo layoutInfo = {};
             layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-            layoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-            layoutInfo.pBindings = bindings.data();
+            layoutInfo.bindingCount = static_cast<uint32_t>(m_PipelineInfo.layoutBindings.size());
+            layoutInfo.pBindings = m_PipelineInfo.layoutBindings.data();
 
             if (vkCreateDescriptorSetLayout(YzVkDevice::instance()->getDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan was unable to create a descriptor set layout.");
             }
         }
 
-        void YzVkPipeline::createGraphicsPipeline(PipelineInfo& pipelineInfo) {
+        void YzVkPipeline::createGraphicsPipeline() {
             auto bindingDescription = VulkanVertex::getBindingDescription();
             auto attributeDescriptions = VulkanVertex::getAttributeDescriptions();
 
@@ -95,14 +74,14 @@ namespace Yarezo {
             VkViewport viewport = {};
             viewport.x = 0.0f;
             viewport.y = 0.0f;
-            viewport.width = (float)pipelineInfo.swapchain->getExtent().width;
-            viewport.height = (float)pipelineInfo.swapchain->getExtent().height;
+            viewport.width = (float)m_PipelineInfo.swapchain->getExtent().width;
+            viewport.height = (float)m_PipelineInfo.swapchain->getExtent().height;
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
 
             VkRect2D scissor = {};
             scissor.offset = { 0,0 };
-            scissor.extent = pipelineInfo.swapchain->getExtent();
+            scissor.extent = m_PipelineInfo.swapchain->getExtent();
 
             VkPipelineViewportStateCreateInfo viewportState = {};
             viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -139,8 +118,8 @@ namespace Yarezo {
 
             VkPipelineDepthStencilStateCreateInfo depthStencil = {};
             depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-            depthStencil.depthTestEnable = VK_TRUE;
-            depthStencil.depthWriteEnable = VK_TRUE;
+            depthStencil.depthTestEnable = m_PipelineInfo.depthTestEnable;
+            depthStencil.depthWriteEnable = m_PipelineInfo.depthWriteEnable;
             depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
             depthStencil.depthBoundsTestEnable = VK_FALSE;
             depthStencil.stencilTestEnable = VK_FALSE;
@@ -182,8 +161,8 @@ namespace Yarezo {
 
             VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
             pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-            pipelineCreateInfo.stageCount = pipelineInfo.shader->getStageCount();
-            pipelineCreateInfo.pStages = pipelineInfo.shader->getShaderStages();
+            pipelineCreateInfo.stageCount = m_PipelineInfo.shader->getStageCount();
+            pipelineCreateInfo.pStages = m_PipelineInfo.shader->getShaderStages();
             pipelineCreateInfo.pVertexInputState = &vertexInputInfo;
             pipelineCreateInfo.pInputAssemblyState = &inputAssembly;
             pipelineCreateInfo.pViewportState = &viewportState;
@@ -193,7 +172,7 @@ namespace Yarezo {
             pipelineCreateInfo.pColorBlendState = &colorBlending;
             pipelineCreateInfo.pDynamicState = nullptr; // Optional
             pipelineCreateInfo.layout = m_PipelineLayout;
-            pipelineCreateInfo.renderPass = pipelineInfo.renderpass->getRenderPass();
+            pipelineCreateInfo.renderPass = m_PipelineInfo.renderpass->getRenderPass();
             pipelineCreateInfo.subpass = 0;
             pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
@@ -203,22 +182,22 @@ namespace Yarezo {
 
 
         }
-        void YzVkPipeline::createDescriptorPool(PipelineInfo& pipelineInfo) {
-            size_t swapchainImagesSize = pipelineInfo.swapchain->getImagesSize();
+        void YzVkPipeline::createDescriptorPool() {
 
-            std::array<VkDescriptorPoolSize, 3> poolSizes = {};
-            poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            poolSizes[0].descriptorCount = static_cast<uint32_t>(1);
-            poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-            poolSizes[1].descriptorCount = static_cast<uint32_t>(1);
-            poolSizes[2].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            poolSizes[2].descriptorCount = static_cast<uint32_t>(MAX_NUM_TEXTURES);
+            std::vector<VkDescriptorPoolSize> poolSizes(m_PipelineInfo.layoutBindings.size());
+
+            int bindingIndex = 0;
+            for (auto binding : m_PipelineInfo.layoutBindings) {
+                poolSizes[bindingIndex].type = binding.descriptorType;
+                poolSizes[bindingIndex].descriptorCount = binding.descriptorCount;
+                bindingIndex++;
+            }
 
             VkDescriptorPoolCreateInfo poolInfo = {};
             poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
             poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
             poolInfo.pPoolSizes = poolSizes.data();
-            poolInfo.maxSets = static_cast<uint32_t>(2);
+            poolInfo.maxSets = m_PipelineInfo.maxObjects;
 
             if (vkCreateDescriptorPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan creation of descriptor pool failed.");
