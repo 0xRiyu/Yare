@@ -110,7 +110,7 @@ namespace Yarezo {
             m_SwapchainImageViews.resize(getImagesSize());
 
             for (uint32_t i = 0; i < getImagesSize(); i++) {
-                m_SwapchainImageViews[i] = VkUtil::createImageView(m_SwapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, m_SwapchainImageFormat, VK_IMAGE_ASPECT_COLOR_BIT);
+                m_SwapchainImageViews[i] = VkUtil::createImageView(m_SwapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, m_SwapchainImageFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT);
             }
         }
 

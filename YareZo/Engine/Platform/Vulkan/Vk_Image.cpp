@@ -43,7 +43,7 @@ namespace Yarezo::Graphics {
         m_TextureWidth = width;
         m_TextureHeight = height;
         createImage(VK_IMAGE_TYPE_2D, format, tiling, usage, 0, properties);
-        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, format, flagBits);
+        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, format, 1, flagBits);
     }
 
     void YzVkImage::loadTextureFromFileIntoBuffer(const std::string& filePath, YzVkBuffer& buffer) {
@@ -73,7 +73,7 @@ namespace Yarezo::Graphics {
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
-                                              VK_IMAGE_ASPECT_COLOR_BIT);
+                                              1, VK_IMAGE_ASPECT_COLOR_BIT);
 
         transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 1, VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -81,7 +81,7 @@ namespace Yarezo::Graphics {
         transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        createSampler();
+        createSampler(VK_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
     void YzVkImage::createTextureCube(const YzVkBuffer& buffer) {
@@ -91,7 +91,7 @@ namespace Yarezo::Graphics {
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_CUBE, VK_FORMAT_R8G8B8A8_SRGB,
-                                              VK_IMAGE_ASPECT_COLOR_BIT);
+                                              6, VK_IMAGE_ASPECT_COLOR_BIT);
 
         transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 6, VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -101,7 +101,7 @@ namespace Yarezo::Graphics {
         transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 6, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        createSampler();
+        createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
     void YzVkImage::transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout) {
@@ -228,14 +228,14 @@ namespace Yarezo::Graphics {
         }
     }
 
-    void YzVkImage::createSampler() {
+    void YzVkImage::createSampler(VkSamplerAddressMode mode) {
         VkSamplerCreateInfo samplerInfo = {};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.magFilter = VK_FILTER_LINEAR;
         samplerInfo.minFilter = VK_FILTER_LINEAR;
-        samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-        samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        samplerInfo.addressModeU = mode;
+        samplerInfo.addressModeV = mode;
+        samplerInfo.addressModeW = mode;
         samplerInfo.anisotropyEnable = VK_TRUE;
         samplerInfo.maxAnisotropy = 16;
         samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;

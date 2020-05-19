@@ -334,6 +334,7 @@ namespace Yarezo::Graphics {
         m_SkyboxModel->load(MaterialTexType::TextureCube);
 
         bufferInfos.clear();
+        viewBufferInfo.buffer = m_UniformBuffers.skybox->getBuffer();
         bufferInfos.push_back(viewBufferInfo);
 
         imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -378,11 +379,9 @@ namespace Yarezo::Graphics {
 
         m_UniformBuffers.view = new YzVkBuffer(usageFlags, viewPropertyFlags, viewBufferSize, nullptr);
         m_UniformBuffers.dynamic = new YzVkBuffer(usageFlags, dynamicPropertyFlags, dynamicBufferSize, nullptr);
-
-
         m_UniformBuffers.skybox = new YzVkBuffer(usageFlags, viewPropertyFlags, viewBufferSize, nullptr);
 
-
+        updateUniformBuffers(0, glm::mat4(1));
     }
 
     void ForwardRenderer::updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix) {
@@ -400,8 +399,11 @@ namespace Yarezo::Graphics {
 
         m_UniformBuffers.view->setData(sizeof(uboVS), &uboVS);
 
-        uboVS.view[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-        m_UniformBuffers.skybox->setData(sizeof(uboVS), &uboVS);
+        UniformVS skyboxVS = uboVS;
+
+        skyboxVS.view[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        m_UniformBuffers.skybox->setData(sizeof(skyboxVS), &skyboxVS);
 
 
     }

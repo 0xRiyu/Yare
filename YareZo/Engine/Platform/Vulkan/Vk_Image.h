@@ -36,15 +36,15 @@ namespace Yarezo::Graphics {
         void createImage(VkImageType type, VkFormat format, VkImageTiling tiling,
                          VkImageUsageFlags usage, VkImageCreateFlags flags,
                          VkMemoryPropertyFlags properties);
-        void createSampler();
+        void createSampler(VkSamplerAddressMode mode);
 
         VkImage         m_Image       = VK_NULL_HANDLE;
         VkDeviceMemory  m_ImageMemory = VK_NULL_HANDLE;
         VkImageView     m_ImageView   = VK_NULL_HANDLE;
         VkSampler       m_Sampler     = VK_NULL_HANDLE;
 
-        size_t m_TextureWidth;
-        size_t m_TextureHeight;
+        size_t m_TextureWidth = 0;
+        size_t m_TextureHeight = 0;
 
     public:
         static YzVkImage* createDepthStencilBuffer(size_t width, size_t height, VkFormat format);
