@@ -1,8 +1,5 @@
 ![YareZoEngineGraphic](https://i.imgur.com/y3som7P.png)
 
-# YareZo [![Build status](https://ci.appveyor.com/api/projects/status/ibi6um09v5j03068?svg=true)](https://ci.appveyor.com/project/Resoona/yarezo)
-![YareZoEngineGraphic](https://i.imgur.com/y3som7P.png)
-
 # YareZo [![Build status](https://ci.appveyor.com/api/projects/status/ibi6um09v5j03068?svg=true)](https://ci.appveyor.com/project/Resoona/yarezo)  
 A Vulkan Rendering Engine  
 A Collaborative project between Resoona & PhaseRush   
