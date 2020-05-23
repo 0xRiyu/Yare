@@ -17,6 +17,7 @@ namespace Yarezo::Graphics {
 
         void createTexture2DFromFile(const std::string& filePath);
         void createTextureCubeFromFile(const std::string& filePath);
+        void createTextureCubeFromFiles(const std::vector<std::string>& filePaths);
         void createEmptyTexture(size_t width, size_t height, VkFormat format,
                                 VkImageTiling tiling, VkImageUsageFlags usage,
                                 VkMemoryPropertyFlags properties, VkImageAspectFlagBits flagBits);
@@ -28,6 +29,7 @@ namespace Yarezo::Graphics {
 
     private:
         void loadTextureFromFileIntoBuffer(const std::string& filePath, YzVkBuffer& buffer);
+        void loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths, YzVkBuffer& buffer);
         void createTexture2D(const YzVkBuffer& buffer);
         void createTextureCube(const YzVkBuffer& buffer);
         void transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout);
@@ -45,11 +47,12 @@ namespace Yarezo::Graphics {
 
         size_t m_TextureWidth = 0;
         size_t m_TextureHeight = 0;
+        size_t m_TextureChannels = 0;
 
     public:
         static YzVkImage* createDepthStencilBuffer(size_t width, size_t height, VkFormat format);
         static YzVkImage* createTexture2D(const std::string& filePath);
-        static YzVkImage* createTextureCube(const std::string& filePath);
+        static YzVkImage* createTextureCube(const std::vector<std::string>& filePaths);
     };
 }
 

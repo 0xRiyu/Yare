@@ -1,12 +1,13 @@
 #include "Graphics/Material.h"
+#include "Core/Yzh.h"
 
 namespace Yarezo::Graphics {
 
-    Material::Material(const std::string& textureFilePath, MaterialTexType type) {
-        if (!textureFilePath.empty()) {
-            loadTexture(textureFilePath, type);
+    Material::Material(const std::vector<std::string>& textureFilePaths, MaterialTexType type) {
+        if (!textureFilePaths.empty()) {
+            loadTexture(textureFilePaths, type);
         } else {
-            loadTexture("../YareZo/Resources/Textures/default.jpg", type);
+            loadTexture({"../YareZo/Resources/Textures/default.jpg"}, type);
         }
     }
 
@@ -16,14 +17,18 @@ namespace Yarezo::Graphics {
         }
     }
 
-    void Material::loadTexture(const std::string& textureFilePath, MaterialTexType type) {
+    void Material::loadTexture(const std::vector<std::string>& textureFilePaths, MaterialTexType type) {
+        if (textureFilePaths.empty()) {
+            YZ_CRITICAL("No texture files were provided to the Material");
+        }
+
         switch (type) {
         case MaterialTexType::TextureCube: {
-            m_Texture = YzVkImage::createTextureCube(textureFilePath);
+            m_Texture = YzVkImage::createTextureCube(textureFilePaths);
             break;
         }
         case MaterialTexType::Texture2D: {
-            m_Texture = YzVkImage::createTexture2D(textureFilePath);
+            m_Texture = YzVkImage::createTexture2D(textureFilePaths[0]);
             break;
         }
         }

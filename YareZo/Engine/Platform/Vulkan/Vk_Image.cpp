@@ -4,6 +4,7 @@
 #include "Platform/Vulkan/Vk_Utilities.h"
 
 #include <stb/stb_image.h>
+#include <stdlib.h>
 
 namespace Yarezo::Graphics {
 
@@ -37,6 +38,12 @@ namespace Yarezo::Graphics {
         createTextureCube(stagingBuffer);
     }
 
+    void YzVkImage::createTextureCubeFromFiles(const std::vector<std::string>& filePaths) {
+        YzVkBuffer stagingBuffer;
+        loadTexturesFromFilesIntoBuffer(filePaths, stagingBuffer);
+        createTextureCube(stagingBuffer);
+    }
+
     void YzVkImage::createEmptyTexture(size_t width, size_t height, VkFormat format,
                                        VkImageTiling tiling, VkImageUsageFlags usage,
                                        VkMemoryPropertyFlags properties, VkImageAspectFlagBits flagBits) {
@@ -64,6 +71,47 @@ namespace Yarezo::Graphics {
                     imageSize, pixels);
 
         stbi_image_free(pixels);
+    }
+
+    void YzVkImage::loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths,
+                                                    YzVkBuffer& buffer) {
+        // allocate some memory for us to store our images in sequence
+        // width * height * r/g/b/a * 20 images
+        uint32_t max_size = 2048 * 2048 * 4 * 20;
+        unsigned char* images = (unsigned char*)malloc(max_size);
+        size_t total_images_size = 0;
+
+        for (const auto& filePath : filePaths) {
+            // Load each image into a buffer
+            int texWidth, texHeight, texChannels;
+            stbi_uc* image = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+            if (!image) {
+                YZ_CRITICAL("stbi_load failed to load a texture from file.");
+            }
+            VkDeviceSize imageSize = texWidth * texHeight * 4 /* STBI_rgb_alpha */;
+            if (total_images_size + imageSize > max_size) {
+                YZ_CRITICAL("VK_Image: Not enough memory was allocated to store images");
+            }
+            // Copy the image into our buffer so we can access it later based on an offset
+            memcpy(images, image, imageSize);
+            // Increment the ptr to the starting address of the next image we want to store
+            images += imageSize;
+
+            // Keep track of how many bytes were copied into the buffer
+            total_images_size += imageSize;
+
+            // I dont know how to handle textures of different sizes yet
+            m_TextureWidth = static_cast<size_t>(texWidth);
+            m_TextureHeight = static_cast<size_t>(texHeight);
+
+            stbi_image_free(image);
+        }
+
+        images -= total_images_size;
+
+        buffer.init(VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                    total_images_size, images);
     }
 
     void YzVkImage::createTexture2D(const YzVkBuffer& buffer) {
@@ -159,8 +207,8 @@ namespace Yarezo::Graphics {
 
         for (uint32_t face = 0; face < faces; face++) {
             for (uint32_t level = 0; level < mipLevels; level++) {
-                // This needs to be updated from the texture?
-                uint32_t offset = 0;
+                // This assumes the buffer has only n required images and nothing more
+                uint32_t offset = (static_cast<uint32_t>(buffer.getSize()) / faces) * face;
                 VkBufferImageCopy bufferCopyRegion = {};
                 bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 bufferCopyRegion.imageSubresource.mipLevel = level;
@@ -266,9 +314,16 @@ namespace Yarezo::Graphics {
         return image;
     }
 
-    YzVkImage* YzVkImage::createTextureCube(const std::string& filePath) {
+    YzVkImage* YzVkImage::createTextureCube(const std::vector<std::string>& filePaths) {
         YzVkImage* image = new YzVkImage();
-        image->createTextureCubeFromFile(filePath);
+        if (filePaths.empty()) {
+            YZ_ERROR("Texture Cube filepaths vector is empty.");
+        }
+        if (filePaths.size() == 1) {
+            image->createTextureCubeFromFile(filePaths[0]);
+        } else {
+            image->createTextureCubeFromFiles(filePaths);
+        }
         return image;
     }
 }

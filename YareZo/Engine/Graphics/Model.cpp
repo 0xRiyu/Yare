@@ -4,7 +4,11 @@
 namespace Yarezo::Graphics {
 
     Model::Model(const std::string& filePath, const std::string& textureFilePath)
-        :m_MeshFilePath(filePath), m_TextureFilePath(textureFilePath) {
+        :m_MeshFilePath(filePath), m_TextureFilePath( std::vector{textureFilePath}) {
+    }
+
+    Model::Model(const std::string& filePath, const std::vector<std::string>& textureFilePaths)
+        :m_MeshFilePath(filePath), m_TextureFilePath(textureFilePaths) {
     }
 
     Model::~Model() {

@@ -102,7 +102,7 @@ namespace Yarezo {
         }
 
         void YzVkBuffer::unmapMemory() {
-            vkUnmapMemory(YzVkDevice::instance()->getDevice(), m_BufferMemory); 
+            vkUnmapMemory(YzVkDevice::instance()->getDevice(), m_BufferMemory);
         }
 
         void YzVkBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {

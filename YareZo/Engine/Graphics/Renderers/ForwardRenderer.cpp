@@ -330,7 +330,16 @@ namespace Yarezo::Graphics {
 
         m_DescriptorSets.descriptorSet->update(bufferInfos);
 
-        m_SkyboxModel = new Model("../YareZo/Resources/Models/cube.obj");
+        std::vector<std::string> skyboxTextures = {
+                                                   "../YareZo/Resources/Textures/skybox/posx.jpg",
+                                                   "../YareZo/Resources/Textures/skybox/negx.jpg",
+                                                   "../YareZo/Resources/Textures/skybox/posy.jpg",
+                                                   "../YareZo/Resources/Textures/skybox/negy.jpg",
+                                                   "../YareZo/Resources/Textures/skybox/posz.jpg",
+                                                   "../YareZo/Resources/Textures/skybox/negz.jpg",
+        };
+
+        m_SkyboxModel = new Model("../YareZo/Resources/Models/cube.obj", skyboxTextures);
         m_SkyboxModel->load(MaterialTexType::TextureCube);
 
         bufferInfos.clear();

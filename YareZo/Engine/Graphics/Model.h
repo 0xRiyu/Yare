@@ -5,12 +5,14 @@
 #include "Graphics/Material.h"
 
 #include <string>
+#include <vector>
 
 namespace Yarezo::Graphics {
 
     class Model {
     public:
         Model(const std::string& meshFilePath, const std::string& textureFilePath = "");
+        Model(const std::string& meshFilePath, const std::vector<std::string>& textureFilesPaths);
         ~Model();
 
         void load(MaterialTexType textureType);
@@ -28,7 +30,7 @@ namespace Yarezo::Graphics {
         Material* m_Material;
 
         std::string m_MeshFilePath;
-        std::string m_TextureFilePath;
+        std::vector<std::string> m_TextureFilePath;
 
         int m_ImageIdx = 0;
     };
