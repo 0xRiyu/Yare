@@ -58,6 +58,7 @@ namespace Yarezo {
             VkCullModeFlags cullMode;
             std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
             uint32_t maxObjects;
+            uint32_t numVertexLayouts;
         };
 
         class YzVkPipeline {

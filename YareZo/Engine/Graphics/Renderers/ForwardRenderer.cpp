@@ -220,6 +220,7 @@ namespace Yarezo::Graphics {
         pipelineInfo.depthTestEnable = VK_TRUE;
         pipelineInfo.depthWriteEnable = VK_TRUE;
         pipelineInfo.maxObjects = 2;
+        pipelineInfo.numVertexLayouts = 3;
 
         //                                       Binding, DescriptorType, DescriptorCount, StageFlags, pImmuatbleSamplers
         pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -237,6 +238,7 @@ namespace Yarezo::Graphics {
         pipelineInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
         pipelineInfo.depthTestEnable = VK_FALSE;
         pipelineInfo.depthWriteEnable = VK_FALSE;
+        pipelineInfo.numVertexLayouts = 1;
 
         pipelineInfo.layoutBindings.clear();
         pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

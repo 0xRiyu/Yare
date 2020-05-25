@@ -63,8 +63,14 @@ namespace Yarezo {
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertexInputInfo.vertexBindingDescriptionCount = 1;
             vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-            vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+            vertexInputInfo.vertexAttributeDescriptionCount = m_PipelineInfo.numVertexLayouts;
+
+            std::vector<VkVertexInputAttributeDescription> inputDescriptions;
+            for (uint32_t i = 0; i < m_PipelineInfo.numVertexLayouts; ++i) {
+                inputDescriptions.push_back(attributeDescriptions[i]);
+            }
+
+            vertexInputInfo.pVertexAttributeDescriptions = inputDescriptions.data();
 
             VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
             inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
