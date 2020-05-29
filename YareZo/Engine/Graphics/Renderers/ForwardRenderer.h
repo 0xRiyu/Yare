@@ -5,19 +5,19 @@
 
 #include "Core/DataStructures.h"
 
-#include "Platform/Vulkan/Vk_Instance.h"
-#include "Platform/Vulkan/Vk_Devices.h"
-#include "Platform/Vulkan/Vk_Swapchain.h"
-#include "Platform/Vulkan/Vk_Renderpass.h"
-#include "Platform/Vulkan/Vk_Pipeline.h"
-#include "Platform/Vulkan/Vk_Framebuffer.h"
-#include "Platform/Vulkan/Vk_CommandPool.h"
-#include "Platform/Vulkan/Vk_Buffer.h"
-#include "Platform/Vulkan/Vk_DescriptorSet.h"
-#include "Platform/Vulkan/Vk_CommandBuffer.h"
-#include "Platform/Vulkan/Vk_Semaphore.h"
-#include "Platform/Vulkan/Vk_Image.h"
-#include "Platform/Vulkan/Vk_Renderer.h"
+#include "Graphics/Vulkan/Vk_Instance.h"
+#include "Graphics/Vulkan/Vk_Devices.h"
+#include "Graphics/Vulkan/Vk_Swapchain.h"
+#include "Graphics/Vulkan/Vk_Renderpass.h"
+#include "Graphics/Vulkan/Vk_Pipeline.h"
+#include "Graphics/Vulkan/Vk_Framebuffer.h"
+#include "Graphics/Vulkan/Vk_CommandPool.h"
+#include "Graphics/Vulkan/Vk_Buffer.h"
+#include "Graphics/Vulkan/Vk_DescriptorSet.h"
+#include "Graphics/Vulkan/Vk_CommandBuffer.h"
+#include "Graphics/Vulkan/Vk_Semaphore.h"
+#include "Graphics/Vulkan/Vk_Image.h"
+#include "Graphics/Vulkan/Vk_Renderer.h"
 
 #define MAX_OBJECTS 2048
 

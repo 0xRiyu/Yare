@@ -6,7 +6,6 @@ namespace Yarezo::Graphics {
         createBuffers(vertices, indices);
     }
 
-
     Mesh::~Mesh() {
         delete m_VertexBuffer;
         delete m_IndexBuffer;

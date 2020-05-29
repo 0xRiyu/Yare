@@ -1,7 +1,7 @@
 #ifndef YAREZO_MESH_H
 #define YAREZO_MESH_H
 
-#include "Platform/Vulkan/Vk_Buffer.h"
+#include "Graphics/Vulkan/Vk_Buffer.h"
 #include "Core/DataStructures.h"
 #include <vector>
 

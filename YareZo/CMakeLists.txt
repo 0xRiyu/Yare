@@ -43,21 +43,21 @@ set (YAREZO_SOURCES
     Engine/Platform/Windows/GlfwWindow.cpp
 
     # Vulkan
-    Engine/Platform/Vulkan/Vk_Image.cpp
-    Engine/Platform/Vulkan/Vk_Buffer.cpp
-    Engine/Platform/Vulkan/Vk_Shader.cpp
-    Engine/Platform/Vulkan/Vk_Devices.cpp
-    Engine/Platform/Vulkan/Vk_Instance.cpp
-    Engine/Platform/Vulkan/Vk_Renderer.cpp
-    Engine/Platform/Vulkan/Vk_Pipeline.cpp
-    Engine/Platform/Vulkan/Vk_Swapchain.cpp
-    Engine/Platform/Vulkan/Vk_Utilities.cpp
-    Engine/Platform/Vulkan/Vk_Semaphore.cpp
-    Engine/Platform/Vulkan/Vk_Renderpass.cpp
-    Engine/Platform/Vulkan/Vk_Framebuffer.cpp
-    Engine/Platform/Vulkan/Vk_CommandPool.cpp
-    Engine/Platform/Vulkan/Vk_DescriptorSet.cpp
-    Engine/Platform/Vulkan/Vk_CommandBuffer.cpp
+    Engine/Graphics/Vulkan/Vk_Image.cpp
+    Engine/Graphics/Vulkan/Vk_Buffer.cpp
+    Engine/Graphics/Vulkan/Vk_Shader.cpp
+    Engine/Graphics/Vulkan/Vk_Devices.cpp
+    Engine/Graphics/Vulkan/Vk_Instance.cpp
+    Engine/Graphics/Vulkan/Vk_Renderer.cpp
+    Engine/Graphics/Vulkan/Vk_Pipeline.cpp
+    Engine/Graphics/Vulkan/Vk_Swapchain.cpp
+    Engine/Graphics/Vulkan/Vk_Utilities.cpp
+    Engine/Graphics/Vulkan/Vk_Semaphore.cpp
+    Engine/Graphics/Vulkan/Vk_Renderpass.cpp
+    Engine/Graphics/Vulkan/Vk_Framebuffer.cpp
+    Engine/Graphics/Vulkan/Vk_CommandPool.cpp
+    Engine/Graphics/Vulkan/Vk_DescriptorSet.cpp
+    Engine/Graphics/Vulkan/Vk_CommandBuffer.cpp
 )
 
 #--------------------------------------------------------------------
@@ -103,22 +103,22 @@ set (YAREZO_HEADERS
     Engine/Platform/Windows/GlfwWindow.h
 
     # Vulkan
-    Engine/Platform/Vulkan/Vk.h
-    Engine/Platform/Vulkan/Vk_Image.h
-    Engine/Platform/Vulkan/Vk_Buffer.h
-    Engine/Platform/Vulkan/Vk_Shader.h
-    Engine/Platform/Vulkan/Vk_Devices.h
-    Engine/Platform/Vulkan/Vk_Pipeline.h
-    Engine/Platform/Vulkan/Vk_Instance.h
-    Engine/Platform/Vulkan/Vk_Renderer.h
-    Engine/Platform/Vulkan/Vk_Swapchain.h
-    Engine/Platform/Vulkan/Vk_Utilities.h
-    Engine/Platform/Vulkan/Vk_Semaphore.h
-    Engine/Platform/Vulkan/Vk_Renderpass.h
-    Engine/Platform/Vulkan/Vk_Framebuffer.h
-    Engine/Platform/Vulkan/Vk_CommandPool.h
-    Engine/Platform/Vulkan/Vk_DescriptorSet.h
-    Engine/Platform/Vulkan/Vk_CommandBuffer.h
+    Engine/Graphics/Vulkan/Vk.h
+    Engine/Graphics/Vulkan/Vk_Image.h
+    Engine/Graphics/Vulkan/Vk_Buffer.h
+    Engine/Graphics/Vulkan/Vk_Shader.h
+    Engine/Graphics/Vulkan/Vk_Devices.h
+    Engine/Graphics/Vulkan/Vk_Pipeline.h
+    Engine/Graphics/Vulkan/Vk_Instance.h
+    Engine/Graphics/Vulkan/Vk_Renderer.h
+    Engine/Graphics/Vulkan/Vk_Swapchain.h
+    Engine/Graphics/Vulkan/Vk_Utilities.h
+    Engine/Graphics/Vulkan/Vk_Semaphore.h
+    Engine/Graphics/Vulkan/Vk_Renderpass.h
+    Engine/Graphics/Vulkan/Vk_Framebuffer.h
+    Engine/Graphics/Vulkan/Vk_CommandPool.h
+    Engine/Graphics/Vulkan/Vk_DescriptorSet.h
+    Engine/Graphics/Vulkan/Vk_CommandBuffer.h
 )
 
 #--------------------------------------------------------------------

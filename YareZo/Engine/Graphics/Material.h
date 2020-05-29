@@ -1,7 +1,7 @@
 #ifndef YAREZO_MATERIAL_H
 #define YAREZO_MATERIAL_H
 
-#include "Platform/Vulkan/Vk_Image.h"
+#include "Graphics/Vulkan/Vk_Image.h"
 
 #include <string>
 
