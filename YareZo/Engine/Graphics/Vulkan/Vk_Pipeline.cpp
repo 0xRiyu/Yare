@@ -162,6 +162,8 @@ namespace Yarezo {
                 YZ_CRITICAL("Vulkan Pipeline Layout was unable to be created.");
             }
 
+
+
             VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
             pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
             pipelineCreateInfo.stageCount = m_PipelineInfo.shader->getStageCount();
@@ -173,7 +175,15 @@ namespace Yarezo {
             pipelineCreateInfo.pMultisampleState = &multisampling;
             pipelineCreateInfo.pDepthStencilState = &depthStencil;
             pipelineCreateInfo.pColorBlendState = &colorBlending;
-            pipelineCreateInfo.pDynamicState = nullptr; // Optional
+
+            VkPipelineDynamicStateCreateInfo pipelineDynamicStateCreateInfo = {};
+            if (!m_PipelineInfo.dynamicStates.empty()) {
+                pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+                pipelineDynamicStateCreateInfo.pDynamicStates = m_PipelineInfo.dynamicStates.data();
+                pipelineDynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(m_PipelineInfo.dynamicStates.size());
+                pipelineDynamicStateCreateInfo.flags = 0;
+                pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
+            }
             pipelineCreateInfo.layout = m_PipelineLayout;
             pipelineCreateInfo.renderPass = m_PipelineInfo.renderpass->getRenderPass();
             pipelineCreateInfo.subpass = 0;

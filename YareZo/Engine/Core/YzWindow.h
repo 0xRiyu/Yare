@@ -28,6 +28,7 @@ namespace Yarezo {
         virtual void setMouseInputCallback() = 0;
         virtual void setMouseButtonCallback() = 0;
         virtual void setScrollInputCallback() = 0;
+        virtual void releaseInputHandling() = 0;
         virtual void setFrameBufferResizeCallback() = 0;
         virtual WindowProperties getWindowProperties()            const { return m_Properties; }
         virtual std::shared_ptr<YzInputHandler> getKeyHandler()   const { return m_KeyHandler; }
@@ -39,6 +40,7 @@ namespace Yarezo {
         virtual void* getNativeWindow() const = 0;
 
         bool windowResized = false;
+        bool windowIsFocused = true;
     protected:
         WindowProperties m_Properties;
         std::shared_ptr<YzInputHandler> m_KeyHandler;

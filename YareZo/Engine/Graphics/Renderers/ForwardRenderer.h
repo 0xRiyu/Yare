@@ -47,6 +47,7 @@ namespace Yarezo::Graphics {
         void createDescriptorSets();
         void createCommandBuffers();
         void prepareUniformBuffers();
+        void createGui();
         void updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix);
 
     private:

@@ -7,6 +7,7 @@
 #include "Handlers/MouseHandler.h"
 #include "Graphics/Camera/Camera.h"
 #include "Core/Yzh.h"
+#include <imgui/imgui.h>
 
 #include <stb/stb_image.h>
 
@@ -35,8 +36,8 @@ namespace Yarezo {
         }
         static void GLFWmouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
             auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
-            mouseHandler->mouseLeftButtonPressed = (button = GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) ? true : false;
-            mouseHandler->mouseRightButtonPressed = (button = GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) ? true : false;
+            mouseHandler->mouseLeftButtonPressed = (button = GLFW_MOUSE_BUTTON_LEFT && action) ? true : false;
+            mouseHandler->mouseRightButtonPressed = (button = GLFW_MOUSE_BUTTON_RIGHT && action) ? true : false;
             mouseHandler->buttonEvent = true;
         }
 
@@ -69,17 +70,24 @@ namespace Yarezo {
             setIcon("..\\YareZo\\Resources\\Textures\\engineLogo.png");
             setFrameBufferResizeCallback();
             setKeyInputCallback();
-            //glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
+            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
             setMouseInputCallback();
             setMouseButtonCallback();
             setScrollInputCallback();
         }
 
-
         void GlfwWindow::onUpdate() {
             glfwPollEvents();
-            m_KeyHandler->handle();
-            m_MouseHandler->handle();
+            if (windowIsFocused) {
+                m_KeyHandler->handle();
+                m_MouseHandler->handle();
+            }
+            // Dear ImGui documentation very clearly states NOT to do this,
+            // but I couldn't figure out how to do it in the way I wanted and this seems to work
+            else if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
+                windowIsFocused = true;
+                glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            }
             windowResized = false;
         }
 
@@ -101,6 +109,17 @@ namespace Yarezo {
 
         void GlfwWindow::setScrollInputCallback() {
             glfwSetScrollCallback(m_Window, GLFWscrollCallback);
+        }
+
+        void GlfwWindow::releaseInputHandling() {
+            if (windowIsFocused) {
+                windowIsFocused = false;
+                glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                glfwSetCursorPos(m_Window, m_Properties.width / 2, m_Properties.height / 2);
+                auto& io = ImGui::GetIO();
+                io.WantCaptureMouse = false;
+                ImGui::SetNextWindowFocus();
+            }
         }
 
         void GlfwWindow::setFrameBufferResizeCallback() {

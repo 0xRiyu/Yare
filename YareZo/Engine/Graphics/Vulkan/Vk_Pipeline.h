@@ -26,6 +26,7 @@ namespace Yarezo {
             std::vector<VkDescriptorSetLayoutBinding> layoutBindings;
             std::vector<VkVertexInputAttributeDescription> vertexInputAttributes;
             VkVertexInputBindingDescription bindingDescription;
+            std::vector<VkDynamicState> dynamicStates;
             uint32_t maxObjects;
             size_t width;
             size_t height;

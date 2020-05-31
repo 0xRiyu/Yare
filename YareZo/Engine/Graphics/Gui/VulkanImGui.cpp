@@ -22,7 +22,6 @@ namespace Yarezo::Graphics {
         delete m_Pipeline;
         delete m_IndexBuffer;
         delete m_VertexBuffer;
-
     }
 
     void VulkanImGui::init(size_t width, size_t height) {
@@ -39,7 +38,7 @@ namespace Yarezo::Graphics {
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = ImVec2((float)width, (float)height);
         io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-        io.Fonts->AddFontFromFileTTF("C:/dev/Yarezo/YareZo/Libs/imgui/imgui/misc/fonts/Cousine-Regular.ttf", 20.0f);
+        io.Fonts->AddFontFromFileTTF("../YareZo/Resources/Fonts/Cousine-Regular.ttf", 24.0f);
     }
 
     void VulkanImGui::initResources(YzVkRenderPass* yzRenderPass) {
@@ -62,9 +61,11 @@ namespace Yarezo::Graphics {
         pipelineInfo.depthTestEnable = VK_FALSE;
         pipelineInfo.depthWriteEnable = VK_FALSE;
         pipelineInfo.maxObjects = 2;
-        pipelineInfo.width = 800;
-        pipelineInfo.height = 600;
+        pipelineInfo.width = (size_t)io.DisplaySize.x;
+        pipelineInfo.height = (size_t)io.DisplaySize.y;
         pipelineInfo.colorBlendingEnabled = true;
+        pipelineInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_VIEWPORT);
+        pipelineInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
         pipelineInfo.pushConstants = {VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock)};
         pipelineInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(ImDrawVert), VK_VERTEX_INPUT_RATE_VERTEX};
 
@@ -121,13 +122,15 @@ namespace Yarezo::Graphics {
             return;
         }
 
-        if (m_IndexBuffer == nullptr) {
+        if (m_IndexBuffer == nullptr || m_IndexBuffer->getSize() != indexBufferSize) {
+            delete m_IndexBuffer;
             m_IndexBuffer = new YzVkBuffer();
             m_IndexBuffer->init(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                                 indexBufferSize, nullptr);
             m_IndexBuffer->mapMemory(0, indexBufferSize);
         }
-        if (m_VertexBuffer == nullptr) {
+        if (m_VertexBuffer == nullptr || m_VertexBuffer->getSize() != vertexBufferSize) {
+            delete m_VertexBuffer;
             m_VertexBuffer = new YzVkBuffer();
             m_VertexBuffer->init(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
                                  vertexBufferSize, nullptr);
@@ -153,10 +156,7 @@ namespace Yarezo::Graphics {
     void VulkanImGui::drawFrame(YzVkCommandBuffer* commandBuffer) {
 
         ImGuiIO& io = ImGui::GetIO();
-        MouseHandler*  mouseHandler = dynamic_cast<MouseHandler*>( Application::getAppInstance()->getWindow()->getMouseHandler().get());
-        io.MousePos = ImVec2(mouseHandler->currentMouseX, mouseHandler->currentMouseY);
-        io.MouseDown[0] = mouseHandler->mouseLeftButtonPressed;
-        io.MouseDown[1] = mouseHandler->mouseRightButtonPressed;
+        updateInputs();
 
         vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                 VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -166,8 +166,17 @@ namespace Yarezo::Graphics {
 
         m_Pipeline->setActive(*commandBuffer);
 
+        VkViewport dViewport = {};
+        dViewport.width = io.DisplaySize.x;
+        dViewport.height = io.DisplaySize.y;
+        dViewport.minDepth = 0.0f;
+        dViewport.maxDepth = 1.0f;
+        vkCmdSetViewport(commandBuffer->getCommandBuffer(), 0, 1, &dViewport);
+
+
+
         // UI scale and translate via push constants
-        pushConstBlock.translate = glm::vec2(-1.5f, -1.0f);
+        pushConstBlock.translate = glm::vec2(-1.0f);
         pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
         vkCmdPushConstants(commandBuffer->getCommandBuffer(),
                            m_Pipeline->getPipelineLayout(),
@@ -187,6 +196,13 @@ namespace Yarezo::Graphics {
                 const ImDrawList* cmd_list = imDrawData->CmdLists[i];
                 for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++) {
                     const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
+                    VkRect2D scissorRect;
+                    scissorRect.offset.x = std::max((int32_t)(pcmd->ClipRect.x), 0);
+                    scissorRect.offset.y = std::max((int32_t)(pcmd->ClipRect.y), 0);
+                    scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
+                    scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
+                    vkCmdSetScissor(commandBuffer->getCommandBuffer(), 0, 1, &scissorRect);
+
                     vkCmdDrawIndexed(commandBuffer->getCommandBuffer(),
                                      pcmd->ElemCount,
                                      1,
@@ -200,6 +216,22 @@ namespace Yarezo::Graphics {
 
         }
 
+    }
+
+    void VulkanImGui::updateInputs() {
+        GLFWwindow* window = static_cast<GLFWwindow*>(Application::getAppInstance()->getWindow()->getNativeWindow());
+        MouseHandler* mouseHandler = dynamic_cast<MouseHandler*>(Application::getAppInstance()->getWindow()->getMouseHandler().get());
+
+        ImGuiIO& io = ImGui::GetIO();
+
+        if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) || glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+            return;
+
+        io.MousePos = ImVec2(mouseHandler->currentMouseX, mouseHandler->currentMouseY);
+        io.MouseDown[0] = mouseHandler->mouseRightButtonPressed;
+        io.MouseDown[1] = mouseHandler->mouseLeftButtonPressed;
+        io.MouseClicked[0] = mouseHandler->mouseRightButtonPressed;
+        io.MouseClicked[1] = mouseHandler->mouseLeftButtonPressed;
     }
 
 

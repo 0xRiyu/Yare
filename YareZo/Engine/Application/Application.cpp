@@ -36,7 +36,7 @@ namespace Yarezo {
         YZ_INFO("Logger Initialized");
 
         //Create a window
-        WindowProperties props = {800, 600};
+        WindowProperties props = {1600, 1200};
         m_Window = YzWindow::createNewWindow(props);
 
         // Create the vulkan pipeline

@@ -86,11 +86,7 @@ namespace Yarezo::Graphics {
 
         createCommandBuffers();
 
-        m_Gui = new VulkanImGui();
-        m_Gui->init(800, 600);
-        m_Gui->initResources(m_RenderPass);
-        m_Gui->newFrame();
-        m_Gui->updateBuffers();
+        createGui();
     }
 
     void ForwardRenderer::waitIdle() {
@@ -109,7 +105,7 @@ namespace Yarezo::Graphics {
         glm::mat4 model_transform = glm::mat4(1.0f);
         model_transform = glm::translate(model_transform, glm::vec3(0.0f, -0.15f, -1.0f));
         model_transform = glm::rotate(model_transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model_transform = glm::rotate(model_transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        // model_transform = glm::rotate(model_transform, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         submitModel(m_Models[0], model_transform);
 
@@ -214,6 +210,7 @@ namespace Yarezo::Graphics {
         prepareUniformBuffers();
         createDescriptorSets();
         createCommandBuffers();
+        createGui();
     }
 
     void ForwardRenderer::createGraphicsPipeline() {
@@ -262,10 +259,8 @@ namespace Yarezo::Graphics {
         pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
                                                                               1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
 
-
         m_Pipelines.skybox = new YzVkPipeline();
         m_Pipelines.skybox->init(pipelineInfo);
-
     }
 
     void ForwardRenderer::createFrameBuffers() {
@@ -433,6 +428,14 @@ namespace Yarezo::Graphics {
         m_UniformBuffers.skybox->setData(sizeof(skyboxVS), &skyboxVS);
 
 
+    }
+
+    void ForwardRenderer::createGui() {
+        m_Gui = new VulkanImGui();
+        m_Gui->init(m_WindowWidth, m_WindowHeight);
+        m_Gui->initResources(m_RenderPass);
+        m_Gui->newFrame();
+        m_Gui->updateBuffers();
     }
 
 }

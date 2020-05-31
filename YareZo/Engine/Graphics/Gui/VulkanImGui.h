@@ -48,6 +48,7 @@ namespace Yarezo::Graphics {
         void newFrame();
         void updateBuffers();
         void drawFrame(YzVkCommandBuffer* commandBuffer);
+        void updateInputs();
 
     private:
         YzVkImage* m_Font;
