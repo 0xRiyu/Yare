@@ -96,20 +96,12 @@ namespace Yarezo::Graphics {
 
     void VulkanImGui::newFrame() {
         ImGui::NewFrame();
+    }
 
-        //ImGui::Begin("Example settings");
-        //ImGui::Checkbox("Render models", &uiSettings.displayModels);
-        //ImGui::Checkbox("Display logos", &uiSettings.displayLogos);
-        //ImGui::Checkbox("Display background", &uiSettings.displayBackground);
-        //ImGui::Checkbox("Animate light", &uiSettings.animateLight);
-        //ImGui::End();
-
-        // ImGui::SetNextWindowPos(ImVec2(650, 20), ImGui::ImGuiSetCond_FirstUseEver);
-         ImGui::ShowDemoWindow();
-
+    void VulkanImGui::postFrame() {
         // Render to generate draw buffers
-         ImGui::EndFrame();
-         ImGui::Render();
+        ImGui::EndFrame();
+        ImGui::Render();
     }
 
     void VulkanImGui::updateBuffers() {

@@ -57,9 +57,11 @@ namespace Yarezo {
             // Output some fps info every 5s to determine if we nuke performace
             if (deltaFPSTime >= 1.0) {
                 if (logFPS) YZ_INFO("FPS: " + std::to_string(frameCount));
+                forwardRenderer.m_Settings.fps = frameCount;
                 frameCount = 0;
                 previousFPSTime = currentTime;
             }
+
             previousFrameTime = currentTime;
 
             forwardRenderer.renderScene();

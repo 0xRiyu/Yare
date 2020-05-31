@@ -23,18 +23,6 @@ namespace Yarezo::Graphics {
     class VulkanImGui {
     public:
 
-        // Options and values to display/toggle from the UI
-        struct UISettings {
-            bool displayModels = true;
-            bool displayLogos = true;
-            bool displayBackground = true;
-            bool animateLight = false;
-            float lightSpeed = 0.25f;
-            std::array<float, 50> frameTimes{};
-            float frameTimeMin = 9999.0f, frameTimeMax = 0.0f;
-            float lightTimer = 0.0f;
-        } uiSettings;
-
         struct PushConstBlock {
             glm::vec2 scale;
             glm::vec2 translate;
@@ -46,6 +34,7 @@ namespace Yarezo::Graphics {
         void init(size_t width, size_t height);
         void initResources(YzVkRenderPass* yzRenderPass);
         void newFrame();
+        void postFrame();
         void updateBuffers();
         void drawFrame(YzVkCommandBuffer* commandBuffer);
         void updateInputs();

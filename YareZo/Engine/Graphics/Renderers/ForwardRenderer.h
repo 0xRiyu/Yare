@@ -48,6 +48,7 @@ namespace Yarezo::Graphics {
         void createCommandBuffers();
         void prepareUniformBuffers();
         void createGui();
+        void updateGui();
         void updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix);
 
     private:
@@ -87,7 +88,14 @@ namespace Yarezo::Graphics {
         } m_UniformBuffers;
 
         UboDataDynamic m_UboDynamicData;
-        bool showSkybox = true;
+
+    public:
+        // Options and values to display/toggle from the UI
+        struct Settings {
+            bool displayModels = true;
+            bool displayBackground = true;
+            double fps = 0;
+        } m_Settings;
 };
 
 }

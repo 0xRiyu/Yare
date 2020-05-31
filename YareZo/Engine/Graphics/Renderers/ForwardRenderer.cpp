@@ -137,7 +137,7 @@ namespace Yarezo::Graphics {
         int index = 0;
         YzVkCommandBuffer* currentCommandBuffer = m_CommandBuffers[m_CurrentBufferID];
 
-        if (showSkybox) {
+        if (m_Settings.displayBackground) {
             vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
                                     VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.skybox->getPipelineLayout(),
                                     0, 1, &m_DescriptorSets.skybox->getDescriptorSet(0), 0 , nullptr);
@@ -150,32 +150,32 @@ namespace Yarezo::Graphics {
         }
 
 
+        if (m_Settings.displayModels) {
+            for (auto& command : m_CommandQueue) {
 
-        for (auto& command : m_CommandQueue) {
+                updateUniformBuffers(index, command.transform);
 
-            updateUniformBuffers(index, command.transform);
-
-            uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
+                uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
 
 
-            m_Pipelines.pipeline->setActive(*currentCommandBuffer);
+                m_Pipelines.pipeline->setActive(*currentCommandBuffer);
 
-            int imageIdx = command.model->getImageIdx();
-            vkCmdPushConstants(currentCommandBuffer->getCommandBuffer(), m_Pipelines.pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
+                int imageIdx = command.model->getImageIdx();
+                vkCmdPushConstants(currentCommandBuffer->getCommandBuffer(), m_Pipelines.pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
 
-            vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
-                                    VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.pipeline->getPipelineLayout(), 0u,
-                                    1u, &m_DescriptorSets.descriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
+                vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
+                                        VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.pipeline->getPipelineLayout(), 0u,
+                                        1u, &m_DescriptorSets.descriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
-            command.model->getMesh()->getVertexBuffer()->bindVertex(*currentCommandBuffer, 0);
-            command.model->getMesh()->getIndexBuffer()->bindIndex(*currentCommandBuffer, VK_INDEX_TYPE_UINT32);
+                command.model->getMesh()->getVertexBuffer()->bindVertex(*currentCommandBuffer, 0);
+                command.model->getMesh()->getIndexBuffer()->bindIndex(*currentCommandBuffer, VK_INDEX_TYPE_UINT32);
 
-            vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
-            index++;
+                vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
+                index++;
+            }
         }
 
-        m_Gui->newFrame();
-        m_Gui->updateBuffers();
+        updateGui();
         m_Gui->drawFrame(currentCommandBuffer);
     }
 
@@ -434,8 +434,23 @@ namespace Yarezo::Graphics {
         m_Gui = new VulkanImGui();
         m_Gui->init(m_WindowWidth, m_WindowHeight);
         m_Gui->initResources(m_RenderPass);
+    }
+
+    void ForwardRenderer::updateGui() {
         m_Gui->newFrame();
+
+        ImGui::Begin("Settings", nullptr,
+                     ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav);
+        std::string fpsStr = "FPS: " + std::to_string((int)m_Settings.fps);
+        ImGui::Text(fpsStr.c_str());
+        ImGui::Checkbox("Render models", &m_Settings.displayModels);
+        ImGui::Checkbox("Display background", &m_Settings.displayBackground);
+        ImGui::End();
+        m_Gui->postFrame();
+
         m_Gui->updateBuffers();
+
     }
 
 }
