@@ -26,6 +26,7 @@ namespace Yarezo {
         virtual void closeWindow() = 0;
         virtual void setKeyInputCallback() = 0;
         virtual void setMouseInputCallback() = 0;
+        virtual void setMouseButtonCallback() = 0;
         virtual void setScrollInputCallback() = 0;
         virtual void setFrameBufferResizeCallback() = 0;
         virtual WindowProperties getWindowProperties()            const { return m_Properties; }

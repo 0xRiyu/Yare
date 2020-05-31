@@ -7,6 +7,8 @@ set (LIB_SOURCES
     Libs/imgui/imgui/imgui_draw.cpp
     Libs/imgui/imgui/imgui_demo.cpp
     Libs/imgui/imgui/imgui_widgets.cpp
+    Libs/imgui/imgui/imgui_impl_glfw.cpp
+    Libs/imgui/imgui/imgui_impl_vulkan.cpp
 )
 
 #--------------------------------------------------------------------
@@ -31,17 +33,6 @@ set (YAREZO_SOURCES
     Engine/Graphics/Camera/Camera.cpp
     Engine/Graphics/Renderers/ForwardRenderer.cpp
 
-    # Handlers
-    Engine/Handlers/KeyHandler.cpp
-    Engine/Handlers/MouseHandler.cpp
-
-    # Utilities
-    Engine/Utilities/YzLogger.cpp
-    Engine/Utilities/IOHelper.cpp
-
-    # Windows OS Specific
-    Engine/Platform/Windows/GlfwWindow.cpp
-
     # Vulkan
     Engine/Graphics/Vulkan/Vk_Image.cpp
     Engine/Graphics/Vulkan/Vk_Buffer.cpp
@@ -58,6 +49,20 @@ set (YAREZO_SOURCES
     Engine/Graphics/Vulkan/Vk_CommandPool.cpp
     Engine/Graphics/Vulkan/Vk_DescriptorSet.cpp
     Engine/Graphics/Vulkan/Vk_CommandBuffer.cpp
+
+    # Gui
+    Engine/Graphics/Gui/VulkanImGui.cpp
+
+    # Handlers
+    Engine/Handlers/KeyHandler.cpp
+    Engine/Handlers/MouseHandler.cpp
+
+    # Utilities
+    Engine/Utilities/YzLogger.cpp
+    Engine/Utilities/IOHelper.cpp
+
+    # Windows OS Specific
+    Engine/Platform/Windows/GlfwWindow.cpp
 )
 
 #--------------------------------------------------------------------
@@ -90,18 +95,6 @@ set (YAREZO_HEADERS
     Engine/Graphics/Renderers/ForwardRenderer.h
     Engine/Graphics/Renderers/YzRenderer.h
 
-    # Handlers
-    Engine/Handlers/KeyHandler.h
-    Engine/Handlers/MouseHandler.h
-
-    # Utilities
-    Engine/Utilities/YzLogger.h
-    Engine/Utilities/IOHelper.h
-    Engine/Utilities/T_Singleton.h
-
-    # Windows OS Specific
-    Engine/Platform/Windows/GlfwWindow.h
-
     # Vulkan
     Engine/Graphics/Vulkan/Vk.h
     Engine/Graphics/Vulkan/Vk_Image.h
@@ -119,6 +112,21 @@ set (YAREZO_HEADERS
     Engine/Graphics/Vulkan/Vk_CommandPool.h
     Engine/Graphics/Vulkan/Vk_DescriptorSet.h
     Engine/Graphics/Vulkan/Vk_CommandBuffer.h
+
+    # Gui
+    Engine/Graphics/Gui/VulkanImGui.h
+
+    # Handlers
+    Engine/Handlers/KeyHandler.h
+    Engine/Handlers/MouseHandler.h
+
+    # Utilities
+    Engine/Utilities/YzLogger.h
+    Engine/Utilities/IOHelper.h
+    Engine/Utilities/T_Singleton.h
+
+    # Windows OS Specific
+    Engine/Platform/Windows/GlfwWindow.h
 )
 
 #--------------------------------------------------------------------

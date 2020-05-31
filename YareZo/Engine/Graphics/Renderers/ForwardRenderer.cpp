@@ -46,14 +46,9 @@ namespace Yarezo::Graphics {
             alignedFree(m_UboDynamicData.model);
         }
 
-        m_Pipelines.pipeline->cleanUp();
         delete m_Pipelines.pipeline;
-
-        m_Pipelines.skybox->cleanUp();
         delete m_Pipelines.skybox;
 
-
-        m_RenderPass->cleanUp();
         delete m_RenderPass;
 
         delete m_UniformBuffers.view;
@@ -61,6 +56,7 @@ namespace Yarezo::Graphics {
         delete m_UniformBuffers.skybox;
 
         delete m_SkyboxModel;
+        delete m_Gui;
     }
 
     void ForwardRenderer::init() {
@@ -90,7 +86,11 @@ namespace Yarezo::Graphics {
 
         createCommandBuffers();
 
-
+        m_Gui = new VulkanImGui();
+        m_Gui->init(800, 600);
+        m_Gui->initResources(m_RenderPass);
+        m_Gui->newFrame();
+        m_Gui->updateBuffers();
     }
 
     void ForwardRenderer::waitIdle() {
@@ -105,7 +105,6 @@ namespace Yarezo::Graphics {
         m_CurrentBufferID = m_Renderer->getYzSwapchain()->getCurrentImage();
 
         begin();
-
 
         glm::mat4 model_transform = glm::mat4(1.0f);
         model_transform = glm::translate(model_transform, glm::vec3(0.0f, -0.15f, -1.0f));
@@ -146,21 +145,22 @@ namespace Yarezo::Graphics {
             vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
                                     VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.skybox->getPipelineLayout(),
                                     0, 1, &m_DescriptorSets.skybox->getDescriptorSet(0), 0 , nullptr);
-            m_SkyboxModel->getMesh()->getVertexBuffer()->bind(*currentCommandBuffer);
-            m_SkyboxModel->getMesh()->getIndexBuffer()->bind(*currentCommandBuffer);
+            m_SkyboxModel->getMesh()->getVertexBuffer()->bindVertex(*currentCommandBuffer, 0);
+            m_SkyboxModel->getMesh()->getIndexBuffer()->bindIndex(*currentCommandBuffer, VK_INDEX_TYPE_UINT32);
             m_Pipelines.skybox->setActive(*currentCommandBuffer);
             vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(),
                              static_cast<uint32_t>(m_SkyboxModel->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)),
                              1, 0, 0, 0);
         }
 
+
+
         for (auto& command : m_CommandQueue) {
 
             updateUniformBuffers(index, command.transform);
 
-
-
             uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
+
 
             m_Pipelines.pipeline->setActive(*currentCommandBuffer);
 
@@ -171,12 +171,16 @@ namespace Yarezo::Graphics {
                                     VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.pipeline->getPipelineLayout(), 0u,
                                     1u, &m_DescriptorSets.descriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
-            command.model->getMesh()->getVertexBuffer()->bind(*currentCommandBuffer);
-            command.model->getMesh()->getIndexBuffer()->bind(*currentCommandBuffer);
+            command.model->getMesh()->getVertexBuffer()->bindVertex(*currentCommandBuffer, 0);
+            command.model->getMesh()->getIndexBuffer()->bindIndex(*currentCommandBuffer, VK_INDEX_TYPE_UINT32);
 
             vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
             index++;
         }
+
+        m_Gui->newFrame();
+        m_Gui->updateBuffers();
+        m_Gui->drawFrame(currentCommandBuffer);
     }
 
     void ForwardRenderer::begin() {
@@ -215,12 +219,22 @@ namespace Yarezo::Graphics {
     void ForwardRenderer::createGraphicsPipeline() {
         YzVkShader shader("../YareZo/Resources/Shaders", "texture_array.shader");
 
-        PipelineInfo pipelineInfo = { &shader,  m_RenderPass, m_Renderer->getYzSwapchain().get() };
+        PipelineInfo pipelineInfo = {};
+        pipelineInfo.shader = &shader;
+        pipelineInfo.renderpass = m_RenderPass;
         pipelineInfo.cullMode = VK_CULL_MODE_BACK_BIT;
         pipelineInfo.depthTestEnable = VK_TRUE;
         pipelineInfo.depthWriteEnable = VK_TRUE;
         pipelineInfo.maxObjects = 2;
-        pipelineInfo.numVertexLayouts = 3;
+        pipelineInfo.width = m_Renderer->getYzSwapchain()->getExtent().width;
+        pipelineInfo.height = m_Renderer->getYzSwapchain()->getExtent().height;
+        pipelineInfo.pushConstants = {VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int)};
+        pipelineInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
+
+        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)});
+        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
+        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)});
+
 
         //                                       Binding, DescriptorType, DescriptorCount, StageFlags, pImmuatbleSamplers
         pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -238,7 +252,9 @@ namespace Yarezo::Graphics {
         pipelineInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
         pipelineInfo.depthTestEnable = VK_FALSE;
         pipelineInfo.depthWriteEnable = VK_FALSE;
-        pipelineInfo.numVertexLayouts = 1;
+
+        pipelineInfo.vertexInputAttributes.clear();
+        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)});
 
         pipelineInfo.layoutBindings.clear();
         pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,

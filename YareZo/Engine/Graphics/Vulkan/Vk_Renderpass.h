@@ -21,14 +21,13 @@ namespace Yarezo {
             ~YzVkRenderPass();
 
             void init(const RenderPassInfo& renderPassInfo);
-            void cleanUp();
             void beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain);
             void endRenderPass(YzVkCommandBuffer* const commandBuffer);
 
             const VkRenderPass& getRenderPass() const { return m_RenderPass; }
 
         private:
-            VkRenderPass m_RenderPass;
+            VkRenderPass m_RenderPass = VK_NULL_HANDLE;
         };
 
     }

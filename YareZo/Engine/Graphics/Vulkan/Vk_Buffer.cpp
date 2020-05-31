@@ -59,9 +59,10 @@ namespace Yarezo {
         }
 
 
-        void YzVkBuffer::setData(size_t size, const void* data) {
+        void YzVkBuffer::setData(size_t size, const void* data, uint32_t offset) {
             if (mapMemory(0, size)) {
-                memcpy(m_MappedData, data, size);
+                auto p = static_cast<char*>(m_MappedData) + offset;
+                memcpy((void*)p, data, size);
                 unmapMemory();
             }
             else {
@@ -69,9 +70,10 @@ namespace Yarezo {
             }
         }
 
-        void YzVkBuffer::setDynamicData(size_t size, const void* data) {
+        void YzVkBuffer::setDynamicData(size_t size, const void* data, uint32_t offset) {
             if (mapMemory(0, VK_WHOLE_SIZE)) {
-                memcpy(m_MappedData, data, size);
+                auto p = static_cast<char*>(m_MappedData) + offset;
+                memcpy(p, data, size);
                 flush(size, 0);
                 unmapMemory();
             }
@@ -80,16 +82,23 @@ namespace Yarezo {
             }
         }
 
-        void YzVkBuffer::bind(const YzVkCommandBuffer& commandBuffer) {
+        void YzVkBuffer::bindIndex(const YzVkCommandBuffer& commandBuffer, VkIndexType type) {
+            // Check that the index buffer bit was set inside the usageflags before binding
+            if (m_Usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) {
+                vkCmdBindIndexBuffer(commandBuffer.getCommandBuffer(), m_Buffer, 0, type);
+            } else {
+                YZ_WARN("Buffer was not of type Index. Did you intend to bind in this way?");
+            }
 
-            auto vertexBufferFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-            if (m_Usage == vertexBufferFlags) {
+        }
+
+        void YzVkBuffer::bindVertex(const YzVkCommandBuffer& commandBuffer, VkDeviceSize offset) {
+            // check that the vertex buffer bit was set inside the usageFlags before binding
+            if (m_Usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) {
                 VkDeviceSize offset = 0;
                 vkCmdBindVertexBuffers(commandBuffer.getCommandBuffer(), 0, 1, &m_Buffer, &offset);
-            }
-            auto indexBufferFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-            if (m_Usage == indexBufferFlags) {
-                vkCmdBindIndexBuffer(commandBuffer.getCommandBuffer(), m_Buffer, 0, VK_INDEX_TYPE_UINT32);
+            } else {
+                YZ_WARN("Buffer was not of type Vertex. Did you intend to bind in this way?");
             }
         }
 

@@ -41,4 +41,4 @@ namespace Yarezo {
     }
 }
 
-#endif // !YAREZO_VK_RENDERER_H
+#endif // YAREZO_VK_RENDERER_H

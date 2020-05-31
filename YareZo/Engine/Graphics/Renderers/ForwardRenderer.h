@@ -19,6 +19,8 @@
 #include "Graphics/Vulkan/Vk_Image.h"
 #include "Graphics/Vulkan/Vk_Renderer.h"
 
+#include "Graphics/Gui/VulkanImGui.h"
+
 #define MAX_OBJECTS 2048
 
 namespace Yarezo::Graphics {
@@ -52,6 +54,7 @@ namespace Yarezo::Graphics {
         std::vector<Model*> m_Models;
         Model* m_SkyboxModel;
         Material* m_DefaultMaterial;
+        VulkanImGui* m_Gui;
 
         size_t m_DynamicAlignment = 0;
 

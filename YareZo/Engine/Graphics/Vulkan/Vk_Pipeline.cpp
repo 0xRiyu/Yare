@@ -8,6 +8,18 @@ namespace Yarezo {
         }
 
         YzVkPipeline::~YzVkPipeline() {
+            if (m_DescriptorSetLayout) {
+                vkDestroyDescriptorSetLayout(YzVkDevice::instance()->getDevice(), m_DescriptorSetLayout, nullptr);
+            }
+            if (m_PipelineLayout) {
+                vkDestroyPipelineLayout(YzVkDevice::instance()->getDevice(), m_PipelineLayout, nullptr);
+            }
+            if (m_GraphicsPipeline) {
+                vkDestroyPipeline(YzVkDevice::instance()->getDevice(), m_GraphicsPipeline, nullptr);
+            }
+            if (m_DescriptorPool) {
+                vkDestroyDescriptorPool(YzVkDevice::instance()->getDevice(), m_DescriptorPool, nullptr);
+            }
         }
 
         void YzVkPipeline::init(PipelineInfo& pipelineInfo) {
@@ -22,21 +34,6 @@ namespace Yarezo {
 
             // Descriptor sets can't be created directly, they must be allocated from a pool like command buffers. We create those here.
             createDescriptorPool();
-        }
-
-        void YzVkPipeline::cleanUp() {
-            if (m_DescriptorSetLayout) {
-                vkDestroyDescriptorSetLayout(YzVkDevice::instance()->getDevice(), m_DescriptorSetLayout, nullptr);
-            }
-            if (m_PipelineLayout) {
-                vkDestroyPipelineLayout(YzVkDevice::instance()->getDevice(), m_PipelineLayout, nullptr);
-            }
-            if (m_GraphicsPipeline) {
-                vkDestroyPipeline(YzVkDevice::instance()->getDevice(), m_GraphicsPipeline, nullptr);
-            }
-            if (m_DescriptorPool) {
-                vkDestroyDescriptorPool(YzVkDevice::instance()->getDevice(), m_DescriptorPool, nullptr);
-            }
         }
 
         void YzVkPipeline::setActive(const YzVkCommandBuffer& commandBuffer) {
@@ -56,21 +53,14 @@ namespace Yarezo {
         }
 
         void YzVkPipeline::createGraphicsPipeline() {
-            auto bindingDescription = VulkanVertex::getBindingDescription();
-            auto attributeDescriptions = VulkanVertex::getAttributeDescriptions();
 
             VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
             vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
             vertexInputInfo.vertexBindingDescriptionCount = 1;
-            vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-            vertexInputInfo.vertexAttributeDescriptionCount = m_PipelineInfo.numVertexLayouts;
+            vertexInputInfo.pVertexBindingDescriptions = &m_PipelineInfo.bindingDescription;
 
-            std::vector<VkVertexInputAttributeDescription> inputDescriptions;
-            for (uint32_t i = 0; i < m_PipelineInfo.numVertexLayouts; ++i) {
-                inputDescriptions.push_back(attributeDescriptions[i]);
-            }
-
-            vertexInputInfo.pVertexAttributeDescriptions = inputDescriptions.data();
+            vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(m_PipelineInfo.vertexInputAttributes.size());
+            vertexInputInfo.pVertexAttributeDescriptions = m_PipelineInfo.vertexInputAttributes.data();
 
             VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
             inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -80,14 +70,14 @@ namespace Yarezo {
             VkViewport viewport = {};
             viewport.x = 0.0f;
             viewport.y = 0.0f;
-            viewport.width = (float)m_PipelineInfo.swapchain->getExtent().width;
-            viewport.height = (float)m_PipelineInfo.swapchain->getExtent().height;
+            viewport.width = (float)m_PipelineInfo.width;
+            viewport.height = (float)m_PipelineInfo.height;
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
 
             VkRect2D scissor = {};
             scissor.offset = { 0,0 };
-            scissor.extent = m_PipelineInfo.swapchain->getExtent();
+            scissor.extent = { (uint32_t)m_PipelineInfo.width, (uint32_t)m_PipelineInfo.height };
 
             VkPipelineViewportStateCreateInfo viewportState = {};
             viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -135,8 +125,19 @@ namespace Yarezo {
             depthStencil.back = {}; // Optional
 
             VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-            colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            colorBlendAttachment.blendEnable = VK_FALSE;
+            if (!m_PipelineInfo.colorBlendingEnabled) {
+                colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+                colorBlendAttachment.blendEnable = VK_FALSE;
+            } else {
+                colorBlendAttachment.blendEnable = VK_TRUE;
+                colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+                colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+                colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+                colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+                colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+                colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+                colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+            }
 
             VkPipelineColorBlendStateCreateInfo colorBlending = {};
             colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -149,16 +150,12 @@ namespace Yarezo {
             colorBlending.blendConstants[2] = 0.0f;
             colorBlending.blendConstants[3] = 0.0f;
 
-            VkPushConstantRange pushConstantRange = {};
-            pushConstantRange.offset = 0;
-            pushConstantRange.size = sizeof(int);
-            pushConstantRange.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
             VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
             pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
             pipelineLayoutInfo.setLayoutCount = 1;
             pipelineLayoutInfo.pSetLayouts = &m_DescriptorSetLayout;
-            pipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+            pipelineLayoutInfo.pPushConstantRanges = &m_PipelineInfo.pushConstants;
             pipelineLayoutInfo.pushConstantRangeCount = 1;
 
             if (vkCreatePipelineLayout(YzVkDevice::instance()->getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
@@ -183,7 +180,7 @@ namespace Yarezo {
             pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
             if (vkCreateGraphicsPipelines(YzVkDevice::instance()->getDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
-                YZ_CRITICAL("Vulkan failed to create the graphics pipeline.");
+                YZ_CRITICAL("Vulkan failed to create a graphics pipeline.");
             }
 
 

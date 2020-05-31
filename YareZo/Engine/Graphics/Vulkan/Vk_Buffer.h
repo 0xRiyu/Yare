@@ -15,16 +15,17 @@ namespace Yarezo {
 
             void init(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags propertyFlags, size_t size, const void* data);
             void cleanUp();
-            void setData(size_t size, const void* data);
-            void setDynamicData(size_t size, const void* data);
-            void bind(const YzVkCommandBuffer& commandBuffer);
-            size_t getSize() const { return m_Size; }
-            void flush(VkDeviceSize size, VkDeviceSize offset);
-            const VkBuffer& getBuffer() const { return m_Buffer; }
-
-        private:
+            void setData(size_t size, const void* data, uint32_t offset = 0);
+            void setDynamicData(size_t size, const void* data, uint32_t offset = 0);
+            void bindIndex(const YzVkCommandBuffer& commandBuffer, VkIndexType type);
+            void bindVertex(const YzVkCommandBuffer& commandBuffer, VkDeviceSize offset);
+            void flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
             bool mapMemory(VkDeviceSize offset, VkDeviceSize size);
             void unmapMemory();
+
+            const VkBuffer& getBuffer() const { return m_Buffer; }
+            void* getMappedData() const { return m_MappedData; }
+            size_t getSize() const { return m_Size; }
 
         private:
             VkBuffer m_Buffer;

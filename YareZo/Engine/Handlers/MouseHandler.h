@@ -18,12 +18,17 @@ namespace Yarezo {
 
         virtual void handleMouseEvent();
         virtual void handleScrollEvent();
+        virtual void handleButtonEvent();
 
         virtual void setHorizontalScroll(const float val) { m_HorizontalScroll = val; }
         virtual void setVerticalScroll(const float val) { m_VerticalScroll = val; }
 
         bool mouseEvent = false;
         bool scrollEvent = false;
+        bool buttonEvent = false;
+
+        bool mouseLeftButtonPressed = false;
+        bool mouseRightButtonPressed = false;
 
         float currentMouseX = 0.0f;
         float currentMouseY = 0.0f;

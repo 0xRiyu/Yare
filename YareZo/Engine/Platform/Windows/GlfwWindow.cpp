@@ -33,6 +33,12 @@ namespace Yarezo {
             mouseHandler->currentMouseY = (float)mouseY;
             mouseHandler->mouseEvent = true;
         }
+        static void GLFWmouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+            auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
+            mouseHandler->mouseLeftButtonPressed = (button = GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) ? true : false;
+            mouseHandler->mouseRightButtonPressed = (button = GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) ? true : false;
+            mouseHandler->buttonEvent = true;
+        }
 
         static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
             auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
@@ -63,8 +69,9 @@ namespace Yarezo {
             setIcon("..\\YareZo\\Resources\\Textures\\engineLogo.png");
             setFrameBufferResizeCallback();
             setKeyInputCallback();
-            glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
+            //glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
             setMouseInputCallback();
+            setMouseButtonCallback();
             setScrollInputCallback();
         }
 
@@ -86,6 +93,10 @@ namespace Yarezo {
 
         void GlfwWindow::setMouseInputCallback() {
             glfwSetCursorPosCallback(m_Window, GLFWmouseCallback);
+        }
+
+        void GlfwWindow::setMouseButtonCallback() {
+            glfwSetMouseButtonCallback(m_Window, GLFWmouseButtonCallback);
         }
 
         void GlfwWindow::setScrollInputCallback() {

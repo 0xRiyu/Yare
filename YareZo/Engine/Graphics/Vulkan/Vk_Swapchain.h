@@ -13,7 +13,6 @@ namespace Yarezo {
             ~YzVkSwapchain();
 
             void init();
-            void cleanUp();
             VkResult present(VkSemaphore waitSemaphore);
 
             VkResult acquireNextImage(VkSemaphore signalSemaphore);
@@ -34,12 +33,12 @@ namespace Yarezo {
             VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
             VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
         private:
-            VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
-            VkFormat m_SwapchainImageFormat;
-            VkExtent2D m_SwapchainExtent;
-            std::vector<VkImage> m_SwapchainImages;
+            VkSwapchainKHR           m_Swapchain = VK_NULL_HANDLE;
+            VkFormat                 m_SwapchainImageFormat;
+            VkExtent2D               m_SwapchainExtent;
+            std::vector<VkImage>     m_SwapchainImages;
             std::vector<VkImageView> m_SwapchainImageViews;
-            uint32_t m_CurrentImage = 0;
+            uint32_t                 m_CurrentImage = 0;
         };
     }
 }

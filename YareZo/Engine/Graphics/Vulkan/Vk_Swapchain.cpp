@@ -8,8 +8,15 @@ namespace Yarezo {
     namespace Graphics {
         YzVkSwapchain::YzVkSwapchain() {
         }
+
         YzVkSwapchain::~YzVkSwapchain() {
-            cleanUp();
+            for (auto& imageView : m_SwapchainImageViews) {
+                vkDestroyImageView(YzVkDevice::instance()->getDevice(), imageView, nullptr);
+            }
+
+            if (m_Swapchain) {
+                vkDestroySwapchainKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, nullptr);
+            }
         }
 
         void YzVkSwapchain::init() {
@@ -19,17 +26,6 @@ namespace Yarezo {
             // Create and image-view, which will represent a 'view' of an image,
             // this way we can interface with images without modifying the underlying image
             createImageViews();
-        }
-
-        void YzVkSwapchain::cleanUp() {
-
-            for (auto& imageView : m_SwapchainImageViews) {
-                vkDestroyImageView(YzVkDevice::instance()->getDevice(), imageView, nullptr);
-            }
-
-            if (m_Swapchain) {
-                vkDestroySwapchainKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, nullptr);
-            }
         }
 
         VkResult YzVkSwapchain::present(VkSemaphore waitSemaphore) {

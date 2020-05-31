@@ -19,6 +19,7 @@ namespace Yarezo {
             virtual void closeWindow() override;
             virtual void setKeyInputCallback() override;
             virtual void setMouseInputCallback() override;
+            virtual void setMouseButtonCallback() override;
             virtual void setScrollInputCallback() override;
             virtual void setFrameBufferResizeCallback() override;
             virtual void setIcon(const std::string& filePath) override;

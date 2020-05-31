@@ -10,15 +10,15 @@
 
 namespace Yarezo {
 
-	MouseHandler::MouseHandler(const std::shared_ptr<YzCamera> currentCamera)
+    MouseHandler::MouseHandler(const std::shared_ptr<YzCamera> currentCamera)
     :p_Camera(currentCamera) {
-		YZ_INFO("Mouse Input Handler Created");
-	}
+        YZ_INFO("Mouse Input Handler Created");
+    }
 
     MouseHandler::~MouseHandler() {
-	}
+    }
 
-	void MouseHandler::handle() {
+    void MouseHandler::handle() {
         if (mouseEvent) {
             handleMouseEvent();
             mouseEvent = false;
@@ -27,7 +27,11 @@ namespace Yarezo {
             handleScrollEvent();
             scrollEvent = false;
         }
-	}
+        if (buttonEvent) {
+            handleButtonEvent();
+            buttonEvent = false;
+        }
+    }
 
     void MouseHandler::handleMouseEvent() {
         auto rotation = p_Camera->getRotation();
@@ -53,6 +57,12 @@ namespace Yarezo {
         // need to reset these because callback will not reset it
         m_VerticalScroll = 0.0f;
         m_HorizontalScroll = 0.0f;
+    }
+
+    void MouseHandler::handleButtonEvent() {
+        if (mouseLeftButtonPressed || mouseRightButtonPressed)
+            YZ_INFO("Someone clicked a button...");
+        // Do nothing for now
     }
 
 }

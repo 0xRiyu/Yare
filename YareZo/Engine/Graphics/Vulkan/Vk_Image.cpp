@@ -29,19 +29,22 @@ namespace Yarezo::Graphics {
     void YzVkImage::createTexture2DFromFile(const std::string& filePath) {
         YzVkBuffer stagingBuffer;
         loadTextureFromFileIntoBuffer(filePath, stagingBuffer);
-        createTexture2D(stagingBuffer);
+        createTexture2D(stagingBuffer, VK_FORMAT_R8G8B8A8_SRGB);
+        createSampler(VK_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
     void YzVkImage::createTextureCubeFromFile(const std::string& filePath) {
         YzVkBuffer stagingBuffer;
         loadTextureFromFileIntoBuffer(filePath, stagingBuffer);
         createTextureCube(stagingBuffer);
+        createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
     void YzVkImage::createTextureCubeFromFiles(const std::vector<std::string>& filePaths) {
         YzVkBuffer stagingBuffer;
         loadTexturesFromFilesIntoBuffer(filePaths, stagingBuffer);
         createTextureCube(stagingBuffer);
+        createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
     void YzVkImage::createEmptyTexture(size_t width, size_t height, VkFormat format,
@@ -51,6 +54,20 @@ namespace Yarezo::Graphics {
         m_TextureHeight = height;
         createImage(VK_IMAGE_TYPE_2D, format, tiling, usage, 0, properties);
         m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, format, 1, flagBits);
+    }
+
+    void YzVkImage::createTexture2DFromData(size_t width, size_t height, VkFormat format, unsigned char* data) {
+        m_TextureWidth = width;
+        m_TextureHeight = height;
+        VkDeviceSize imageSize = width * height * 4 * sizeof(char);
+
+        YzVkBuffer stagingBuffer;
+        stagingBuffer.init(VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                           imageSize, data);
+
+        createTexture2D(stagingBuffer, format);
+        createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
     void YzVkImage::loadTextureFromFileIntoBuffer(const std::string& filePath, YzVkBuffer& buffer) {
@@ -114,22 +131,20 @@ namespace Yarezo::Graphics {
                     total_images_size, images);
     }
 
-    void YzVkImage::createTexture2D(const YzVkBuffer& buffer) {
-        createImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
+    void YzVkImage::createTexture2D(const YzVkBuffer& buffer, VkFormat format) {
+        createImage(VK_IMAGE_TYPE_2D, format,
                     VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     0,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
+        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, format,
                                               1, VK_IMAGE_ASPECT_COLOR_BIT);
 
-        transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 1, VK_IMAGE_LAYOUT_UNDEFINED,
+        transitionImageLayout(format, 1, VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         copyBufferToImage(buffer, 1, 1);
-        transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        transitionImageLayout(format, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        createSampler(VK_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
     void YzVkImage::createTextureCube(const YzVkBuffer& buffer) {
@@ -148,8 +163,6 @@ namespace Yarezo::Graphics {
 
         transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 6, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
     void YzVkImage::transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout) {
@@ -173,7 +186,8 @@ namespace Yarezo::Graphics {
             barrier.srcAccessMask = 0;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            // I added the host bit here because it was in the imgui tutorial but I dont know its affect beware
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_HOST_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         }
         else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
@@ -286,7 +300,7 @@ namespace Yarezo::Graphics {
         samplerInfo.addressModeW = mode;
         samplerInfo.anisotropyEnable = VK_TRUE;
         samplerInfo.maxAnisotropy = 16;
-        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_WHITE;
         samplerInfo.unnormalizedCoordinates = VK_FALSE;
         samplerInfo.compareEnable = VK_FALSE;
         samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
@@ -305,6 +319,12 @@ namespace Yarezo::Graphics {
         image->createEmptyTexture(width, height, format, VK_IMAGE_TILING_OPTIMAL,
                                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+        return image;
+    }
+
+    YzVkImage* YzVkImage::createTexture2D(size_t width, size_t height, VkFormat format, unsigned char* data) {
+        YzVkImage* image = new YzVkImage();
+        image->createTexture2DFromData(width, height, format, data);
         return image;
     }
 

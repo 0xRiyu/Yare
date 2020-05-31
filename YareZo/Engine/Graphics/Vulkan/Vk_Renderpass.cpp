@@ -12,6 +12,9 @@ namespace Yarezo {
         YzVkRenderPass::YzVkRenderPass() {
         }
         YzVkRenderPass::~YzVkRenderPass() {
+            if (m_RenderPass) {
+                vkDestroyRenderPass(YzVkDevice::instance()->getDevice(), m_RenderPass, nullptr);
+            }
         }
 
         void YzVkRenderPass::init(const RenderPassInfo& renderPassInfo) {
@@ -72,11 +75,6 @@ namespace Yarezo {
                 YZ_CRITICAL("Vulkan failed to create a render pass.");
             }
 
-        }
-        void YzVkRenderPass::cleanUp() {
-            if (m_RenderPass) {
-                vkDestroyRenderPass(YzVkDevice::instance()->getDevice(), m_RenderPass, nullptr);
-            }
         }
 
         void YzVkRenderPass::beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain) {
