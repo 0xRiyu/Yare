@@ -3,6 +3,7 @@
 #include "Graphics/Vulkan/Vk_Utilities.h"
 #include "Graphics/Renderers/ForwardRenderer.h"
 #include "Graphics/Renderers/ImGuiRenderer.h"
+#include "Graphics/Renderers/SkyboxRenderer.h"
 
 namespace Yarezo::Graphics {
 
@@ -35,7 +36,6 @@ namespace Yarezo::Graphics {
     void RenderManager::renderScene() {
         begin();
         for (const auto renderer : m_Renderers) {
-            renderer->resetCommandQueue();
             renderer->prepareScene();
             renderer->present(m_CommandBuffers[m_CurrentBufferID]);
         }
@@ -79,6 +79,7 @@ namespace Yarezo::Graphics {
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();
+        m_Renderers.emplace_back(new SkyboxRenderer());
         m_Renderers.emplace_back(new ForwardRenderer());
         m_Renderers.emplace_back(new ImGuiRenderer());
         for (const auto renderer : m_Renderers) {

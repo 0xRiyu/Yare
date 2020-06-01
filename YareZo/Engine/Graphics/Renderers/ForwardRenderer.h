@@ -3,21 +3,9 @@
 
 #include "Graphics/Renderers/YzRenderer.h"
 
-#include "Core/DataStructures.h"
-
-#include "Graphics/Vulkan/Vk_Instance.h"
-#include "Graphics/Vulkan/Vk_Devices.h"
-#include "Graphics/Vulkan/Vk_Swapchain.h"
-#include "Graphics/Vulkan/Vk_Renderpass.h"
 #include "Graphics/Vulkan/Vk_Pipeline.h"
-#include "Graphics/Vulkan/Vk_Framebuffer.h"
-#include "Graphics/Vulkan/Vk_CommandPool.h"
 #include "Graphics/Vulkan/Vk_Buffer.h"
 #include "Graphics/Vulkan/Vk_DescriptorSet.h"
-#include "Graphics/Vulkan/Vk_CommandBuffer.h"
-#include "Graphics/Vulkan/Vk_Semaphore.h"
-#include "Graphics/Vulkan/Vk_Image.h"
-#include "Graphics/Vulkan/Vk_Renderer.h"
 
 #define MAX_OBJECTS 2048
 
@@ -34,8 +22,6 @@ namespace Yarezo::Graphics {
         virtual void present(YzVkCommandBuffer* commandBuffer) override;
         virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
 
-        void submitModel(Model* model, const glm::mat4& transform);
-
         void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         void createDescriptorSets();
         void prepareUniformBuffers();
@@ -44,25 +30,16 @@ namespace Yarezo::Graphics {
     private:
         // TODO Move this into some content management class, I have no clue what that would look like
         std::vector<Model*> m_Models;
-        Model* m_SkyboxModel;
         Material* m_DefaultMaterial;
 
         size_t m_DynamicAlignment = 0;
 
-        struct {
-            YzVkPipeline*  pipeline;
-            YzVkPipeline*  skybox;
-        } m_Pipelines;
-
-        struct {
-            YzVkDescriptorSet* descriptorSet;
-            YzVkDescriptorSet* skybox;
-        } m_DescriptorSets;
+        YzVkPipeline*  m_Pipeline;
+        YzVkDescriptorSet* m_DescriptorSet;
 
         struct UniformBuffers {
             YzVkBuffer* view;
             YzVkBuffer* dynamic;
-            YzVkBuffer* skybox;
         } m_UniformBuffers;
 
         UboDataDynamic m_UboDynamicData;

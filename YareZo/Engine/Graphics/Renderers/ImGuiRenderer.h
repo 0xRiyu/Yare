@@ -3,20 +3,9 @@
 
 #include "Graphics/Renderers/YzRenderer.h"
 
-#include "Graphics/Vulkan/Vk.h"
-#include "Graphics/Vulkan/Vk_Instance.h"
-#include "Graphics/Vulkan/Vk_Devices.h"
-#include "Graphics/Vulkan/Vk_Swapchain.h"
-#include "Graphics/Vulkan/Vk_Renderpass.h"
 #include "Graphics/Vulkan/Vk_Pipeline.h"
-#include "Graphics/Vulkan/Vk_Framebuffer.h"
-#include "Graphics/Vulkan/Vk_CommandPool.h"
 #include "Graphics/Vulkan/Vk_Buffer.h"
 #include "Graphics/Vulkan/Vk_DescriptorSet.h"
-#include "Graphics/Vulkan/Vk_CommandBuffer.h"
-#include "Graphics/Vulkan/Vk_Semaphore.h"
-#include "Graphics/Vulkan/Vk_Image.h"
-#include "Graphics/Vulkan/Vk_Renderer.h"
 
 #include <imgui/imgui.h>
 

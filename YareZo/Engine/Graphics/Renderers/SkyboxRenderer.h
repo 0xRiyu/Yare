@@ -3,24 +3,9 @@
 
 #include "Graphics/Renderers/YzRenderer.h"
 
-
-#include "Core/DataStructures.h"
-
-#include "Graphics/Vulkan/Vk_Instance.h"
-#include "Graphics/Vulkan/Vk_Devices.h"
-#include "Graphics/Vulkan/Vk_Swapchain.h"
-#include "Graphics/Vulkan/Vk_Renderpass.h"
 #include "Graphics/Vulkan/Vk_Pipeline.h"
-#include "Graphics/Vulkan/Vk_Framebuffer.h"
-#include "Graphics/Vulkan/Vk_CommandPool.h"
 #include "Graphics/Vulkan/Vk_Buffer.h"
 #include "Graphics/Vulkan/Vk_DescriptorSet.h"
-#include "Graphics/Vulkan/Vk_CommandBuffer.h"
-#include "Graphics/Vulkan/Vk_Semaphore.h"
-#include "Graphics/Vulkan/Vk_Image.h"
-#include "Graphics/Vulkan/Vk_Renderer.h"
-
-#include "Graphics/Gui/VulkanImGui.h"
 
 namespace Yarezo::Graphics {
 
@@ -29,14 +14,16 @@ namespace Yarezo::Graphics {
         SkyboxRenderer();
         ~SkyboxRenderer() override;
 
-        virtual void init() override;
-        virtual void renderScene() override;
-        virtual void submitModel(Model* model, const glm::mat4& transform) override;
-        virtual void present() override;
-        virtual void begin() override;
-        virtual void end() override;
+        virtual void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
+        virtual void prepareScene() override;
+        virtual void present(YzVkCommandBuffer* commandBuffer) override;
+        virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
 
-
+    private:
+        void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
+        void createDescriptorSet();
+        void prepareUniformBuffer();
+        void updateUniformBuffer(uint32_t index, const glm::mat4& modelMatrix);
 
     private:
         Model* m_SkyboxModel;
@@ -44,7 +31,6 @@ namespace Yarezo::Graphics {
         YzVkDescriptorSet* m_DescriptorSet;
         YzVkBuffer* m_UniformBuffer;
     };
-
 }
 
 #endif // YAREZO_SKYBOX_RENDERER_H

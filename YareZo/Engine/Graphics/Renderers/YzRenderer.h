@@ -1,11 +1,9 @@
 #ifndef YAREZO_YZ_RENDERER_H
 #define YAREZO_YZ_RENDERER_H
 
-#include "Graphics/Model.h"
 #include "Graphics/RenderCommand.h"
+#include "Graphics/Model.h"
 
-#include "Graphics/Vulkan/Vk_Renderer.h"
-#include "Graphics/Vulkan/Vk_Framebuffer.h"
 #include "Graphics/Vulkan/Vk_CommandBuffer.h"
 #include "Graphics/Vulkan/Vk_RenderPass.h"
 
@@ -27,11 +25,11 @@ namespace Yarezo::Graphics {
         virtual void prepareScene() = 0;
         virtual void present(YzVkCommandBuffer* commandBuffer) = 0;
         virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) = 0;
-        virtual void resetCommandQueue() { m_CommandQueue.clear(); }
 
     protected:
+        virtual void resetCommandQueue();
+        virtual void submitModel(Model* model, const glm::mat4& transform);
         CommandQueue m_CommandQueue;
     };
-
 }
 #endif

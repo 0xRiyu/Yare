@@ -98,6 +98,7 @@ namespace Yarezo::Graphics {
     }
 
     void ImGuiRenderer::prepareScene() {
+        resetCommandQueue();
         newFrame();
         ImGui::Begin("Settings", nullptr,
                      ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
