@@ -20,24 +20,23 @@ namespace Yarezo::Graphics {
         virtual void present(YzVkCommandBuffer* commandBuffer) override;
         virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
 
-    protected:
-        void initResources(YzVkRenderPass* renderPass);
+    private:
+        void createGraphicsPipeline(YzVkRenderPass* renderPass);
+        void createDescriptorSet();
         void newFrame();
         void postFrame();
         void updateBuffers();
 
         struct PushConstBlock {
-            glm::vec2 scale;
-            glm::vec2 translate;
-        };
+            glm::vec2 scale = {};
+            glm::vec2 translate = {};
+        } m_PushConstBlock;
 
-    private:
         YzVkImage* m_Font;
         YzVkPipeline* m_Pipeline;
         YzVkBuffer* m_IndexBuffer = nullptr;
         YzVkBuffer* m_VertexBuffer = nullptr;
         YzVkDescriptorSet* m_DescriptorSet;
-        PushConstBlock pushConstBlock = {};
     };
 
 }

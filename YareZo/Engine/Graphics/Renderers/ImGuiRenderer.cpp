@@ -41,20 +41,11 @@ namespace Yarezo::Graphics {
         io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
         io.Fonts->AddFontFromFileTTF("../YareZo/Resources/Fonts/Cousine-Regular.ttf", 24.0f);
 
-        initResources(renderPass);
+        createGraphicsPipeline(renderPass);
+        createDescriptorSet();
     }
 
-    void ImGuiRenderer::initResources(YzVkRenderPass* renderPass) {
-        ImGuiIO& io = ImGui::GetIO();
-
-        // Create font texture
-        unsigned char* fontData;
-        int texWidth, texHeight;
-        io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
-        VkDeviceSize uploadSize = texWidth*texHeight * 4 * sizeof(char);
-
-        m_Font = YzVkImage::createTexture2D(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, fontData);
-
+    void ImGuiRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass) {
         YzVkShader shader("../YareZo/Resources/Shaders", "gui.shader");
 
         PipelineInfo pipelineInfo = {};
@@ -64,8 +55,8 @@ namespace Yarezo::Graphics {
         pipelineInfo.depthTestEnable = VK_FALSE;
         pipelineInfo.depthWriteEnable = VK_FALSE;
         pipelineInfo.maxObjects = 2;
-        pipelineInfo.width = (size_t)io.DisplaySize.x;
-        pipelineInfo.height = (size_t)io.DisplaySize.y;
+        pipelineInfo.width = (size_t)ImGui::GetIO().DisplaySize.x;
+        pipelineInfo.height = (size_t)ImGui::GetIO().DisplaySize.y;
         pipelineInfo.colorBlendingEnabled = true;
         pipelineInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_VIEWPORT);
         pipelineInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
@@ -81,6 +72,18 @@ namespace Yarezo::Graphics {
 
         m_Pipeline = new YzVkPipeline();
         m_Pipeline->init(pipelineInfo);
+    }
+
+    void ImGuiRenderer::createDescriptorSet() {
+        ImGuiIO& io = ImGui::GetIO();
+
+        // Create font texture
+        unsigned char* fontData;
+        int texWidth, texHeight;
+        io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
+        VkDeviceSize uploadSize = texWidth*texHeight * 4 * sizeof(char);
+
+        m_Font = YzVkImage::createTexture2D(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, fontData);
 
         m_DescriptorSet = new YzVkDescriptorSet();
         m_DescriptorSet->init({m_Pipeline, 1});
@@ -131,12 +134,12 @@ namespace Yarezo::Graphics {
         vkCmdSetViewport(commandBuffer->getCommandBuffer(), 0, 1, &dViewport);
 
         // UI scale and translate via push constants
-        pushConstBlock.translate = glm::vec2(-1.0f);
-        pushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
+        m_PushConstBlock.translate = glm::vec2(-1.0f);
+        m_PushConstBlock.scale = glm::vec2(2.0f / io.DisplaySize.x, 2.0f / io.DisplaySize.y);
         vkCmdPushConstants(commandBuffer->getCommandBuffer(),
                            m_Pipeline->getPipelineLayout(),
                            VK_SHADER_STAGE_VERTEX_BIT, 0,
-                           sizeof(PushConstBlock), &pushConstBlock);
+                           sizeof(PushConstBlock), &m_PushConstBlock);
 
         // Render commands
         ImDrawData* imDrawData = ImGui::GetDrawData();

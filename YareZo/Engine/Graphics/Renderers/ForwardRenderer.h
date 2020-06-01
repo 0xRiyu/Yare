@@ -22,12 +22,12 @@ namespace Yarezo::Graphics {
         virtual void present(YzVkCommandBuffer* commandBuffer) override;
         virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
 
+    private:
         void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         void createDescriptorSets();
         void prepareUniformBuffers();
         void updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix);
 
-    private:
         // TODO Move this into some content management class, I have no clue what that would look like
         std::vector<Model*> m_Models;
         Material* m_DefaultMaterial;
