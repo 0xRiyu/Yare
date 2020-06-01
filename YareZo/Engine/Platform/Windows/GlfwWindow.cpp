@@ -39,6 +39,19 @@ namespace Yarezo {
             mouseHandler->mouseLeftButtonPressed = (button = GLFW_MOUSE_BUTTON_LEFT && action) ? true : false;
             mouseHandler->mouseRightButtonPressed = (button = GLFW_MOUSE_BUTTON_RIGHT && action) ? true : false;
             mouseHandler->buttonEvent = true;
+
+            // GUI related
+            {
+                ImGuiIO& io = ImGui::GetIO();
+                if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) || glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+                    return;
+
+                io.MousePos = ImVec2(mouseHandler->currentMouseX, mouseHandler->currentMouseY);
+                io.MouseDown[0] = mouseHandler->mouseRightButtonPressed;
+                io.MouseDown[1] = mouseHandler->mouseLeftButtonPressed;
+                io.MouseClicked[0] = mouseHandler->mouseRightButtonPressed;
+                io.MouseClicked[1] = mouseHandler->mouseLeftButtonPressed;
+            }
         }
 
         static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
@@ -91,7 +104,11 @@ namespace Yarezo {
             windowResized = false;
         }
 
-        void GlfwWindow::closeWindow() {
+        bool GlfwWindow::shouldClose() {
+            return glfwWindowShouldClose(m_Window);
+        }
+
+        void GlfwWindow::close() {
             glfwSetWindowShouldClose(m_Window, 1);
         }
 
@@ -117,7 +134,7 @@ namespace Yarezo {
                 glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
                 glfwSetCursorPos(m_Window, m_Properties.width / 2, m_Properties.height / 2);
                 auto& io = ImGui::GetIO();
-                io.WantCaptureMouse = false;
+                io.WantCaptureMouse = true;
                 ImGui::SetNextWindowFocus();
             }
         }
@@ -125,6 +142,7 @@ namespace Yarezo {
         void GlfwWindow::setFrameBufferResizeCallback() {
             glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
         }
+
         void GlfwWindow::setIcon(const std::string& filePath) {
             GLFWimage image;
             int imgWidth, imgHeight, imgChannels;
@@ -134,5 +152,6 @@ namespace Yarezo {
             image.pixels = pixels;
             glfwSetWindowIcon(m_Window, 1, &image);
         }
+
     }
 }

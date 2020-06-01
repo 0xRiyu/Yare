@@ -31,7 +31,9 @@ set (YAREZO_SOURCES
     Engine/Graphics/Model.cpp
     Engine/Graphics/Material.cpp
     Engine/Graphics/Camera/Camera.cpp
+    Engine/Graphics/RenderManager.cpp
     Engine/Graphics/Renderers/ForwardRenderer.cpp
+    Engine/Graphics/Renderers/ImGuiRenderer.cpp
 
     # Vulkan
     Engine/Graphics/Vulkan/Vk_Image.cpp
@@ -75,6 +77,7 @@ set (YAREZO_HEADERS
     # Application
     Engine/Application/EntryPoint.h
     Engine/Application/Application.h
+    Engine/Application/GlobalSettings.h
 
     # Core
     Engine/Core/Yzh.h
@@ -92,7 +95,9 @@ set (YAREZO_HEADERS
     Engine/Graphics/Material.h
     Engine/Graphics/RenderCommand.h
     Engine/Graphics/Camera/Camera.h
+    Engine/Graphics/RenderManager.h
     Engine/Graphics/Renderers/ForwardRenderer.h
+    Engine/Graphics/Renderers/ImGuiRenderer.h
     Engine/Graphics/Renderers/YzRenderer.h
 
     # Vulkan

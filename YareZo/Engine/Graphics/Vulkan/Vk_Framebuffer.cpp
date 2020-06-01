@@ -19,16 +19,13 @@ namespace Yarezo {
             if (vkCreateFramebuffer(YzVkDevice::instance()->getDevice(), &framebufferCreateInfo, nullptr, &m_Framebuffer) != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan failed to create a framebuffer");
             }
-
         }
 
         YzVkFramebuffer::~YzVkFramebuffer() {
-        }
-
-        void YzVkFramebuffer::cleanUp() {
             if (m_Framebuffer) {
                 vkDestroyFramebuffer(YzVkDevice::instance()->getDevice(), m_Framebuffer, nullptr);
             }
         }
+
     }
 }

@@ -11,7 +11,12 @@ namespace Yarezo {
 
 
         YzVkCommandBuffer::~YzVkCommandBuffer() {
-
+            if (m_Fence) {
+                vkDestroyFence(YzVkDevice::instance()->getDevice(), m_Fence, nullptr);
+            }
+            if (m_CommandBuffer) {
+                vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkInstance::getYzVkInstance()->getYzCommandPool().getCommandPool(), 1, &m_CommandBuffer);
+            }
         }
 
         void YzVkCommandBuffer::init() {
@@ -33,15 +38,6 @@ namespace Yarezo {
             }
             vkResetFences(YzVkDevice::instance()->getDevice(), 1, &m_Fence);
 
-        }
-
-        void YzVkCommandBuffer::cleanUp() {
-            if (m_Fence) {
-                vkDestroyFence(YzVkDevice::instance()->getDevice(), m_Fence, nullptr);
-            }
-            if (m_CommandBuffer) {
-                vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkInstance::getYzVkInstance()->getYzCommandPool().getCommandPool(), 1, &m_CommandBuffer);
-            }
         }
 
         void YzVkCommandBuffer::beginRecording() {

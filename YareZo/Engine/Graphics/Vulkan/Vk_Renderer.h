@@ -18,13 +18,15 @@ namespace Yarezo {
             YzVkRenderer();
             ~YzVkRenderer();
 
-            void init();
-            void createSemaphores();
             void recreateSwapchain();
             bool begin();
             bool present(YzVkCommandBuffer* cmdBuffer);
 
             std::shared_ptr<YzVkSwapchain> getYzSwapchain() const { return m_YzSwapchain; }
+
+        protected:
+            void init();
+            void createSemaphores();
 
         private:
             const int MAX_FRAMES_IN_FLIGHT = 1;

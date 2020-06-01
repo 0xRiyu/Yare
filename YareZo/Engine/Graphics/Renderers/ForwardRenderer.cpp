@@ -1,6 +1,7 @@
 #include "Graphics/Renderers/ForwardRenderer.h"
 
 #include "Graphics/Vulkan/Vk_Utilities.h"
+#include "Application/GlobalSettings.h"
 
 #include "Core/Yzh.h"
 #include "Core/Memory.h"
@@ -13,35 +14,9 @@ namespace Yarezo::Graphics {
         //m_Models.emplace_back(new Model("../YareZo/Resources/Models/chalet.obj", "../YareZo/Resources/Textures/chalet.jpg"));
         m_Models.emplace_back(new Model("../YareZo/Resources/Models/viking_room.obj",  "../YareZo/Resources/Textures/viking_room.png"));
         m_Models.emplace_back(new Model("../YareZo/Resources/Models/cube.obj", "../YareZo/Resources/Textures/crate.png"));
-        init();
     }
 
     ForwardRenderer::~ForwardRenderer() {
-        cleanupSwapChain();
-
-        for (auto model : m_Models){
-            delete model;
-        }
-        delete m_DefaultMaterial;
-
-        delete m_Renderer;
-    }
-
-    void ForwardRenderer::cleanupSwapChain() {
-
-        delete m_DepthBuffer;
-
-        for (int i = (int)m_FrameBuffers.size() - 1; i >= 0; i--) {
-            m_FrameBuffers[i]->cleanUp();
-            delete m_FrameBuffers[i];
-            m_FrameBuffers.pop_back();
-        }
-
-        for (auto commandBuffer : m_CommandBuffers) {
-            commandBuffer->cleanUp();
-            delete commandBuffer;
-        }
-
         if (m_UboDynamicData.model) {
             alignedFree(m_UboDynamicData.model);
         }
@@ -49,59 +24,34 @@ namespace Yarezo::Graphics {
         delete m_Pipelines.pipeline;
         delete m_Pipelines.skybox;
 
-        delete m_RenderPass;
-
         delete m_UniformBuffers.view;
         delete m_UniformBuffers.dynamic;
         delete m_UniformBuffers.skybox;
 
         delete m_SkyboxModel;
-        delete m_Gui;
+
+        for (auto model : m_Models){
+            delete model;
+        }
+        delete m_DefaultMaterial;
     }
 
-    void ForwardRenderer::init() {
-        m_Renderer = new YzVkRenderer();
-        m_Renderer->init();
+    void ForwardRenderer::init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
 
         for (auto model: m_Models) {
             model->load(MaterialTexType::Texture2D);
         }
-
         m_DefaultMaterial = new Material();
 
-        m_WindowWidth =  m_Renderer->getYzSwapchain()->getExtent().width;
-        m_WindowHeight = m_Renderer->getYzSwapchain()->getExtent().height;
-
-        const RenderPassInfo renderPassInfo{ m_Renderer->getYzSwapchain()->getImageFormat() };
-        m_RenderPass = new YzVkRenderPass();
-        m_RenderPass->init(renderPassInfo);
-
-        createGraphicsPipeline();
-
-        createFrameBuffers();
+        createGraphicsPipeline(renderPass, windowWidth, windowHeight);
 
         prepareUniformBuffers();
 
         createDescriptorSets();
-
-        createCommandBuffers();
-
-        createGui();
     }
 
-    void ForwardRenderer::waitIdle() {
-        YzVkDevice::instance()->waitIdle();
-    }
 
-    void ForwardRenderer::renderScene() {
-        if (!m_Renderer->begin()) {
-            recreateSwapChain();
-        }
-
-        m_CurrentBufferID = m_Renderer->getYzSwapchain()->getCurrentImage();
-
-        begin();
-
+    void ForwardRenderer::prepareScene() {
         glm::mat4 model_transform = glm::mat4(1.0f);
         model_transform = glm::translate(model_transform, glm::vec3(0.0f, -0.15f, -1.0f));
         model_transform = glm::rotate(model_transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
@@ -114,15 +64,6 @@ namespace Yarezo::Graphics {
         model_transform2 = glm::rotate(model_transform2, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
         submitModel(m_Models[1], model_transform2);
-
-        glm::mat4 model_transform3 = glm::mat4(1.0f);
-        model_transform3 = glm::translate(model_transform3, glm::vec3(0.0f, 2.0f, 0.0f));
-
-        //submitModel(m_Models[2], model_transform3);
-
-        present();
-
-        end();
     }
 
     void ForwardRenderer::submitModel(Model* model, const glm::mat4& transform) {
@@ -133,24 +74,23 @@ namespace Yarezo::Graphics {
         m_CommandQueue.push_back(renderCommand);
     }
 
-    void ForwardRenderer::present() {
+    void ForwardRenderer::present(YzVkCommandBuffer* commandBuffer) {
         int index = 0;
-        YzVkCommandBuffer* currentCommandBuffer = m_CommandBuffers[m_CurrentBufferID];
 
-        if (m_Settings.displayBackground) {
-            vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
+        if (GlobalSettings::instance()->displayBackground) {
+            vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                     VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.skybox->getPipelineLayout(),
                                     0, 1, &m_DescriptorSets.skybox->getDescriptorSet(0), 0 , nullptr);
-            m_SkyboxModel->getMesh()->getVertexBuffer()->bindVertex(*currentCommandBuffer, 0);
-            m_SkyboxModel->getMesh()->getIndexBuffer()->bindIndex(*currentCommandBuffer, VK_INDEX_TYPE_UINT32);
-            m_Pipelines.skybox->setActive(*currentCommandBuffer);
-            vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(),
+            m_SkyboxModel->getMesh()->getVertexBuffer()->bindVertex(*commandBuffer, 0);
+            m_SkyboxModel->getMesh()->getIndexBuffer()->bindIndex(*commandBuffer, VK_INDEX_TYPE_UINT32);
+            m_Pipelines.skybox->setActive(*commandBuffer);
+            vkCmdDrawIndexed(commandBuffer->getCommandBuffer(),
                              static_cast<uint32_t>(m_SkyboxModel->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)),
                              1, 0, 0, 0);
+            updateUniformBuffers(index, glm::mat4(1.0));
         }
 
-
-        if (m_Settings.displayModels) {
+        if (GlobalSettings::instance()->displayModels) {
             for (auto& command : m_CommandQueue) {
 
                 updateUniformBuffers(index, command.transform);
@@ -158,73 +98,57 @@ namespace Yarezo::Graphics {
                 uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
 
 
-                m_Pipelines.pipeline->setActive(*currentCommandBuffer);
+                m_Pipelines.pipeline->setActive(*commandBuffer);
 
                 int imageIdx = command.model->getImageIdx();
-                vkCmdPushConstants(currentCommandBuffer->getCommandBuffer(), m_Pipelines.pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
+                vkCmdPushConstants(commandBuffer->getCommandBuffer(), m_Pipelines.pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
 
-                vkCmdBindDescriptorSets(currentCommandBuffer->getCommandBuffer(),
+                vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipelines.pipeline->getPipelineLayout(), 0u,
                                         1u, &m_DescriptorSets.descriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
-                command.model->getMesh()->getVertexBuffer()->bindVertex(*currentCommandBuffer, 0);
-                command.model->getMesh()->getIndexBuffer()->bindIndex(*currentCommandBuffer, VK_INDEX_TYPE_UINT32);
+                command.model->getMesh()->getVertexBuffer()->bindVertex(*commandBuffer, 0);
+                command.model->getMesh()->getIndexBuffer()->bindIndex(*commandBuffer, VK_INDEX_TYPE_UINT32);
 
-                vkCmdDrawIndexed(currentCommandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
+                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
                 index++;
             }
         }
-
-        updateGui();
-        m_Gui->drawFrame(currentCommandBuffer);
     }
 
-    void ForwardRenderer::begin() {
-        m_CommandQueue.clear();
+    void ForwardRenderer::onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) {
+        // Cleanup
+        {
+            if (m_UboDynamicData.model) {
+                alignedFree(m_UboDynamicData.model);
+            }
 
-        m_CommandBuffers[m_CurrentBufferID]->beginRecording();
+            delete m_Pipelines.pipeline;
+            delete m_Pipelines.skybox;
 
-        m_RenderPass->beginRenderPass(m_CommandBuffers[m_CurrentBufferID], m_FrameBuffers[m_CurrentBufferID], m_Renderer->getYzSwapchain().get());
-    }
+            delete m_UniformBuffers.view;
+            delete m_UniformBuffers.dynamic;
+            delete m_UniformBuffers.skybox;
 
-    void ForwardRenderer::end() {
-        m_RenderPass->endRenderPass(m_CommandBuffers[m_CurrentBufferID]);
-
-        m_CommandBuffers[m_CurrentBufferID]->endRecording();
-
-        if (!m_Renderer->present(m_CommandBuffers[m_CurrentBufferID])) {
-            recreateSwapChain();
+            delete m_SkyboxModel;
         }
-    }
-
-    void ForwardRenderer::recreateSwapChain() {
-        m_WindowWidth =  m_Renderer->getYzSwapchain()->getExtent().width;
-        m_WindowHeight = m_Renderer->getYzSwapchain()->getExtent().height;
-
-        cleanupSwapChain();
-        RenderPassInfo renderPassInfo{ m_Renderer->getYzSwapchain()->getImageFormat() };
-        m_RenderPass = new YzVkRenderPass();
-        m_RenderPass->init(renderPassInfo);
-        createGraphicsPipeline();
-        createFrameBuffers();
+        createGraphicsPipeline(renderPass, newWidth, newHeight);
         prepareUniformBuffers();
         createDescriptorSets();
-        createCommandBuffers();
-        createGui();
     }
 
-    void ForwardRenderer::createGraphicsPipeline() {
+    void ForwardRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         YzVkShader shader("../YareZo/Resources/Shaders", "texture_array.shader");
 
         PipelineInfo pipelineInfo = {};
         pipelineInfo.shader = &shader;
-        pipelineInfo.renderpass = m_RenderPass;
+        pipelineInfo.renderpass = renderPass;
         pipelineInfo.cullMode = VK_CULL_MODE_BACK_BIT;
         pipelineInfo.depthTestEnable = VK_TRUE;
         pipelineInfo.depthWriteEnable = VK_TRUE;
         pipelineInfo.maxObjects = 2;
-        pipelineInfo.width = m_Renderer->getYzSwapchain()->getExtent().width;
-        pipelineInfo.height = m_Renderer->getYzSwapchain()->getExtent().height;
+        pipelineInfo.width = windowWidth;
+        pipelineInfo.height = windowHeight;
         pipelineInfo.pushConstants = {VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int)};
         pipelineInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
 
@@ -263,25 +187,7 @@ namespace Yarezo::Graphics {
         m_Pipelines.skybox->init(pipelineInfo);
     }
 
-    void ForwardRenderer::createFrameBuffers() {
-        VkFormat depthFormat = VkUtil::findDepthFormat();
-        m_DepthBuffer = YzVkImage::createDepthStencilBuffer(m_WindowWidth, m_WindowHeight, depthFormat);
-
-        FramebufferInfo framebufferInfo;
-        framebufferInfo.type = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferInfo.renderPass = m_RenderPass;
-        framebufferInfo.width = m_WindowWidth;
-        framebufferInfo.height = m_WindowHeight;
-        framebufferInfo.layers = 1;
-
-        for (uint32_t i = 0; i < m_Renderer->getYzSwapchain()->getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_Renderer->getYzSwapchain()->getImageView(i), m_DepthBuffer->getImageView() };
-            m_FrameBuffers.push_back(new YzVkFramebuffer(framebufferInfo));
-        }
-    }
-
     void ForwardRenderer::createDescriptorSets() {
-        size_t swapchainImagesSize = m_Renderer->getYzSwapchain()->getImagesSize();
 
         DescriptorSetInfo descriptorSetInfo;
         descriptorSetInfo.descriptorSetCount = 1;
@@ -370,17 +276,6 @@ namespace Yarezo::Graphics {
         m_DescriptorSets.skybox->update(bufferInfos);
     }
 
-    void ForwardRenderer::createCommandBuffers() {
-        m_CommandBuffers.resize(m_FrameBuffers.size());
-
-        for (unsigned int i = 0; i < m_CommandBuffers.size(); i++) {
-            m_CurrentBufferID = i;
-
-            m_CommandBuffers[i] = new YzVkCommandBuffer();
-            m_CommandBuffers[i]->init();
-        }
-    }
-
     void ForwardRenderer::prepareUniformBuffers() {
 
         VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
@@ -426,31 +321,5 @@ namespace Yarezo::Graphics {
         skyboxVS.view[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
         m_UniformBuffers.skybox->setData(sizeof(skyboxVS), &skyboxVS);
-
-
     }
-
-    void ForwardRenderer::createGui() {
-        m_Gui = new VulkanImGui();
-        m_Gui->init(m_WindowWidth, m_WindowHeight);
-        m_Gui->initResources(m_RenderPass);
-    }
-
-    void ForwardRenderer::updateGui() {
-        m_Gui->newFrame();
-
-        ImGui::Begin("Settings", nullptr,
-                     ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize |
-                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNav);
-        std::string fpsStr = "FPS: " + std::to_string((int)m_Settings.fps);
-        ImGui::Text(fpsStr.c_str());
-        ImGui::Checkbox("Render models", &m_Settings.displayModels);
-        ImGui::Checkbox("Display background", &m_Settings.displayBackground);
-        ImGui::End();
-        m_Gui->postFrame();
-
-        m_Gui->updateBuffers();
-
-    }
-
 }

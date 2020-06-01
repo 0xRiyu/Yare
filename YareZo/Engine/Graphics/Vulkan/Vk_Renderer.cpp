@@ -9,6 +9,7 @@ namespace Yarezo {
         YzVkRenderer::YzVkRenderer()
             :m_ImageAvailableSemaphores(MAX_FRAMES_IN_FLIGHT),
              m_RenderFinishedSemaphores(MAX_FRAMES_IN_FLIGHT) {
+            init();
         }
 
         YzVkRenderer::~YzVkRenderer() {

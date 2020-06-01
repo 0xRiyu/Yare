@@ -3,8 +3,10 @@
 //
 
 #include "Application/Application.h"
+#include "Application/GlobalSettings.h"
 #include "Utilities/YzLogger.h"
 #include "Graphics/Renderers/ForwardRenderer.h"
+#include "Graphics/RenderManager.h"
 #include "Core/Glfw.h"
 
 // Define the header once here before anywhere else
@@ -22,12 +24,14 @@ namespace Yarezo {
 
     Application::Application() {
         if (s_AppInstance) {
-            throw std::runtime_error("Application already exists, Don't be doing that fam");
+            throw std::runtime_error("Attempted to create an Application after once has previously been created.");
         }
         s_AppInstance = this;
+        GlobalSettings::instance();
     }
 
     Application::~Application() {
+        GlobalSettings::release();
     }
 
 
@@ -39,16 +43,13 @@ namespace Yarezo {
         WindowProperties props = {1600, 1200};
         m_Window = YzWindow::createNewWindow(props);
 
-        // Create the vulkan pipeline
-        // GraphicsDevice_Vulkan vulkanDevice;
-        Graphics::ForwardRenderer forwardRenderer;
-
+        Graphics::RenderManager renderManager;
 
         double previousFPSTime = glfwGetTime();
         double previousFrameTime = glfwGetTime();
         int frameCount = 0;
 
-        while (!glfwWindowShouldClose(static_cast<GLFWwindow*>(m_Window->getNativeWindow()))) {
+        while (!m_Window->shouldClose()) {
             double currentTime = glfwGetTime();
             frameCount++;
             double deltaFrameTime = currentTime - previousFrameTime;
@@ -57,16 +58,18 @@ namespace Yarezo {
             // Output some fps info every 5s to determine if we nuke performace
             if (deltaFPSTime >= 1.0) {
                 if (logFPS) YZ_INFO("FPS: " + std::to_string(frameCount));
-                forwardRenderer.m_Settings.fps = frameCount;
+                GlobalSettings::instance()->fps = frameCount;
                 frameCount = 0;
                 previousFPSTime = currentTime;
             }
 
             previousFrameTime = currentTime;
 
-            forwardRenderer.renderScene();
+            renderManager.renderScene();
+
             m_Window->onUpdate();
         }
-        forwardRenderer.waitIdle();
+
+        renderManager.waitDeviceIdle();
     }
 }

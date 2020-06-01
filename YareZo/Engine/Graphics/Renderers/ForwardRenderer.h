@@ -31,24 +31,16 @@ namespace Yarezo::Graphics {
         ForwardRenderer();
         ~ForwardRenderer() override;
 
-        virtual void init() override;
-        virtual void renderScene() override;
-        virtual void submitModel(Model* model, const glm::mat4& transform) override;
-        virtual void present() override;
-        virtual void begin() override;
-        virtual void end() override;
+        virtual void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
+        virtual void prepareScene() override;
+        virtual void present(YzVkCommandBuffer* commandBuffer) override;
+        virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
 
-        void cleanupSwapChain();
-        void waitIdle();
-        void recreateSwapChain();
+        void submitModel(Model* model, const glm::mat4& transform);
 
-        void createGraphicsPipeline();
-        void createFrameBuffers();
+        void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         void createDescriptorSets();
-        void createCommandBuffers();
         void prepareUniformBuffers();
-        void createGui();
-        void updateGui();
         void updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix);
 
     private:
@@ -56,11 +48,8 @@ namespace Yarezo::Graphics {
         std::vector<Model*> m_Models;
         Model* m_SkyboxModel;
         Material* m_DefaultMaterial;
-        VulkanImGui* m_Gui;
 
         size_t m_DynamicAlignment = 0;
-
-        YzVkRenderer*                       m_Renderer;
 
         struct {
             YzVkPipeline*  pipeline;
@@ -72,15 +61,6 @@ namespace Yarezo::Graphics {
             YzVkDescriptorSet* skybox;
         } m_DescriptorSets;
 
-        YzVkRenderPass*                     m_RenderPass;
-        YzVkImage*                          m_DepthBuffer;
-        std::vector<YzVkCommandBuffer*>     m_CommandBuffers;
-        std::vector<YzVkFramebuffer*>       m_FrameBuffers;
-
-        uint32_t m_WindowWidth, m_WindowHeight;
-
-        uint32_t m_CurrentBufferID;
-
         struct UniformBuffers {
             YzVkBuffer* view;
             YzVkBuffer* dynamic;
@@ -88,14 +68,6 @@ namespace Yarezo::Graphics {
         } m_UniformBuffers;
 
         UboDataDynamic m_UboDynamicData;
-
-    public:
-        // Options and values to display/toggle from the UI
-        struct Settings {
-            bool displayModels = true;
-            bool displayBackground = true;
-            double fps = 0;
-        } m_Settings;
 };
 
 }

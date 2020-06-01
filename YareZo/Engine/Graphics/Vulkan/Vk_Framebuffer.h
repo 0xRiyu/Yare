@@ -23,7 +23,6 @@ namespace Yarezo {
             YzVkFramebuffer(const FramebufferInfo& framebufferInfo);
             ~YzVkFramebuffer();
 
-            void cleanUp();
             const VkFramebuffer& getFramebuffer() const { return m_Framebuffer; }
 
         private:

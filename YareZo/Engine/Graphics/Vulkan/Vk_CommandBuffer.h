@@ -13,7 +13,6 @@ namespace Yarezo {
             ~YzVkCommandBuffer();
 
             void init();
-            void cleanUp();
             void beginRecording();
             void endRecording();
             void submitGfxQueue(VkPipelineStageFlags flags, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, bool waitFence);

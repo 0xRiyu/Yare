@@ -16,18 +16,20 @@ namespace Yarezo {
             virtual ~GlfwWindow();
 
             virtual void onUpdate() override;
-            virtual void closeWindow() override;
-            virtual void setKeyInputCallback() override;
-            virtual void setMouseInputCallback() override;
-            virtual void setMouseButtonCallback() override;
-            virtual void setScrollInputCallback() override;
+            virtual bool shouldClose() override;
+            virtual void close() override;
             virtual void releaseInputHandling() override;
-            virtual void setFrameBufferResizeCallback() override;
-            virtual void setIcon(const std::string& filePath) override;
+
+        private:
+            virtual void setKeyInputCallback();
+            virtual void setMouseInputCallback();
+            virtual void setMouseButtonCallback();
+            virtual void setScrollInputCallback();
+            virtual void setFrameBufferResizeCallback();
+            virtual void setIcon(const std::string& filePath);
 
             inline virtual void* getNativeWindow() const override { return m_Window; };
 
-        private:
             void init();
             GLFWwindow* m_Window;
         };

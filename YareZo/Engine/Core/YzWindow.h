@@ -23,18 +23,13 @@ namespace Yarezo {
     public:
         virtual ~YzWindow() = default;
         virtual void onUpdate() = 0;
-        virtual void closeWindow() = 0;
-        virtual void setKeyInputCallback() = 0;
-        virtual void setMouseInputCallback() = 0;
-        virtual void setMouseButtonCallback() = 0;
-        virtual void setScrollInputCallback() = 0;
+        virtual bool shouldClose() = 0;
+        virtual void close() = 0;
         virtual void releaseInputHandling() = 0;
-        virtual void setFrameBufferResizeCallback() = 0;
         virtual WindowProperties getWindowProperties()            const { return m_Properties; }
         virtual std::shared_ptr<YzInputHandler> getKeyHandler()   const { return m_KeyHandler; }
         virtual std::shared_ptr<YzInputHandler> getMouseHandler() const { return m_MouseHandler; }
         virtual std::shared_ptr<YzCamera> getCamera()             const { return m_Camera; }
-        virtual void setIcon(const std::string& filePath) = 0;
 
         static std::shared_ptr<YzWindow> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;
