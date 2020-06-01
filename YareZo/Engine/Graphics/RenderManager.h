@@ -43,10 +43,6 @@ namespace Yarezo::Graphics {
 
         std::vector<YzRenderer*> m_Renderers;
     };
-
-
-
-
 }
 
 #endif //YAREZO_RENDER_MANAGER_H

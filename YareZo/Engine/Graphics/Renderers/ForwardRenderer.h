@@ -19,8 +19,6 @@
 #include "Graphics/Vulkan/Vk_Image.h"
 #include "Graphics/Vulkan/Vk_Renderer.h"
 
-#include "Graphics/Gui/VulkanImGui.h"
-
 #define MAX_OBJECTS 2048
 
 namespace Yarezo::Graphics {

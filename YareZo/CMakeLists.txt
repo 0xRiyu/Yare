@@ -52,9 +52,6 @@ set (YAREZO_SOURCES
     Engine/Graphics/Vulkan/Vk_DescriptorSet.cpp
     Engine/Graphics/Vulkan/Vk_CommandBuffer.cpp
 
-    # Gui
-    Engine/Graphics/Gui/VulkanImGui.cpp
-
     # Handlers
     Engine/Handlers/KeyHandler.cpp
     Engine/Handlers/MouseHandler.cpp
@@ -117,9 +114,6 @@ set (YAREZO_HEADERS
     Engine/Graphics/Vulkan/Vk_CommandPool.h
     Engine/Graphics/Vulkan/Vk_DescriptorSet.h
     Engine/Graphics/Vulkan/Vk_CommandBuffer.h
-
-    # Gui
-    Engine/Graphics/Gui/VulkanImGui.h
 
     # Handlers
     Engine/Handlers/KeyHandler.h
