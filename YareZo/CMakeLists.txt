@@ -28,13 +28,15 @@ set (YAREZO_SOURCES
 
     # Core
     Engine/Core/Memory.cpp
+    Engine/Core/Transform.cpp
 
     # Graphics
     Engine/Graphics/Mesh.cpp
-    Engine/Graphics/Model.cpp
     Engine/Graphics/Material.cpp
-    Engine/Graphics/Camera/Camera.cpp
+    Engine/Graphics/MeshInstance.cpp
     Engine/Graphics/RenderManager.cpp
+    Engine/Graphics/Camera/Camera.cpp
+    Engine/Graphics/Scene/Scene.cpp
     Engine/Graphics/Renderers/YzRenderer.cpp
     Engine/Graphics/Renderers/ImGuiRenderer.cpp
     Engine/Graphics/Renderers/SkyboxRenderer.cpp
@@ -88,16 +90,18 @@ set (YAREZO_HEADERS
     Engine/Core/Memory.h
     Engine/Core/YzWindow.h
     Engine/Core/YzCamera.h
+    Engine/Core/Transform.h
     Engine/Core/DataStructures.h
     Engine/Core/YzInputHandler.h
 
     # Graphics
     Engine/Graphics/Mesh.h
-    Engine/Graphics/Model.h
     Engine/Graphics/Material.h
+    Engine/Graphics/MeshInstance.h
+    Engine/Graphics/RenderManager.h
     Engine/Graphics/RenderCommand.h
     Engine/Graphics/Camera/Camera.h
-    Engine/Graphics/RenderManager.h
+    Engine/Graphics/Scene/Scene.h
     Engine/Graphics/Renderers/YzRenderer.h
     Engine/Graphics/Renderers/ImGuiRenderer.h
     Engine/Graphics/Renderers/SkyboxRenderer.h

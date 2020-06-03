@@ -2,7 +2,7 @@
 #define YAREZO_YZ_RENDERER_H
 
 #include "Graphics/RenderCommand.h"
-#include "Graphics/Model.h"
+#include "Graphics/MeshInstance.h"
 
 #include "Graphics/Vulkan/Vk_CommandBuffer.h"
 #include "Graphics/Vulkan/Vk_RenderPass.h"
@@ -28,7 +28,7 @@ namespace Yarezo::Graphics {
 
     protected:
         virtual void resetCommandQueue();
-        virtual void submitModel(Model* model, const glm::mat4& transform);
+        virtual void submit(MeshInstance* instance);
         CommandQueue m_CommandQueue;
     };
 }

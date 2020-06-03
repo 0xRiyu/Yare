@@ -10,9 +10,21 @@
 namespace Yarezo::Graphics {
 
     ForwardRenderer::ForwardRenderer() {
+        m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/viking_room.obj"));
+        m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj"));
         //m_Models.emplace_back(new Model("../YareZo/Resources/Models/chalet.obj", "../YareZo/Resources/Textures/chalet.jpg"));
-        m_Models.emplace_back(new Model("../YareZo/Resources/Models/viking_room.obj",  "../YareZo/Resources/Textures/viking_room.png"));
-        m_Models.emplace_back(new Model("../YareZo/Resources/Models/cube.obj", "../YareZo/Resources/Textures/crate.png"));
+        m_MeshInstances.emplace_back(new MeshInstance(m_Meshes[0].get(),  "../YareZo/Resources/Textures/viking_room.png"));
+        m_MeshInstances.emplace_back(new MeshInstance(m_Meshes[1].get(), "../YareZo/Resources/Textures/crate.png"));
+
+        Transform transform{glm::vec3(0.0f, -0.15f, -1.0f),
+                            glm::vec3(0.0f, 0.0f, 0.0f),
+                            glm::vec3(1.0f, 1.0f, 1.0f)};
+        m_MeshInstances[0]->setTransform(transform);
+
+        Transform transform2{glm::vec3(0.0f, 0.0f, 1.0f),
+                             glm::vec3(0.0f, 0.0f, 0.0f),
+                             glm::vec3(1.0f, 1.0f, 1.0f)};
+        m_MeshInstances[1]->setTransform(transform2);
     }
 
     ForwardRenderer::~ForwardRenderer() {
@@ -25,15 +37,16 @@ namespace Yarezo::Graphics {
         delete m_UniformBuffers.view;
         delete m_UniformBuffers.dynamic;
 
-        for (auto model : m_Models){
+        for (auto model : m_MeshInstances){
             delete model;
         }
+
         delete m_DefaultMaterial;
     }
 
     void ForwardRenderer::init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-        for (auto model: m_Models) {
-            model->load(MaterialTexType::Texture2D);
+        for (auto mesh: m_MeshInstances) {
+            mesh->load(MaterialTexType::Texture2D);
         }
         m_DefaultMaterial = new Material();
 
@@ -47,17 +60,10 @@ namespace Yarezo::Graphics {
 
     void ForwardRenderer::prepareScene() {
         resetCommandQueue();
-        glm::mat4 model_transform = glm::mat4(1.0f);
-        model_transform = glm::translate(model_transform, glm::vec3(0.0f, -0.15f, -1.0f));
-        model_transform = glm::rotate(model_transform, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
-        submitModel(m_Models[0], model_transform);
+        submit(m_MeshInstances[0]);
 
-        glm::mat4 model_transform2 = glm::mat4(1.0f);
-        model_transform2 = glm::translate(model_transform2, glm::vec3(0.0f, 0.0f, 1.0f));
-        model_transform2 = glm::rotate(model_transform2, glm::radians(-90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-        submitModel(m_Models[1], model_transform2);
+        submit(m_MeshInstances[1]);
     }
 
     void ForwardRenderer::present(YzVkCommandBuffer* commandBuffer) {
@@ -66,20 +72,20 @@ namespace Yarezo::Graphics {
         if (GlobalSettings::instance()->displayModels) {
             for (auto& command : m_CommandQueue) {
 
-                updateUniformBuffers(index, command.transform);
+                updateUniformBuffers(index, command.meshInstance->getTransform());
                 uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
                 m_Pipeline->setActive(*commandBuffer);
-                int imageIdx = command.model->getImageIdx();
+                int imageIdx = command.meshInstance->getImageIdx();
 
                 vkCmdPushConstants(commandBuffer->getCommandBuffer(), m_Pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
                 vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u,
                                         1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
-                command.model->getMesh()->getVertexBuffer()->bindVertex(*commandBuffer, 0);
-                command.model->getMesh()->getIndexBuffer()->bindIndex(*commandBuffer, VK_INDEX_TYPE_UINT32);
+                command.meshInstance->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
+                command.meshInstance->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
 
-                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.model->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
+                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.meshInstance->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
                 index++;
             }
         }
@@ -176,14 +182,14 @@ namespace Yarezo::Graphics {
         imageBufferInfo.descriptorCount = MAX_NUM_TEXTURES;
 
         int imageIdx = 0;
-        for (auto model : m_Models) {
-            imageBufferInfo.imageSampler = model->getMaterial()->getTextureImage()->getSampler();
-            imageBufferInfo.imageView = model->getMaterial()->getTextureImage()->getImageView();
+        for (auto meshInstance : m_MeshInstances) {
+            imageBufferInfo.imageSampler = meshInstance->getMaterial()->getTextureImage()->getSampler();
+            imageBufferInfo.imageView = meshInstance->getMaterial()->getTextureImage()->getImageView();
             bufferInfos.push_back(imageBufferInfo);
-            model->setImageIdx(imageIdx++);
+            meshInstance->setImageIdx(imageIdx++);
         }
 
-        for (size_t i = m_Models.size(); i < MAX_NUM_TEXTURES; i++) {
+        for (size_t i = m_MeshInstances.size(); i < MAX_NUM_TEXTURES; i++) {
 
             imageBufferInfo.imageSampler = m_DefaultMaterial->getTextureImage()->getSampler();
             imageBufferInfo.imageView = m_DefaultMaterial->getTextureImage()->getImageView();
@@ -215,11 +221,11 @@ namespace Yarezo::Graphics {
         m_UniformBuffers.dynamic = new YzVkBuffer(usageFlags, dynamicPropertyFlags, dynamicBufferSize, nullptr);
     }
 
-    void ForwardRenderer::updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix) {
+    void ForwardRenderer::updateUniformBuffers(uint32_t index, const Transform& transform) {
         // TODO, store UBOs for each model we want to display in one UBO, separated by an offset
         // then bind based on that offset in the present call
         glm::mat4* uboDynamicModelPtr = (glm::mat4*)((uint64_t)m_UboDynamicData.model + (index * m_DynamicAlignment));
-        *uboDynamicModelPtr = modelMatrix;
+        *uboDynamicModelPtr = transform.getMatrix();
 
         m_UniformBuffers.dynamic->setDynamicData(MAX_OBJECTS * m_DynamicAlignment, &*m_UboDynamicData.model);
 

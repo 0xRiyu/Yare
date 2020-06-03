@@ -47,7 +47,7 @@ namespace Yarezo {
 
     void KeyHandler::handle() {
 
-        auto posVec = p_Camera->getPosition();
+        auto posVec = p_Camera->getTransform().getTranslation();
         auto upVec = p_Camera->getUpVector();
         auto lookAtVec = p_Camera->getLookAtVector();
         float cameraSpeed = p_Camera->getCameraSpeed();

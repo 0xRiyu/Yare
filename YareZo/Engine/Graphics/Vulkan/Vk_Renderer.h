@@ -29,7 +29,7 @@ namespace Yarezo {
             void createSemaphores();
 
         private:
-            const int MAX_FRAMES_IN_FLIGHT = 1;
+            const int MAX_FRAMES_IN_FLIGHT = 2;
 
             YzVkInstance*                     m_Instance;
             YzVkDevice*                       m_Device;

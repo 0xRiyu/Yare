@@ -2,13 +2,7 @@
 #ifndef YAREZO_YZ_CAMERA_H
 #define YAREZO_YZ_CAMERA_H
 
-#ifndef GLM_FORCE_RADIANS
-#define GLM_FORCE_RADIANS
-#endif
-
-#include <glm/ext.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <glm/glm.hpp>
+#include "Core/Transform.h"
 
 namespace Yarezo {
 
@@ -23,8 +17,7 @@ namespace Yarezo {
         virtual void setFov(const float in) = 0;
         virtual void setCameraSpeed(const float speed) = 0;
 
-        virtual glm::vec3 getPosition()          const { return m_Position; }
-        virtual glm::vec3 getRotation()          const { return m_Rotation; }
+        virtual Transform getTransform()         const { return m_Transform; }
         virtual glm::vec3 getLookAtVector()      const { return m_LookAt; }
         virtual glm::vec3 getUpVector()          const { return m_Up; }
         virtual glm::mat4 getProjectionMatrix()  const { return m_ProjectionMatrix; }
@@ -33,18 +26,17 @@ namespace Yarezo {
         virtual float getCameraSpeed()           const { return m_CameraSpeed; }
 
     protected:
-        glm::vec3 m_Position;
-        glm::vec3 m_Rotation;
-        glm::vec3 m_LookAt;
-        glm::vec3 m_Up;
-        glm::vec3 m_Front;
+        Transform m_Transform;
 
-        float m_Aspect;
+        glm::vec3 m_LookAt = glm::vec3(0.0f);
+        glm::vec3 m_Up = glm::vec3(0.0f);
+        glm::vec3 m_Front = glm::vec3(0.0f);
 
-        glm::mat4 m_ProjectionMatrix;
-        glm::mat4 m_ViewMatrix;
+        glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
+        glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 
-        float m_Fov;
+        float m_Aspect = 0.0f;
+        float m_Fov = 0.0f;
         float m_CameraSpeed = 0.0f;
     };
 }

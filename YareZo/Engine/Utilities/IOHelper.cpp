@@ -40,13 +40,13 @@ namespace Yarezo::Utilities {
         return myLines;
     }
 
-	void loadModel(const std::string& modelFilePath, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
+    void loadMesh(const std::string& meshFilePath, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelFilePath.c_str())) {
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshFilePath.c_str())) {
             YZ_ERROR(warn + err);
         }
 
@@ -77,6 +77,6 @@ namespace Yarezo::Utilities {
                 indices.push_back(uniqueVertices[vertex]);
             }
         }
-	}
+    }
 
 }

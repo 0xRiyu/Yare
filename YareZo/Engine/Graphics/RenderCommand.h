@@ -1,13 +1,12 @@
 #ifndef YAREZO_RENDER_COMMAND_H
 #define YAREZO_RENDER_COMMAND_H
 
-#include "Graphics/Model.h"
+#include "Graphics/MeshInstance.h"
 
 namespace Yarezo::Graphics {
 
     struct RenderCommand {
-        Model* model;
-        glm::mat4 transform;
+        MeshInstance* meshInstance;
     };
 }
 

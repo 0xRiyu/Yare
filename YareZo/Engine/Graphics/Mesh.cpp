@@ -1,6 +1,20 @@
 #include "Graphics/Mesh.h"
+#include "Utilities/IOHelper.h"
+
+#include "Core/yzh.h"
 
 namespace Yarezo::Graphics {
+
+    Mesh::Mesh(const std::string& meshFilePath)
+        :m_FilePath(meshFilePath) {
+        if (!meshFilePath.empty()) {
+            std::vector<Vertex> vertices;
+            std::vector<uint32_t> indices;
+
+            Utilities::loadMesh(meshFilePath, vertices, indices);
+            createBuffers(vertices, indices);
+        }
+    }
 
     Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         createBuffers(vertices, indices);

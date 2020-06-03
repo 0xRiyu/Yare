@@ -147,8 +147,8 @@ namespace Yarezo::Graphics {
         int32_t indexOffset = 0;
 
         if (imDrawData->CmdListsCount > 0) {
-            m_IndexBuffer->bindIndex(*commandBuffer, VK_INDEX_TYPE_UINT16);
-            m_VertexBuffer->bindVertex(*commandBuffer, 0);
+            m_IndexBuffer->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT16);
+            m_VertexBuffer->bindVertex(commandBuffer, 0);
 
             for (int32_t i = 0; i < imDrawData->CmdListsCount; i++) {
                 const ImDrawList* cmd_list = imDrawData->CmdLists[i];

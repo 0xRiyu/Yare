@@ -7,6 +7,8 @@
 #include "Graphics/Vulkan/Vk_Buffer.h"
 #include "Graphics/Vulkan/Vk_DescriptorSet.h"
 
+#include <memory>
+
 #define MAX_OBJECTS 2048
 
 namespace Yarezo::Graphics {
@@ -26,10 +28,11 @@ namespace Yarezo::Graphics {
         void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         void createDescriptorSets();
         void prepareUniformBuffers();
-        void updateUniformBuffers(uint32_t index, const glm::mat4& modelMatrix);
+        void updateUniformBuffers(uint32_t index, const Transform& transform);
 
-        // TODO Move this into some content management class, I have no clue what that would look like
-        std::vector<Model*> m_Models;
+        // TODO Move this into some content management class
+        std::vector<std::shared_ptr<Mesh>> m_Meshes;
+        std::vector<MeshInstance*> m_MeshInstances;
         Material* m_DefaultMaterial;
 
         size_t m_DynamicAlignment = 0;

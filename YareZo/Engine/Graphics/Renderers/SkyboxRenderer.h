@@ -7,6 +7,8 @@
 #include "Graphics/Vulkan/Vk_Buffer.h"
 #include "Graphics/Vulkan/Vk_DescriptorSet.h"
 
+#include <memory>
+
 namespace Yarezo::Graphics {
 
     class SkyboxRenderer : public YzRenderer {
@@ -23,10 +25,11 @@ namespace Yarezo::Graphics {
         void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         void createDescriptorSet();
         void prepareUniformBuffer();
-        void updateUniformBuffer(uint32_t index, const glm::mat4& modelMatrix);
+        void updateUniformBuffer(uint32_t index);
 
     private:
-        Model* m_SkyboxModel;
+        std::shared_ptr<Mesh> m_CubeMesh;
+        MeshInstance* m_SkyboxModel;
         YzVkPipeline* m_Pipeline;
         YzVkDescriptorSet* m_DescriptorSet;
         YzVkBuffer* m_UniformBuffer;

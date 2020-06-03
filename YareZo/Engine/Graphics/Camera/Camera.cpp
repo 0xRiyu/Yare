@@ -8,15 +8,13 @@ namespace Yarezo::Graphics {
 
     Camera::Camera(const float screenWidth, const float screenHeight) {
         m_Aspect = screenWidth / screenHeight;
-        m_Position = glm::vec3(3.0f, 2.0f, 0.0f);
+
+        m_Transform = Transform(glm::vec3(3.0f, 2.0f, 0.0f),
+                                glm::vec3(0.0f, 32.5f, 0.0f),
+                                glm::vec3(1.0f));
+
         m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
         m_Fov = 50.0f;
-
-        // TODO: World has X coming into the camera rather than Z
-        float yaw = 0.0f;
-        float pitch = 32.5f;
-        float roll = 0.0f;
-        m_Rotation = glm::vec3(yaw, pitch, roll);
 
         recalculateViewParams();
 
@@ -28,12 +26,12 @@ namespace Yarezo::Graphics {
     }
 
     void Camera::setPosition(const glm::vec3& in) {
-        m_Position = in;
+        m_Transform.setTranslation(in);
         updateView();
     }
 
     void Camera::setRotation(const glm::vec3& in) {
-        m_Rotation = in;
+        m_Transform.setRotation(in);
 
         recalculateViewParams();
         updateView();
@@ -59,9 +57,9 @@ namespace Yarezo::Graphics {
     }
 
     void Camera::recalculateViewParams() {
-        m_LookAt.x = cos(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
-        m_LookAt.y = sin(glm::radians(m_Rotation.y));
-        m_LookAt.z = sin(glm::radians(m_Rotation.x)) * cos(glm::radians(m_Rotation.y));
+        m_LookAt.x = cos(glm::radians(m_Transform.getRotation().x)) * cos(glm::radians(m_Transform.getRotation().y));
+        m_LookAt.y = sin(glm::radians(m_Transform.getRotation().y));
+        m_LookAt.z = sin(glm::radians(m_Transform.getRotation().x)) * cos(glm::radians(m_Transform.getRotation().y));
         m_LookAt = glm::normalize(m_LookAt);
 
         m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -70,7 +68,7 @@ namespace Yarezo::Graphics {
     }
 
     void Camera::updateView() {
-        m_ViewMatrix = glm::lookAtLH(m_Position, m_Position + m_LookAt, m_Up);
+        m_ViewMatrix = glm::lookAtLH(m_Transform.getTranslation(), m_Transform.getTranslation() + m_LookAt, m_Up);
     }
 
     void Camera::updateProj() {

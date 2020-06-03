@@ -17,8 +17,8 @@ namespace Yarezo {
             void cleanUp();
             void setData(size_t size, const void* data, uint32_t offset = 0);
             void setDynamicData(size_t size, const void* data, uint32_t offset = 0);
-            void bindIndex(const YzVkCommandBuffer& commandBuffer, VkIndexType type);
-            void bindVertex(const YzVkCommandBuffer& commandBuffer, VkDeviceSize offset);
+            void bindIndex(YzVkCommandBuffer* commandBuffer, VkIndexType type);
+            void bindVertex(YzVkCommandBuffer* commandBuffer, VkDeviceSize offset);
             void flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
             bool mapMemory(VkDeviceSize offset, VkDeviceSize size);
             void unmapMemory();

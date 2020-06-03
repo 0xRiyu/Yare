@@ -34,7 +34,7 @@ namespace Yarezo {
     }
 
     void MouseHandler::handleMouseEvent() {
-        auto rotation = p_Camera->getRotation();
+        auto rotation = p_Camera->getTransform().getRotation();
 
         float deltaX = glm::clamp(currentMouseX - prevMouseX, -10.0f, 10.0f) * mouseSensitivity;
         float deltaY = glm::clamp(currentMouseY - prevMouseY, -10.0f, 10.0f) * mouseSensitivity;

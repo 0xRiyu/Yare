@@ -6,10 +6,9 @@ namespace Yarezo::Graphics {
         m_CommandQueue.clear();
     }
 
-    void YzRenderer::submitModel(Model* model, const glm::mat4& transform) {
+    void YzRenderer::submit(MeshInstance* instance) {
         RenderCommand renderCommand;
-        renderCommand.model = model;
-        renderCommand.transform = transform;
+        renderCommand.meshInstance = instance;
 
         m_CommandQueue.push_back(renderCommand);
     }

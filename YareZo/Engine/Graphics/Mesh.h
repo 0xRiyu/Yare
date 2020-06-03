@@ -7,9 +7,10 @@
 
 namespace Yarezo::Graphics {
 
-    class Mesh
-    {
+    class Mesh {
     public:
+        Mesh() {}
+        Mesh(const std::string& meshFilePath);
         Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
         virtual ~Mesh();
 
@@ -21,7 +22,7 @@ namespace Yarezo::Graphics {
 
         YzVkBuffer* m_VertexBuffer;
         YzVkBuffer* m_IndexBuffer;
-
+        std::string m_FilePath;
     };
 }
 

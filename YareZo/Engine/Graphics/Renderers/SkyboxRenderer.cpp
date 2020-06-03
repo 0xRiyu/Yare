@@ -16,8 +16,9 @@ namespace Yarezo::Graphics {
                                                    "../YareZo/Resources/Textures/skybox/posz.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negz.jpg",
         };
+        m_CubeMesh = std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj");
 
-        m_SkyboxModel = new Model("../YareZo/Resources/Models/cube.obj", skyboxTextures);
+        m_SkyboxModel = new MeshInstance(m_CubeMesh.get(), skyboxTextures);
     }
 
     SkyboxRenderer::~SkyboxRenderer() {
@@ -36,7 +37,8 @@ namespace Yarezo::Graphics {
 
     void SkyboxRenderer::prepareScene() {
         resetCommandQueue();
-        submitModel(m_SkyboxModel, glm::mat4(1.0f) /* unused in a skybox */);
+        Transform transform{};
+        submit(m_SkyboxModel);
     }
 
 
@@ -46,13 +48,13 @@ namespace Yarezo::Graphics {
                 vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(),
                                         0, 1, &m_DescriptorSet->getDescriptorSet(0), 0 , nullptr);
-                command.model->getMesh()->getVertexBuffer()->bindVertex(*commandBuffer, 0);
-                command.model->getMesh()->getIndexBuffer()->bindIndex(*commandBuffer, VK_INDEX_TYPE_UINT32);
+                command.meshInstance->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
+                command.meshInstance->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
                 m_Pipeline->setActive(*commandBuffer);
                 vkCmdDrawIndexed(commandBuffer->getCommandBuffer(),
-                                 static_cast<uint32_t>(m_SkyboxModel->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)),
+                                 static_cast<uint32_t>(command.meshInstance->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)),
                                  1, 0, 0, 0);
-                updateUniformBuffer(0, command.transform);
+                updateUniformBuffer(0);
             }
         }
     }
@@ -136,7 +138,7 @@ namespace Yarezo::Graphics {
         m_UniformBuffer = new YzVkBuffer(usageFlags, viewPropertyFlags, viewBufferSize, nullptr);
     }
 
-    void SkyboxRenderer::updateUniformBuffer(uint32_t index, const glm::mat4& modelMatrix) {
+    void SkyboxRenderer::updateUniformBuffer(uint32_t index) {
         UniformVS skyboxVS = {};
 
         skyboxVS.view = Application::getAppInstance()->getWindow()->getCamera()->getViewMatrix();

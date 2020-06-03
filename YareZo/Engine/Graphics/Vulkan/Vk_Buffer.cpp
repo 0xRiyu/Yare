@@ -82,21 +82,21 @@ namespace Yarezo {
             }
         }
 
-        void YzVkBuffer::bindIndex(const YzVkCommandBuffer& commandBuffer, VkIndexType type) {
+        void YzVkBuffer::bindIndex(YzVkCommandBuffer* commandBuffer, VkIndexType type) {
             // Check that the index buffer bit was set inside the usageflags before binding
             if (m_Usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT) {
-                vkCmdBindIndexBuffer(commandBuffer.getCommandBuffer(), m_Buffer, 0, type);
+                vkCmdBindIndexBuffer(commandBuffer->getCommandBuffer(), m_Buffer, 0, type);
             } else {
                 YZ_WARN("Buffer was not of type Index. Did you intend to bind in this way?");
             }
 
         }
 
-        void YzVkBuffer::bindVertex(const YzVkCommandBuffer& commandBuffer, VkDeviceSize offset) {
+        void YzVkBuffer::bindVertex(YzVkCommandBuffer* commandBuffer, VkDeviceSize offset) {
             // check that the vertex buffer bit was set inside the usageFlags before binding
             if (m_Usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT) {
                 VkDeviceSize offset = 0;
-                vkCmdBindVertexBuffers(commandBuffer.getCommandBuffer(), 0, 1, &m_Buffer, &offset);
+                vkCmdBindVertexBuffers(commandBuffer->getCommandBuffer(), 0, 1, &m_Buffer, &offset);
             } else {
                 YZ_WARN("Buffer was not of type Vertex. Did you intend to bind in this way?");
             }
