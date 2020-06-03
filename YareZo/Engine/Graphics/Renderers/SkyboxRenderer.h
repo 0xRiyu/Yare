@@ -29,6 +29,7 @@ namespace Yarezo::Graphics {
 
     private:
         std::shared_ptr<Mesh> m_CubeMesh;
+        std::shared_ptr<Material> m_Material;
         MeshInstance* m_SkyboxModel;
         YzVkPipeline* m_Pipeline;
         YzVkDescriptorSet* m_DescriptorSet;

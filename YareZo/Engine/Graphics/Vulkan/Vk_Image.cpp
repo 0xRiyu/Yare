@@ -80,7 +80,7 @@ namespace Yarezo::Graphics {
         m_TextureHeight = static_cast<size_t>(texHeight);
 
         if (!pixels) {
-            YZ_CRITICAL("stbi_load failed to load a texture from file.");
+            YZ_CRITICAL("stbi_load failed to load a texture from file at :" + filePath);
         }
 
         buffer.init(VK_BUFFER_USAGE_TRANSFER_SRC_BIT,

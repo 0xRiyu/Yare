@@ -5,11 +5,11 @@
 namespace Yarezo {
     Transform::Transform() { }
     Transform::Transform(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale):
-        m_Translation(translation), m_Rotation(rotation), m_Scale(scale) { }
+        m_Translation(translation), m_Rotation(glm::quat(glm::radians(rotation))), m_Scale(scale) { }
 
     void Transform::set(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale) {
         m_Translation = translation;
-        m_Rotation = rotation;
+        m_Rotation = glm::quat(glm::radians(rotation));
         m_Scale = scale;
     }
 
@@ -21,11 +21,15 @@ namespace Yarezo {
         m_Translation = translation;
     }
 
-    void Transform::setRotation(float yaw, float pitch, float roll) {
-        m_Rotation = glm::vec3(yaw, pitch, roll);
+    void Transform::setRotation(float pitch, float yaw, float roll) {
+        m_Rotation = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
     }
 
     void Transform::setRotation(const glm::vec3& rotation) {
+        m_Rotation = glm::quat(glm::radians(rotation));
+    }
+
+    void Transform::setRotation(const glm::quat& rotation) {
         m_Rotation = rotation;
     }
 
@@ -39,7 +43,7 @@ namespace Yarezo {
 
     glm::mat4 Transform::getMatrix() const {
         glm::mat4 trans = glm::translate(m_Translation);
-        glm::mat4 rot = glm::orientate4(m_Rotation);
+        glm::mat4 rot = glm::mat4_cast(m_Rotation);
         glm::mat4 scale = glm::scale(m_Scale);
         return trans * rot * scale;
     }

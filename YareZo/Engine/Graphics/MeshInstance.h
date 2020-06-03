@@ -13,30 +13,21 @@ namespace Yarezo::Graphics {
 
     class MeshInstance {
     public:
-        MeshInstance(Mesh* mesh, const std::string& textureFilePath = "");
-        MeshInstance(Mesh* mesh, const std::vector<std::string>& textureFilesPaths);
+        MeshInstance(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material);
+        MeshInstance(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material, const Transform& transform);
         ~MeshInstance();
 
-        void load(MaterialTexType textureType);
-
-        void setImageIdx(int Idx) { m_ImageIdx = Idx; }
         void setTransform(Transform& transform) { m_Transform = transform; }
 
-        const Mesh*       getMesh()      const { return m_Mesh; }
-        const Material*   getMaterial()  const { return m_Material; }
-        int               getImageIdx()  const { return m_ImageIdx; }
+        const std::shared_ptr<Mesh>       getMesh()      const { return m_Mesh; }
+        const std::shared_ptr<Material>   getMaterial()  const { return m_Material; }
         Transform         getTransform() const { return m_Transform; }
 
-
     private:
-        void loadMaterial(MaterialTexType textureType);
 
-        Mesh* m_Mesh;
-        Material* m_Material;
+        std::shared_ptr<Mesh> m_Mesh;
+        std::shared_ptr<Material> m_Material;
         Transform m_Transform;
-
-        std::string m_MeshFilePath;
-        std::vector<std::string> m_TextureFilePath;
 
         int m_ImageIdx = 0;
     };

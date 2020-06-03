@@ -12,19 +12,26 @@ namespace Yarezo::Graphics {
     ForwardRenderer::ForwardRenderer() {
         m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/viking_room.obj"));
         m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj"));
-        //m_Models.emplace_back(new Model("../YareZo/Resources/Models/chalet.obj", "../YareZo/Resources/Textures/chalet.jpg"));
-        m_MeshInstances.emplace_back(new MeshInstance(m_Meshes[0].get(),  "../YareZo/Resources/Textures/viking_room.png"));
-        m_MeshInstances.emplace_back(new MeshInstance(m_Meshes[1].get(), "../YareZo/Resources/Textures/crate.png"));
 
-        Transform transform{glm::vec3(0.0f, -0.15f, -1.0f),
-                            glm::vec3(0.0f, 0.0f, 0.0f),
+        m_Materials.emplace_back(std::make_shared<Material>()); // Default texture
+        m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/viking_room.png"));
+        m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/crate.png"));
+        m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/skysphere.png"));
+        m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/sprite.jpg"));
+
+        Transform transform{glm::vec3(3.0f, -0.15f, 0.0f),
+                            glm::vec3(90.0f, 90.0f, -180.0f),
                             glm::vec3(1.0f, 1.0f, 1.0f)};
-        m_MeshInstances[0]->setTransform(transform);
+        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[0], m_Materials[1], transform));
 
-        Transform transform2{glm::vec3(0.0f, 0.0f, 1.0f),
-                             glm::vec3(0.0f, 0.0f, 0.0f),
-                             glm::vec3(1.0f, 1.0f, 1.0f)};
-        m_MeshInstances[1]->setTransform(transform2);
+        Transform transform2;
+        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[1], transform2));
+        transform2.setTranslation(1.0f, 0.0f, 0.0f);
+        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[2], transform2));
+        transform2.setTranslation(0.0f, 1.0f, 0.0f);
+        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[3], transform2));
+        transform2.setTranslation(0.0f, 0.0f, 1.0f);
+        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[4], transform2));
     }
 
     ForwardRenderer::~ForwardRenderer() {
@@ -37,18 +44,12 @@ namespace Yarezo::Graphics {
         delete m_UniformBuffers.view;
         delete m_UniformBuffers.dynamic;
 
-        for (auto model : m_MeshInstances){
-            delete model;
-        }
-
-        delete m_DefaultMaterial;
     }
 
     void ForwardRenderer::init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-        for (auto mesh: m_MeshInstances) {
-            mesh->load(MaterialTexType::Texture2D);
+        for (auto material : m_Materials) {
+            material->loadTextures();
         }
-        m_DefaultMaterial = new Material();
 
         createGraphicsPipeline(renderPass, windowWidth, windowHeight);
 
@@ -61,9 +62,9 @@ namespace Yarezo::Graphics {
     void ForwardRenderer::prepareScene() {
         resetCommandQueue();
 
-        submit(m_MeshInstances[0]);
-
-        submit(m_MeshInstances[1]);
+        for (const auto meshInstance : m_MeshInstances){
+            submit(meshInstance.get());
+        }
     }
 
     void ForwardRenderer::present(YzVkCommandBuffer* commandBuffer) {
@@ -75,7 +76,7 @@ namespace Yarezo::Graphics {
                 updateUniformBuffers(index, command.meshInstance->getTransform());
                 uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
                 m_Pipeline->setActive(*commandBuffer);
-                int imageIdx = command.meshInstance->getImageIdx();
+                int imageIdx = command.meshInstance->getMaterial()->getImageIdx();
 
                 vkCmdPushConstants(commandBuffer->getCommandBuffer(), m_Pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
                 vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
@@ -182,17 +183,16 @@ namespace Yarezo::Graphics {
         imageBufferInfo.descriptorCount = MAX_NUM_TEXTURES;
 
         int imageIdx = 0;
-        for (auto meshInstance : m_MeshInstances) {
-            imageBufferInfo.imageSampler = meshInstance->getMaterial()->getTextureImage()->getSampler();
-            imageBufferInfo.imageView = meshInstance->getMaterial()->getTextureImage()->getImageView();
+        for (auto material : m_Materials) {
+            imageBufferInfo.imageSampler = material->getTextureImage()->getSampler();
+            imageBufferInfo.imageView = material->getTextureImage()->getImageView();
             bufferInfos.push_back(imageBufferInfo);
-            meshInstance->setImageIdx(imageIdx++);
+            material->setImageIdx(imageIdx++);
         }
 
-        for (size_t i = m_MeshInstances.size(); i < MAX_NUM_TEXTURES; i++) {
-
-            imageBufferInfo.imageSampler = m_DefaultMaterial->getTextureImage()->getSampler();
-            imageBufferInfo.imageView = m_DefaultMaterial->getTextureImage()->getImageView();
+        for (size_t i = m_Materials.size(); i < MAX_NUM_TEXTURES; i++) {
+            imageBufferInfo.imageSampler = m_Materials[0]->getTextureImage()->getSampler();
+            imageBufferInfo.imageView = m_Materials[0]->getTextureImage()->getImageView();
             bufferInfos.push_back(imageBufferInfo);
         }
 

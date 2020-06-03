@@ -3,12 +3,12 @@
 
 namespace Yarezo::Graphics {
 
-    Material::Material(const std::vector<std::string>& textureFilePaths, MaterialTexType type) {
-        if (!textureFilePaths.empty()) {
-            loadTexture(textureFilePaths, type);
-        } else {
-            loadTexture({"../YareZo/Resources/Textures/default.jpg"}, type);
-        }
+    Material::Material(const std::string& textureFilePath, MaterialTexType type)
+        : m_FilePaths({textureFilePath}), m_Type(type) {
+    }
+
+    Material::Material(const std::vector<std::string>& textureFilePaths, MaterialTexType type)
+        : m_FilePaths(textureFilePaths), m_Type(type) {
     }
 
     Material::~Material() {
@@ -17,18 +17,29 @@ namespace Yarezo::Graphics {
         }
     }
 
-    void Material::loadTexture(const std::vector<std::string>& textureFilePaths, MaterialTexType type) {
-        if (textureFilePaths.empty()) {
-            YZ_CRITICAL("No texture files were provided to the Material");
-        }
-
-        switch (type) {
+    void Material::loadTextures() {
+        switch (m_Type) {
         case MaterialTexType::TextureCube: {
-            m_Texture = YzVkImage::createTextureCube(textureFilePaths);
+            std::vector<std::string> texturePaths{6};
+            int index = 0;
+            for (int i = 0; i < 6; i++){
+                if (index < m_FilePaths.size()) {
+                    texturePaths[i] = m_FilePaths[index];
+                    index++;
+                } else {
+                    texturePaths[i] = "../YareZo/Resources/Textures/default.jpg";
+                }
+            }
+
+            m_Texture = YzVkImage::createTextureCube(texturePaths);
             break;
         }
         case MaterialTexType::Texture2D: {
-            m_Texture = YzVkImage::createTexture2D(textureFilePaths[0]);
+            if (m_FilePaths.size() >= 1) {
+                m_Texture = YzVkImage::createTexture2D(m_FilePaths[0]);
+            } else {
+                m_Texture = YzVkImage::createTexture2D("../YareZo/Resources/Textures/default.jpg");
+            }
             break;
         }
         }

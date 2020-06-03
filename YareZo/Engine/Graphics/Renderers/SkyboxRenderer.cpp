@@ -16,9 +16,10 @@ namespace Yarezo::Graphics {
                                                    "../YareZo/Resources/Textures/skybox/posz.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negz.jpg",
         };
+        m_Material = std::make_shared<Material>(skyboxTextures, MaterialTexType::TextureCube);
         m_CubeMesh = std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj");
 
-        m_SkyboxModel = new MeshInstance(m_CubeMesh.get(), skyboxTextures);
+        m_SkyboxModel = new MeshInstance(m_CubeMesh, m_Material);
     }
 
     SkyboxRenderer::~SkyboxRenderer() {
@@ -29,7 +30,7 @@ namespace Yarezo::Graphics {
     }
 
     void SkyboxRenderer::init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-        m_SkyboxModel->load(MaterialTexType::TextureCube);
+        m_Material->loadTextures();
         createGraphicsPipeline(renderPass, windowWidth, windowHeight);
         prepareUniformBuffer();
         createDescriptorSet();
@@ -37,7 +38,6 @@ namespace Yarezo::Graphics {
 
     void SkyboxRenderer::prepareScene() {
         resetCommandQueue();
-        Transform transform{};
         submit(m_SkyboxModel);
     }
 

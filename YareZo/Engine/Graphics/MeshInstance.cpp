@@ -3,25 +3,14 @@
 
 namespace Yarezo::Graphics {
 
-    MeshInstance::MeshInstance(Mesh* mesh, const std::string& textureFilePath)
-        :m_Mesh(mesh), m_TextureFilePath( std::vector{textureFilePath}) {
+    MeshInstance::MeshInstance(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material)
+        :m_Mesh(mesh), m_Material(material) {
     }
 
-    MeshInstance::MeshInstance(Mesh* mesh, const std::vector<std::string>& textureFilePaths)
-        :m_Mesh(mesh), m_TextureFilePath(textureFilePaths) {
+    MeshInstance::MeshInstance(std::shared_ptr<Mesh> mesh, std::shared_ptr<Material> material, const Transform& transform)
+        :m_Mesh(mesh), m_Material(material), m_Transform(transform) {
     }
 
     MeshInstance::~MeshInstance() {
-        delete m_Material;
     }
-
-    void MeshInstance::load(MaterialTexType textureType){
-        loadMaterial(textureType);
-    }
-
-    void MeshInstance::loadMaterial(MaterialTexType textureType) {
-        m_Material = new Material(m_TextureFilePath, textureType);
-
-    }
-
 }

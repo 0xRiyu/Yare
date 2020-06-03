@@ -34,13 +34,13 @@ namespace Yarezo {
     }
 
     void MouseHandler::handleMouseEvent() {
-        auto rotation = p_Camera->getTransform().getRotation();
+        auto rotation = p_Camera->getTransform().getVec3Rotation();
 
         float deltaX = glm::clamp(currentMouseX - prevMouseX, -10.0f, 10.0f) * mouseSensitivity;
         float deltaY = glm::clamp(currentMouseY - prevMouseY, -10.0f, 10.0f) * mouseSensitivity;
 
         rotation.x += deltaX;
-        rotation.y = glm::clamp(rotation.y + deltaY, -89.0f, 89.0f);
+        rotation.y = glm::clamp(rotation.y - deltaY, -89.0f, 89.0f);
 
         p_Camera->setRotation(rotation);
 

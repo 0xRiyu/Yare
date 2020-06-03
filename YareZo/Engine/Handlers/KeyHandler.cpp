@@ -54,19 +54,19 @@ namespace Yarezo {
 
 
         if (isKeyDown(GLFW_KEY_S)) {
-            posVec += (glm::normalize(lookAtVec) * cameraSpeed);
-        }
-
-        if (isKeyDown(GLFW_KEY_W)) {
             posVec -= (glm::normalize(lookAtVec) * cameraSpeed);
         }
 
+        if (isKeyDown(GLFW_KEY_W)) {
+            posVec += (glm::normalize(lookAtVec) * cameraSpeed);
+        }
+
         if (isKeyDown(GLFW_KEY_A)) {
-            posVec += (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
+            posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
         }
 
         if (isKeyDown(GLFW_KEY_D)) {
-            posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
+            posVec += (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
         }
 
         if (isKeyDown(GLFW_KEY_E)) {
