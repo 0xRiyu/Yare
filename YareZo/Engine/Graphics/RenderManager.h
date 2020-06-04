@@ -7,13 +7,15 @@
 #include "Graphics/Vulkan/Vk_RenderPass.h"
 #include "Graphics/Vulkan/Vk_Image.h"
 
+#include "Graphics/Window/YzWindow.h"
+
 #include "Graphics/Renderers/YzRenderer.h"
 
 namespace Yarezo::Graphics {
 
     class RenderManager {
     public:
-        RenderManager();
+        RenderManager(const std::shared_ptr<YzWindow> window);
         ~RenderManager();
 
         void renderScene();
@@ -31,17 +33,19 @@ namespace Yarezo::Graphics {
 
     private:
         // Constructs the instance, devices and swapchain required for rendering
-        YzVkRenderer*                       m_Renderer;
-        std::vector<YzVkFramebuffer*>       m_FrameBuffers;
-        std::vector<YzVkCommandBuffer*>     m_CommandBuffers;
-        YzVkRenderPass*                     m_RenderPass;
-        YzVkImage*                          m_DepthBuffer;
+        YzVkRenderer*                            m_Renderer;
+        std::vector<YzVkFramebuffer*>            m_FrameBuffers;
+        std::vector<YzVkCommandBuffer*>          m_CommandBuffers;
+        YzVkRenderPass*                          m_RenderPass;
+        YzVkImage*                               m_DepthBuffer;
+        const std::shared_ptr<YzWindow>          m_WindowRef;
+        // TODO: Find a better naming scheme
+        std::vector<YzRenderer*>                 m_Renderers;
 
         uint32_t m_CurrentBufferID = 0;
         uint32_t m_WindowWidth = 0;
         uint32_t m_WindowHeight = 0;
 
-        std::vector<YzRenderer*> m_Renderers;
     };
 }
 

@@ -14,12 +14,12 @@ namespace Yarezo {
         virtual ~Application();
         void run();
 
-        std::shared_ptr<YzWindow> getWindow() const { return m_Window; }
+        std::shared_ptr<Graphics::YzWindow> getWindow() const { return m_Window; }
 
         inline static Application* getAppInstance() { return s_AppInstance; }
         static bool logFPS;
     private:
-        std::shared_ptr<YzWindow> m_Window;
+        std::shared_ptr<Graphics::YzWindow> m_Window;
         static Application* s_AppInstance;
     };
 

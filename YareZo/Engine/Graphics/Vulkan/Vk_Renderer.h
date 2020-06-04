@@ -5,27 +5,25 @@
 #include "Graphics/Vulkan/Vk_Instance.h"
 #include "Graphics/Vulkan/Vk_Devices.h"
 #include "Graphics/Vulkan/Vk_Swapchain.h"
-#include "Graphics/Vulkan/Vk_DescriptorSet.h"
 #include "Graphics/Vulkan/Vk_CommandBuffer.h"
 #include "Graphics/Vulkan/Vk_Semaphore.h"
-
 
 namespace Yarezo {
     namespace Graphics {
 
         class YzVkRenderer {
         public:
-            YzVkRenderer();
+            YzVkRenderer(size_t width, size_t height);
             ~YzVkRenderer();
 
-            void recreateSwapchain();
+            void onResize(size_t width, size_t height);
             bool begin();
             bool present(YzVkCommandBuffer* cmdBuffer);
 
             std::shared_ptr<YzVkSwapchain> getYzSwapchain() const { return m_YzSwapchain; }
 
         private:
-            void init();
+            void init(size_t width, size_t height);
 
             const int MAX_FRAMES_IN_FLIGHT = 2;
 

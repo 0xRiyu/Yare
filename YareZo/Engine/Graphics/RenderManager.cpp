@@ -5,9 +5,12 @@
 #include "Graphics/Renderers/ImGuiRenderer.h"
 #include "Graphics/Renderers/SkyboxRenderer.h"
 
+#include "Graphics/Window/GlfwWindow.h"
+
 namespace Yarezo::Graphics {
 
-    RenderManager::RenderManager() {
+    RenderManager::RenderManager(const std::shared_ptr<YzWindow> window):
+        m_WindowRef(window) {
         init();
     }
 
@@ -55,7 +58,7 @@ namespace Yarezo::Graphics {
 
         m_CommandBuffers[m_CurrentBufferID]->beginRecording();
 
-        m_RenderPass->beginRenderPass(m_CommandBuffers[m_CurrentBufferID], m_FrameBuffers[m_CurrentBufferID], m_Renderer->getYzSwapchain().get());
+        m_RenderPass->beginRenderPass(m_CommandBuffers[m_CurrentBufferID], m_FrameBuffers[m_CurrentBufferID]);
     }
 
     void RenderManager::end() {
@@ -73,9 +76,10 @@ namespace Yarezo::Graphics {
     }
 
     void RenderManager::init() {
-        m_Renderer = new YzVkRenderer();
-        m_WindowWidth =  m_Renderer->getYzSwapchain()->getExtent().width;
-        m_WindowHeight = m_Renderer->getYzSwapchain()->getExtent().height;
+        auto props = m_WindowRef->getWindowProperties();
+        m_WindowWidth =  props.width;
+        m_WindowHeight = props.height;
+        m_Renderer = new YzVkRenderer(m_WindowWidth, m_WindowHeight);
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();
@@ -85,7 +89,9 @@ namespace Yarezo::Graphics {
     }
 
     void RenderManager::createRenderPass() {
-        const RenderPassInfo renderPassInfo{ m_Renderer->getYzSwapchain()->getImageFormat() };
+        RenderPassInfo renderPassInfo{};
+        renderPassInfo.imageFormat = m_Renderer->getYzSwapchain()->getImageFormat();
+        renderPassInfo.extent = VkExtent2D{m_WindowWidth, m_WindowHeight};
         m_RenderPass = new YzVkRenderPass(renderPassInfo);
     }
 
@@ -132,9 +138,9 @@ namespace Yarezo::Graphics {
             delete m_DepthBuffer;
             delete m_RenderPass;
         }
-
-        m_WindowWidth =  m_Renderer->getYzSwapchain()->getExtent().width;
-        m_WindowHeight = m_Renderer->getYzSwapchain()->getExtent().height;
+        m_WindowWidth =  m_WindowRef->getWindowProperties().width;
+        m_WindowHeight = m_WindowRef->getWindowProperties().height;
+        m_Renderer->onResize(m_WindowWidth, m_WindowHeight);
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();

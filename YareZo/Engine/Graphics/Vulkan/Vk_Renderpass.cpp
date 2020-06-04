@@ -6,8 +6,9 @@
 
 namespace Yarezo::Graphics {
 
-    YzVkRenderPass::YzVkRenderPass(const RenderPassInfo& info) {
-        init(info);
+    YzVkRenderPass::YzVkRenderPass(const RenderPassInfo& info)
+        :m_Info(info) {
+        init();
     }
 
     YzVkRenderPass::~YzVkRenderPass() {
@@ -16,9 +17,9 @@ namespace Yarezo::Graphics {
         }
     }
 
-    void YzVkRenderPass::init(const RenderPassInfo& renderPassInfo) {
+    void YzVkRenderPass::init() {
         VkAttachmentDescription colorAttachment = {};
-        colorAttachment.format = renderPassInfo.imageFormat;
+        colorAttachment.format = m_Info.imageFormat;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -74,13 +75,13 @@ namespace Yarezo::Graphics {
         }
     }
 
-    void YzVkRenderPass::beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain) {
+    void YzVkRenderPass::beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer) {
         VkRenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_RenderPass;
         renderPassInfo.framebuffer = frameBuffer->getFramebuffer();
         renderPassInfo.renderArea.offset = { 0, 0 };
-        renderPassInfo.renderArea.extent = swapchain->getExtent();
+        renderPassInfo.renderArea.extent = m_Info.extent;
         std::array<VkClearValue, 2> clearValues = {};
         clearValues[0].color = { 0.7f, 0.8f, 0.9f, 1.0f };
         clearValues[1].depthStencil = { 1.0f, 0 };

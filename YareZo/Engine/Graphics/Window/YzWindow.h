@@ -12,11 +12,11 @@
 #include <memory>
 #include <string>
 
-namespace Yarezo {
+namespace Yarezo::Graphics {
 
     struct WindowProperties {
-        unsigned short width;
-        unsigned short height;
+        uint32_t width;
+        uint32_t height;
     };
 
     class YzWindow {
@@ -26,10 +26,11 @@ namespace Yarezo {
         virtual bool shouldClose() = 0;
         virtual void close() = 0;
         virtual void releaseInputHandling() = 0;
-        virtual WindowProperties getWindowProperties()            const { return m_Properties; }
-        virtual std::shared_ptr<YzInputHandler> getKeyHandler()   const { return m_KeyHandler; }
-        virtual std::shared_ptr<YzInputHandler> getMouseHandler() const { return m_MouseHandler; }
-        virtual std::shared_ptr<YzCamera> getCamera()             const { return m_Camera; }
+        virtual void setWindowProperties(WindowProperties& props) { m_Properties = props; }
+        virtual WindowProperties                getWindowProperties()  const { return m_Properties; }
+        virtual std::shared_ptr<YzInputHandler> getKeyHandler()        const { return m_KeyHandler; }
+        virtual std::shared_ptr<YzInputHandler> getMouseHandler()      const { return m_MouseHandler; }
+        virtual std::shared_ptr<YzCamera>       getCamera()            const { return m_Camera; }
 
         static std::shared_ptr<YzWindow> createNewWindow(WindowProperties& properties);
         virtual void* getNativeWindow() const = 0;

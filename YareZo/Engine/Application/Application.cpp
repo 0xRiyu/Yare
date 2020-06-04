@@ -34,16 +34,15 @@ namespace Yarezo {
         ImGui::DestroyContext();
     }
 
-
     void Application::run() {
         Yarezo::Logger::init();
         YZ_INFO("Logger Initialized");
 
         //Create a window
-        WindowProperties props = {1600, 1200};
-        m_Window = YzWindow::createNewWindow(props);
+        Graphics::WindowProperties props = {1600, 1200};
+        m_Window = Graphics::YzWindow::createNewWindow(props);
 
-        Graphics::RenderManager renderManager;
+        Graphics::RenderManager renderManager{m_Window};
 
         double previousFPSTime = glfwGetTime();
         double previousFrameTime = glfwGetTime();

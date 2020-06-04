@@ -3,7 +3,6 @@
 
 #include "Graphics/Vulkan/Vk.h"
 #include "Graphics/Vulkan/Vk_CommandBuffer.h"
-#include "Graphics/Vulkan/Vk_Swapchain.h"
 
 namespace Yarezo::Graphics {
     // Forward declaration
@@ -11,6 +10,7 @@ namespace Yarezo::Graphics {
 
     struct RenderPassInfo {
         VkFormat imageFormat;
+        VkExtent2D extent;
     };
 
     class YzVkRenderPass {
@@ -18,12 +18,13 @@ namespace Yarezo::Graphics {
         YzVkRenderPass(const RenderPassInfo& info);
         ~YzVkRenderPass();
 
-        void beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain);
+        void beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer);
         void endRenderPass(YzVkCommandBuffer* const commandBuffer);
 
         const VkRenderPass& getRenderPass() const { return m_RenderPass; }
     private:
-        void init(const RenderPassInfo& renderPassInfo);
+        void init();
+        RenderPassInfo m_Info;
 
         VkRenderPass m_RenderPass = VK_NULL_HANDLE;
     };
