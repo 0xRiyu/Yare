@@ -5,33 +5,26 @@
 #include "Graphics/Vulkan/Vk_Swapchain.h"
 #include "Graphics/Vulkan/Vk_Renderpass.h"
 
-namespace Yarezo {
-    namespace Graphics {
+namespace Yarezo::Graphics {
 
-        struct FramebufferInfo {
-            VkStructureType type;
-            uint32_t width;
-            uint32_t height;
-            uint32_t layers = 1;
-            std::vector<VkImageView> attachments;
-            YzVkRenderPass* renderPass;
-        };
+    struct FramebufferInfo {
+        VkStructureType type;
+        uint32_t width;
+        uint32_t height;
+        uint32_t layers = 1;
+        std::vector<VkImageView> attachments;
+        YzVkRenderPass* renderPass;
+    };
 
-        class YzVkFramebuffer {
+    class YzVkFramebuffer {
+    public:
+        YzVkFramebuffer(const FramebufferInfo& framebufferInfo);
+        ~YzVkFramebuffer();
 
-        public:
-            YzVkFramebuffer(const FramebufferInfo& framebufferInfo);
-            ~YzVkFramebuffer();
+        const VkFramebuffer& getFramebuffer() const { return m_Framebuffer; }
 
-            const VkFramebuffer& getFramebuffer() const { return m_Framebuffer; }
-
-        private:
-            VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
-
-        };
-    }
+    private:
+        VkFramebuffer m_Framebuffer = VK_NULL_HANDLE;
+    };
 }
-
-
-
-#endif
+#endif //YAREZO_VK_FRAMEBUFFER_H

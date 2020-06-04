@@ -1,15 +1,12 @@
 #include "Graphics/Vulkan/Vk_Image.h"
 #include "Graphics/Vulkan/Vk_Devices.h"
 #include "Graphics/Vulkan/Vk_Utilities.h"
-#include "Utilities/YzLogger.h"
+#include "Utilities/Logger.h"
 
 #include <stb/stb_image.h>
 #include <stdlib.h>
 
 namespace Yarezo::Graphics {
-
-    YzVkImage::YzVkImage() {
-    }
 
     YzVkImage::~YzVkImage() {
         if (m_ImageView) {

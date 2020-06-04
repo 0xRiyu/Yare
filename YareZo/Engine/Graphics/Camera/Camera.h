@@ -2,7 +2,7 @@
 #ifndef YAREZO_CAMERA_H
 #define YAREZO_CAMERA_H
 
-#include "Core/YzCamera.h"
+#include "Graphics/Camera/YzCamera.h"
 
 namespace Yarezo::Graphics {
 

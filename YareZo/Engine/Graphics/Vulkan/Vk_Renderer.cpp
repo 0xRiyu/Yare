@@ -6,17 +6,13 @@
 namespace Yarezo {
     namespace Graphics {
 
-        YzVkRenderer::YzVkRenderer()
-            :m_ImageAvailableSemaphores(MAX_FRAMES_IN_FLIGHT),
-             m_RenderFinishedSemaphores(MAX_FRAMES_IN_FLIGHT) {
+        YzVkRenderer::YzVkRenderer() {
             init();
         }
 
         YzVkRenderer::~YzVkRenderer() {
-            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                m_ImageAvailableSemaphores[i].cleanUp();
-                m_RenderFinishedSemaphores[i].cleanUp();
-            }
+            m_ImageAvailableSemaphores.clear();
+            m_RenderFinishedSemaphores.clear();
 
             m_YzSwapchain.reset();
             m_Instance->cleanUp();
@@ -39,14 +35,8 @@ namespace Yarezo {
             m_YzSwapchain = std::make_shared<YzVkSwapchain>();
             m_YzSwapchain->init();
 
-            createSemaphores();
-        }
-
-        void YzVkRenderer::createSemaphores() {
-            for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-                m_ImageAvailableSemaphores[i].init();
-                m_RenderFinishedSemaphores[i].init();
-            }
+            m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+            m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         }
 
         void YzVkRenderer::recreateSwapchain() {

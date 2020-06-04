@@ -31,19 +31,15 @@ namespace Yarezo {
         private:
             void readShaderFiles();
 
-        private:
             VkPipelineShaderStageCreateInfo* m_ShaderStages;
             std::string m_ShaderName;
             std::string m_FilePath;
             std::vector<std::string> m_ShaderSource;
             uint32_t m_StageCount;
             std::vector<ShaderType> m_ShaderType;
-
-
         };
 
     }
 }
 
-
-#endif // !YAREZO_VK_SHADER_H
+#endif // YAREZO_VK_SHADER_H

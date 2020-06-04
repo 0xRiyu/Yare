@@ -1,11 +1,6 @@
-//
-// Created by Drew on 2019-08-15.
-//
-
 #include "Application/Application.h"
 #include "Application/GlobalSettings.h"
-#include "Utilities/YzLogger.h"
-#include "Graphics/Renderers/ForwardRenderer.h"
+#include "Utilities/Logger.h"
 #include "Graphics/RenderManager.h"
 #include "Core/Glfw.h"
 
@@ -36,7 +31,7 @@ namespace Yarezo {
 
 
     void Application::run() {
-        Yarezo::YzLogger::init();
+        Yarezo::Logger::init();
         YZ_INFO("Logger Initialized");
 
         //Create a window

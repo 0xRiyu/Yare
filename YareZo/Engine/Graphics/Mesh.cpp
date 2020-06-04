@@ -1,7 +1,7 @@
 #include "Graphics/Mesh.h"
 #include "Utilities/IOHelper.h"
 
-#include "Core/yzh.h"
+#include "Core/Yzh.h"
 
 namespace Yarezo::Graphics {
 

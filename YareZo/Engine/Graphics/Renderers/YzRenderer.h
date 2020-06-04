@@ -1,9 +1,7 @@
 #ifndef YAREZO_YZ_RENDERER_H
 #define YAREZO_YZ_RENDERER_H
 
-#include "Graphics/RenderCommand.h"
 #include "Graphics/MeshInstance.h"
-
 #include "Graphics/Vulkan/Vk_CommandBuffer.h"
 #include "Graphics/Vulkan/Vk_RenderPass.h"
 
@@ -14,6 +12,10 @@
 #include <glm/ext.hpp>
 
 namespace Yarezo::Graphics {
+
+    struct RenderCommand {
+        MeshInstance* meshInstance;
+    };
 
     typedef std::vector<RenderCommand> CommandQueue;
 
@@ -32,4 +34,4 @@ namespace Yarezo::Graphics {
         CommandQueue m_CommandQueue;
     };
 }
-#endif
+#endif // YAREZO_YZ_RENDERER_H

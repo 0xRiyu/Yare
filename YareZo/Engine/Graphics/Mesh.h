@@ -6,7 +6,6 @@
 #include <vector>
 
 namespace Yarezo::Graphics {
-
     class Mesh {
     public:
         Mesh() {}

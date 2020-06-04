@@ -37,11 +37,7 @@ namespace Yarezo {
 
         private:
            VkDescriptorSet m_DescriptorSets;
-
         };
     }
 }
-
-
-
 #endif //YAREZO_VK_DESCRIPTORSET_H

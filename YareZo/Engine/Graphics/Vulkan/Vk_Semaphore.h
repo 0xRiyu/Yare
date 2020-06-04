@@ -3,23 +3,19 @@
 
 #include "Graphics/Vulkan/Vk.h"
 
-namespace Yarezo {
-    namespace Graphics {
+namespace Yarezo::Graphics {
 
-        class YzVkSemaphore {
-        public:
-            YzVkSemaphore();
-            ~YzVkSemaphore();
+    class YzVkSemaphore {
+    public:
+        YzVkSemaphore();
+        ~YzVkSemaphore();
 
-            void init();
-            void cleanUp();
+        void init();
 
-            const VkSemaphore& getSemaphore() const { return m_Semaphore; }
+        const VkSemaphore& getSemaphore() const { return m_Semaphore; }
 
-        private:
-            VkSemaphore m_Semaphore;
-        };
-    }
+    private:
+        VkSemaphore m_Semaphore = VK_NULL_HANDLE;
+    };
 }
-
-#endif // !YAREZO_VK_SEMAPHORE_H
+#endif // YAREZO_VK_SEMAPHORE_H

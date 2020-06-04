@@ -36,6 +36,7 @@ set (YAREZO_SOURCES
     Engine/Graphics/MeshInstance.cpp
     Engine/Graphics/RenderManager.cpp
     Engine/Graphics/Camera/Camera.cpp
+    Engine/Graphics/Window/GlfwWindow.cpp
     Engine/Graphics/Scene/Scene.cpp
     Engine/Graphics/Renderers/YzRenderer.cpp
     Engine/Graphics/Renderers/ImGuiRenderer.cpp
@@ -60,15 +61,12 @@ set (YAREZO_SOURCES
     Engine/Graphics/Vulkan/Vk_CommandBuffer.cpp
 
     # Handlers
-    Engine/Handlers/KeyHandler.cpp
-    Engine/Handlers/MouseHandler.cpp
+    Engine/Input/KeyHandler.cpp
+    Engine/Input/MouseHandler.cpp
 
     # Utilities
-    Engine/Utilities/YzLogger.cpp
+    Engine/Utilities/Logger.cpp
     Engine/Utilities/IOHelper.cpp
-
-    # Windows OS Specific
-    Engine/Platform/Windows/GlfwWindow.cpp
 )
 
 #--------------------------------------------------------------------
@@ -88,19 +86,18 @@ set (YAREZO_HEADERS
     Engine/Core/Glfw.h
     Engine/Core/Core.h
     Engine/Core/Memory.h
-    Engine/Core/YzWindow.h
-    Engine/Core/YzCamera.h
     Engine/Core/Transform.h
     Engine/Core/DataStructures.h
-    Engine/Core/YzInputHandler.h
 
     # Graphics
     Engine/Graphics/Mesh.h
     Engine/Graphics/Material.h
     Engine/Graphics/MeshInstance.h
     Engine/Graphics/RenderManager.h
-    Engine/Graphics/RenderCommand.h
+    Engine/Graphics/Camera/YzCamera.h
     Engine/Graphics/Camera/Camera.h
+    Engine/Graphics/Window/YzWindow.h
+    Engine/Graphics/Window/GlfwWindow.h
     Engine/Graphics/Scene/Scene.h
     Engine/Graphics/Renderers/YzRenderer.h
     Engine/Graphics/Renderers/ImGuiRenderer.h
@@ -126,16 +123,14 @@ set (YAREZO_HEADERS
     Engine/Graphics/Vulkan/Vk_CommandBuffer.h
 
     # Handlers
-    Engine/Handlers/KeyHandler.h
-    Engine/Handlers/MouseHandler.h
+    Engine/Input/YzInputHandler.h
+    Engine/Input/KeyHandler.h
+    Engine/Input/MouseHandler.h
 
     # Utilities
-    Engine/Utilities/YzLogger.h
+    Engine/Utilities/Logger.h
     Engine/Utilities/IOHelper.h
     Engine/Utilities/T_Singleton.h
-
-    # Windows OS Specific
-    Engine/Platform/Windows/GlfwWindow.h
 )
 
 #--------------------------------------------------------------------

@@ -1,6 +1,6 @@
 #include "Graphics/Vulkan/Vk_Utilities.h"
 #include "Graphics/Vulkan/Vk_Devices.h"
-#include "Utilities/YzLogger.h"
+#include "Utilities/Logger.h"
 
 #include <fstream>
 
@@ -18,7 +18,6 @@ namespace Yarezo::Graphics::VkUtil {
         YZ_ERROR("Vulkan failed to find a suitable memory type.");
         return 0;
     }
-
 
     std::vector<char> readShaderFile(const std::string& filePath) {
         std::ifstream file(filePath, std::ios::ate | std::ios::binary);
@@ -42,7 +41,7 @@ namespace Yarezo::Graphics::VkUtil {
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool().getCommandPool();
+        allocInfo.commandPool = YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool()->getCommandPool();
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -68,7 +67,7 @@ namespace Yarezo::Graphics::VkUtil {
         vkQueueSubmit(YzVkDevice::instance()->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(YzVkDevice::instance()->getGraphicsQueue());
 
-        vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool().getCommandPool(), 1, &commandBuffer);
+        vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool()->getCommandPool(), 1, &commandBuffer);
     }
 
     VkImageView createImageView(VkImage image, VkImageViewType viewType, VkFormat format, uint32_t layerCount, VkImageAspectFlags aspectFlags) {
@@ -108,15 +107,12 @@ namespace Yarezo::Graphics::VkUtil {
     }
 
     VkFormat findDepthFormat() {
-        return findSupportedFormat(
-                                   { VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
+        return findSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
                                    VK_IMAGE_TILING_OPTIMAL,
-                                   VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-                                   );
+                                   VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
 
     bool hasStencilComponent(VkFormat format) {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
-
 }

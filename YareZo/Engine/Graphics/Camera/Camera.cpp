@@ -1,6 +1,5 @@
 
 #include "Graphics/Camera/Camera.h"
-#include "Utilities/YzLogger.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 

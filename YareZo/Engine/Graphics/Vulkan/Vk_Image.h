@@ -10,7 +10,7 @@ namespace Yarezo::Graphics {
     class YzVkImage {
     protected:
         // Only allow the static constructors
-        YzVkImage();
+        YzVkImage() {}
 
     public:
         ~YzVkImage();

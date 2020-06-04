@@ -1,14 +1,10 @@
-//
-// Created by Drew on 2019-08-15.
-//
-
-#ifndef YAREZO_APPLICATION
-#define YAREZO_APPLICATION
+#ifndef YAREZO_APPLICATION_H
+#define YAREZO_APPLICATION_H
 
 #include <memory>
 
 #include "Core/Core.h"
-#include "Core/YzWindow.h"
+#include "Graphics/Window/YzWindow.h"
 
 namespace Yarezo {
 
@@ -30,5 +26,4 @@ namespace Yarezo {
     Application* createApplication();
 }
 
-
-#endif //YAREZO_APPLICATION
+#endif //YAREZO_APPLICATION_H

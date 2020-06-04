@@ -1,16 +1,14 @@
 #include "Graphics/Renderers/ImGuiRenderer.h"
 #include "Application/Application.h"
+#include "Application/GlobalSettings.h"
 #include "Core/yzh.h"
 #include "Core/Glfw.h"
-
-#include "Application/GlobalSettings.h"
 
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
 
 #include "Graphics/Vulkan/Vk_Instance.h"
 #include "Graphics/Vulkan/Vk_Devices.h"
-#include "Handlers/MouseHandler.h"
 
 namespace Yarezo::Graphics {
     ImGuiRenderer::ImGuiRenderer() {

@@ -3,30 +3,19 @@
 
 #include "Graphics/Vulkan/Vk.h"
 
-namespace Yarezo {
-    namespace Graphics {
+namespace Yarezo::Graphics {
+    class YzVkCommandPool {
+    public:
+        YzVkCommandPool();
+        ~YzVkCommandPool();
 
-        class YzVkCommandPool {
-        public:
+        void init();
+        const VkCommandPool& getCommandPool() const { return m_CommandPool; }
 
-            YzVkCommandPool();
-            ~YzVkCommandPool();
-
-            void init();
-            void cleanUp();
-            const VkCommandPool& getCommandPool() const { return m_CommandPool; }
-
-        private:
-
-            VkCommandPool m_CommandPool;
+    private:
+        VkCommandPool m_CommandPool;
+    };
 
 
-
-        };
-
-
-    }
 }
-
-
 #endif //YAREZO_VK_COMMANDPOOL_H

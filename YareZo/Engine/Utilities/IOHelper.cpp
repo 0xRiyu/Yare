@@ -1,6 +1,3 @@
-//
-// Created by Drew on 11/27/2019.
-//
 #include "Utilities/IOHelper.h"
 #include "Core/Yzh.h"
 
@@ -78,5 +75,4 @@ namespace Yarezo::Utilities {
             }
         }
     }
-
 }

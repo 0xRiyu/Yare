@@ -17,7 +17,7 @@ namespace Yarezo {
             void cleanUp();
             void createCommandPool();
             const VkInstance& getVKInstance() const { return m_Instance; }
-            const YzVkCommandPool& getYzCommandPool() const { return m_YzCommandPool; }
+            const YzVkCommandPool* getYzCommandPool() const { return m_YzCommandPool; }
             static inline YzVkInstance* getYzVkInstance(){ return s_YzVkInstance; }
 
         private:
@@ -31,7 +31,7 @@ namespace Yarezo {
             VkInstance m_Instance = VK_NULL_HANDLE;
             VkDebugUtilsMessengerEXT m_DebugMessenger;
             // To be initialized after a device has been created
-            YzVkCommandPool m_YzCommandPool;
+            YzVkCommandPool* m_YzCommandPool;
 
             const std::vector<const char*> validationLayers = {
                 "VK_LAYER_KHRONOS_validation"

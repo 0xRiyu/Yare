@@ -19,14 +19,11 @@ namespace Yarezo {
         void set(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale);
         void setTranslation(float x, float y, float z);
         void setTranslation(const glm::vec3& translation);
-        // Expects degree's, will convert to quat later
         void setRotation(float pitch, float yaw, float roll);
         void setRotation(const glm::vec3& rotation);
         void setRotation(const glm::quat& rotation);
         void setScale(float scaleX, float scaleY, float scaleZ);
         void setScale(const glm::vec3& scale);
-
-        // void rotate(const glm::vec3& rotation);
 
         glm::vec3 getTranslation()     const { return m_Translation; }
         glm::vec3 getVec3Rotation()    const { return glm::degrees(glm::eulerAngles(m_Rotation)); }
@@ -38,7 +35,6 @@ namespace Yarezo {
         glm::vec3 m_Translation = glm::vec3(0.0f);
         glm::quat m_Rotation = glm::quat(0.0f, 0.0f, 0.0f, 0.0f);
         glm::vec3 m_Scale = glm::vec3(1.0f);
-
     };
 }
 
