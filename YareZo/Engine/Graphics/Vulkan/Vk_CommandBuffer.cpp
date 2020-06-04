@@ -11,7 +11,7 @@ namespace Yarezo::Graphics {
 
         YzVkCommandBuffer::~YzVkCommandBuffer() {
             if (m_Fence) {
-                vkDestroyFence(YzVkDevice::instance()->getDevice(), m_Fence, nullptr);
+                 vkDestroyFence(YzVkDevice::instance()->getDevice(), m_Fence, nullptr);
             }
             if (m_CommandBuffer) {
                 vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkInstance::getYzVkInstance()->getYzCommandPool()->getCommandPool(), 1, &m_CommandBuffer);

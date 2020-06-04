@@ -9,7 +9,7 @@
 
 namespace Yarezo::Graphics {
 
-    ForwardRenderer::ForwardRenderer() {
+    ForwardRenderer::ForwardRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/viking_room.obj"));
         m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj"));
 
@@ -32,6 +32,8 @@ namespace Yarezo::Graphics {
         m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[3], transform2));
         transform2.setTranslation(0.0f, 0.0f, 1.0f);
         m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[4], transform2));
+
+        init(renderPass, windowWidth, windowHeight);
     }
 
     ForwardRenderer::~ForwardRenderer() {

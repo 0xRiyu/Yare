@@ -13,15 +13,15 @@ namespace Yarezo::Graphics {
 
     class SkyboxRenderer : public YzRenderer {
     public:
-        SkyboxRenderer();
+        SkyboxRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         ~SkyboxRenderer() override;
 
-        virtual void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
-        virtual void prepareScene() override;
-        virtual void present(YzVkCommandBuffer* commandBuffer) override;
-        virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
+        void prepareScene() override;
+        void present(YzVkCommandBuffer* commandBuffer) override;
+        void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
 
     private:
+        void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
         void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         void createDescriptorSet();
         void prepareUniformBuffer();

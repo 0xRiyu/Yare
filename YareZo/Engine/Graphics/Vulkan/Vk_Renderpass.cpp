@@ -6,7 +6,8 @@
 
 namespace Yarezo::Graphics {
 
-    YzVkRenderPass::YzVkRenderPass() {
+    YzVkRenderPass::YzVkRenderPass(const RenderPassInfo& info) {
+        init(info);
     }
 
     YzVkRenderPass::~YzVkRenderPass() {

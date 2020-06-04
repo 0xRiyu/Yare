@@ -11,12 +11,11 @@
 #include "Graphics/Vulkan/Vk_Devices.h"
 
 namespace Yarezo::Graphics {
-    ImGuiRenderer::ImGuiRenderer() {
-        ImGui::CreateContext();
+    ImGuiRenderer::ImGuiRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+        init(renderPass, windowWidth, windowHeight);
     }
 
     ImGuiRenderer::~ImGuiRenderer() {
-        ImGui::DestroyContext();
         delete m_Font;
         delete m_Pipeline;
         delete m_IndexBuffer;

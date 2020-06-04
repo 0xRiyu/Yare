@@ -79,18 +79,14 @@ namespace Yarezo::Graphics {
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();
-        m_Renderers.emplace_back(new SkyboxRenderer());
-        m_Renderers.emplace_back(new ForwardRenderer());
-        m_Renderers.emplace_back(new ImGuiRenderer());
-        for (const auto renderer : m_Renderers) {
-            renderer->init(m_RenderPass, m_WindowWidth, m_WindowHeight);
-        }
+        m_Renderers.emplace_back(new SkyboxRenderer(m_RenderPass, m_WindowWidth, m_WindowHeight));
+        m_Renderers.emplace_back(new ForwardRenderer(m_RenderPass, m_WindowWidth, m_WindowHeight));
+        m_Renderers.emplace_back(new ImGuiRenderer(m_RenderPass, m_WindowWidth, m_WindowHeight));
     }
 
     void RenderManager::createRenderPass() {
         const RenderPassInfo renderPassInfo{ m_Renderer->getYzSwapchain()->getImageFormat() };
-        m_RenderPass = new YzVkRenderPass();
-        m_RenderPass->init(renderPassInfo);
+        m_RenderPass = new YzVkRenderPass(renderPassInfo);
     }
 
     void RenderManager::createFrameBuffers() {
@@ -117,7 +113,6 @@ namespace Yarezo::Graphics {
             m_CurrentBufferID = i;
 
             m_CommandBuffers[i] = new YzVkCommandBuffer();
-            m_CommandBuffers[i]->init();
         }
     }
 

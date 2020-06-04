@@ -7,7 +7,7 @@
 
 namespace Yarezo::Graphics {
 
-    SkyboxRenderer::SkyboxRenderer() {
+    SkyboxRenderer::SkyboxRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         std::vector<std::string> skyboxTextures = {
                                                    "../YareZo/Resources/Textures/skybox/posx.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negx.jpg",
@@ -20,6 +20,7 @@ namespace Yarezo::Graphics {
         m_CubeMesh = std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj");
 
         m_SkyboxModel = new MeshInstance(m_CubeMesh, m_Material);
+        init(renderPass, windowWidth, windowHeight);
     }
 
     SkyboxRenderer::~SkyboxRenderer() {

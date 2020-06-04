@@ -15,16 +15,16 @@ namespace Yarezo::Graphics {
 
     class YzVkRenderPass {
     public:
-        YzVkRenderPass();
+        YzVkRenderPass(const RenderPassInfo& info);
         ~YzVkRenderPass();
 
-        void init(const RenderPassInfo& renderPassInfo);
         void beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer, YzVkSwapchain* const swapchain);
         void endRenderPass(YzVkCommandBuffer* const commandBuffer);
 
         const VkRenderPass& getRenderPass() const { return m_RenderPass; }
-
     private:
+        void init(const RenderPassInfo& renderPassInfo);
+
         VkRenderPass m_RenderPass = VK_NULL_HANDLE;
     };
 }

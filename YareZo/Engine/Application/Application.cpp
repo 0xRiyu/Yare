@@ -5,10 +5,13 @@
 #include "Core/Glfw.h"
 
 // Define the header once here before anywhere else
+// I dont have a better place to put this for now
 #define STB_IMAGE_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <tinyobjloader/tiny_obj_loader.h>
+
+#include <imgui/imgui.h>
 
 #include <exception>
 
@@ -19,14 +22,16 @@ namespace Yarezo {
 
     Application::Application() {
         if (s_AppInstance) {
-            throw std::runtime_error("Attempted to create an Application after once has previously been created.");
+            throw std::runtime_error("Attempted to create an Application after one has previously been created.");
         }
         s_AppInstance = this;
         GlobalSettings::instance();
+        ImGui::CreateContext();
     }
 
     Application::~Application() {
         GlobalSettings::release();
+        ImGui::DestroyContext();
     }
 
 

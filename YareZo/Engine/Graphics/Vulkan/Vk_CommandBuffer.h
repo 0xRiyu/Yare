@@ -10,7 +10,6 @@ namespace Yarezo::Graphics {
         YzVkCommandBuffer();
         ~YzVkCommandBuffer();
 
-        void init();
         void beginRecording();
         void endRecording();
         void submitGfxQueue(VkPipelineStageFlags flags, VkSemaphore waitSemaphore, VkSemaphore signalSemaphore, bool waitFence);
@@ -18,8 +17,9 @@ namespace Yarezo::Graphics {
         const VkCommandBuffer& getCommandBuffer() const { return m_CommandBuffer; }
         const VkFence& getFence() const { return m_Fence; }
     private:
+        void init();
         VkCommandBuffer m_CommandBuffer;
-        VkFence m_Fence;
+        VkFence m_Fence = VK_NULL_HANDLE;
     };
 }
 

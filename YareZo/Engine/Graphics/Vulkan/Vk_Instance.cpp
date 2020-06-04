@@ -66,7 +66,7 @@ namespace Yarezo::Graphics {
     }
 
     void YzVkInstance::createCommandPool() {
-        m_YzCommandPool = new YzVkCommandPool();
+         m_YzCommandPool = new YzVkCommandPool();
     }
 
     void YzVkInstance::createInstance() {
