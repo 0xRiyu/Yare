@@ -21,7 +21,7 @@ namespace Yarezo::Graphics {
 
         const std::shared_ptr<Mesh>       getMesh()      const { return m_Mesh; }
         const std::shared_ptr<Material>   getMaterial()  const { return m_Material; }
-        Transform         getTransform() const { return m_Transform; }
+        const Transform&                  getTransform() const { return m_Transform; }
 
     private:
 

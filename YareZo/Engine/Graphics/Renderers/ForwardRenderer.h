@@ -35,7 +35,7 @@ namespace Yarezo::Graphics {
         std::vector<std::shared_ptr<Material>> m_Materials;
         std::vector<std::shared_ptr<MeshInstance>> m_MeshInstances;
 
-        size_t m_DynamicAlignment = 0;
+        uint64_t m_DynamicAlignment = 0;
 
         YzVkPipeline*  m_Pipeline;
         YzVkDescriptorSet* m_DescriptorSet;

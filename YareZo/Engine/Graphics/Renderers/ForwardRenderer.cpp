@@ -209,7 +209,7 @@ namespace Yarezo::Graphics {
         VkMemoryPropertyFlags viewPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
         m_DynamicAlignment = sizeof(glm::mat4);
-        size_t minUboAlignment = YzVkDevice::instance()->getGPUProperties().limits.minUniformBufferOffsetAlignment;
+        VkDeviceSize minUboAlignment = YzVkDevice::instance()->getGPUProperties().limits.minUniformBufferOffsetAlignment;
         if (minUboAlignment > 0) {
             m_DynamicAlignment = (m_DynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
         }
@@ -229,7 +229,7 @@ namespace Yarezo::Graphics {
         glm::mat4* uboDynamicModelPtr = (glm::mat4*)((uint64_t)m_UboDynamicData.model + (index * m_DynamicAlignment));
         *uboDynamicModelPtr = transform.getMatrix();
 
-        m_UniformBuffers.dynamic->setDynamicData(MAX_OBJECTS * m_DynamicAlignment, &*m_UboDynamicData.model);
+        m_UniformBuffers.dynamic->setDynamicData(sizeof(glm::mat4), uboDynamicModelPtr, index * m_DynamicAlignment);
 
         UniformVS uboVS = {};
         uboVS.view = Application::getAppInstance()->getWindow()->getCamera()->getViewMatrix();

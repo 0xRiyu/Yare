@@ -33,7 +33,7 @@ namespace Yarezo::Graphics {
 
         delete m_RenderPass;
 
-        delete m_Renderer;
+        delete m_VulkanRenderer;
     }
 
     void RenderManager::renderScene() {
@@ -50,11 +50,11 @@ namespace Yarezo::Graphics {
         // Renderer will ask the swapchain to get the next image (frame)
         // for us to work with, if the result is OUT_OF_DATA_KHR or SUBOPTIMAL_KHR
         // we need to re-create our pipeline
-        if (!m_Renderer->begin()) {
+        if (!m_VulkanRenderer->begin()) {
             onResize();
         }
 
-        m_CurrentBufferID = m_Renderer->getYzSwapchain()->getCurrentImage();
+        m_CurrentBufferID = m_VulkanRenderer->getYzSwapchain()->getCurrentImage();
 
         m_CommandBuffers[m_CurrentBufferID]->beginRecording();
 
@@ -66,7 +66,7 @@ namespace Yarezo::Graphics {
 
         m_CommandBuffers[m_CurrentBufferID]->endRecording();
 
-        if (!m_Renderer->present(m_CommandBuffers[m_CurrentBufferID])) {
+        if (!m_VulkanRenderer->present(m_CommandBuffers[m_CurrentBufferID])) {
             onResize();
         }
     }
@@ -79,7 +79,7 @@ namespace Yarezo::Graphics {
         auto props = m_WindowRef->getWindowProperties();
         m_WindowWidth =  props.width;
         m_WindowHeight = props.height;
-        m_Renderer = new YzVkRenderer(m_WindowWidth, m_WindowHeight);
+        m_VulkanRenderer = new YzVkRenderer(m_WindowWidth, m_WindowHeight);
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();
@@ -90,7 +90,7 @@ namespace Yarezo::Graphics {
 
     void RenderManager::createRenderPass() {
         RenderPassInfo renderPassInfo{};
-        renderPassInfo.imageFormat = m_Renderer->getYzSwapchain()->getImageFormat();
+        renderPassInfo.imageFormat = m_VulkanRenderer->getYzSwapchain()->getImageFormat();
         renderPassInfo.extent = VkExtent2D{m_WindowWidth, m_WindowHeight};
         m_RenderPass = new YzVkRenderPass(renderPassInfo);
     }
@@ -106,8 +106,8 @@ namespace Yarezo::Graphics {
         framebufferInfo.height = m_WindowHeight;
         framebufferInfo.layers = 1;
 
-        for (uint32_t i = 0; i < m_Renderer->getYzSwapchain()->getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_Renderer->getYzSwapchain()->getImageView(i), m_DepthBuffer->getImageView() };
+        for (uint32_t i = 0; i < m_VulkanRenderer->getYzSwapchain()->getImageViewSize(); i++) {
+            framebufferInfo.attachments = { m_VulkanRenderer->getYzSwapchain()->getImageView(i), m_DepthBuffer->getImageView() };
             m_FrameBuffers.push_back(new YzVkFramebuffer(framebufferInfo));
         }
     }
@@ -140,7 +140,7 @@ namespace Yarezo::Graphics {
         }
         m_WindowWidth =  m_WindowRef->getWindowProperties().width;
         m_WindowHeight = m_WindowRef->getWindowProperties().height;
-        m_Renderer->onResize(m_WindowWidth, m_WindowHeight);
+        m_VulkanRenderer->onResize(m_WindowWidth, m_WindowHeight);
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();

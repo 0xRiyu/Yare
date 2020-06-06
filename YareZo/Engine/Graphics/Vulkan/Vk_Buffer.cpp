@@ -54,7 +54,7 @@ namespace Yarezo::Graphics {
     }
 
 
-    void YzVkBuffer::setData(size_t size, const void* data, uint32_t offset) {
+    void YzVkBuffer::setData(size_t size, const void* data, uint64_t offset) {
         if (mapMemory(0, size)) {
             auto p = static_cast<char*>(m_MappedData) + offset;
             memcpy((void*)p, data, size);
@@ -65,7 +65,7 @@ namespace Yarezo::Graphics {
         }
     }
 
-    void YzVkBuffer::setDynamicData(size_t size, const void* data, uint32_t offset) {
+    void YzVkBuffer::setDynamicData(size_t size, const void* data, uint64_t offset) {
         if (mapMemory(0, VK_WHOLE_SIZE)) {
             auto p = static_cast<char*>(m_MappedData) + offset;
             memcpy(p, data, size);

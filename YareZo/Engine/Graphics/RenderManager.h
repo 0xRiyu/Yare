@@ -33,7 +33,7 @@ namespace Yarezo::Graphics {
 
     private:
         // Constructs the instance, devices and swapchain required for rendering
-        YzVkRenderer*                            m_Renderer;
+        YzVkRenderer*                            m_VulkanRenderer;
         std::vector<YzVkFramebuffer*>            m_FrameBuffers;
         std::vector<YzVkCommandBuffer*>          m_CommandBuffers;
         YzVkRenderPass*                          m_RenderPass;

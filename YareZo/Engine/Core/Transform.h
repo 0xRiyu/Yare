@@ -29,12 +29,15 @@ namespace Yarezo {
         glm::vec3 getVec3Rotation()    const { return glm::degrees(glm::eulerAngles(m_Rotation)); }
         glm::quat getQuatRotation()    const { return m_Rotation; }
         glm::vec3 getScale()           const { return m_Scale; }
-        glm::mat4 getMatrix()          const;
+        glm::mat4 getMatrix()          const { return m_Matrix; };
 
     private:
+        void updateMatrix();
+
         glm::vec3 m_Translation = glm::vec3(0.0f);
         glm::quat m_Rotation = glm::quat(0.0f, 0.0f, 0.0f, 0.0f);
         glm::vec3 m_Scale = glm::vec3(1.0f);
+        glm::mat4 m_Matrix = glm::mat4(1.0);
     };
 }
 

@@ -52,29 +52,36 @@ namespace Yarezo {
         auto lookAtVec = p_Camera->getLookAtVector();
         float cameraSpeed = p_Camera->getCameraSpeed();
 
+        bool needsUpdate = false;
 
         if (isKeyDown(GLFW_KEY_S)) {
             posVec -= (glm::normalize(lookAtVec) * cameraSpeed);
+            needsUpdate = true;
         }
 
         if (isKeyDown(GLFW_KEY_W)) {
             posVec += (glm::normalize(lookAtVec) * cameraSpeed);
+            needsUpdate = true;
         }
 
         if (isKeyDown(GLFW_KEY_A)) {
             posVec -= (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
+            needsUpdate = true;
         }
 
         if (isKeyDown(GLFW_KEY_D)) {
             posVec += (glm::normalize(glm::cross(lookAtVec, upVec)) * cameraSpeed);
+            needsUpdate = true;
         }
 
         if (isKeyDown(GLFW_KEY_E)) {
             posVec += upVec * cameraSpeed;
+            needsUpdate = true;
         }
 
         if (isKeyDown(GLFW_KEY_Q)) {
             posVec -= upVec * cameraSpeed;
+            needsUpdate = true;
         }
 
         if ((isKeyDown(GLFW_KEY_LEFT_CONTROL) || isKeyDown(GLFW_KEY_RIGHT_CONTROL)) && isKeyPressed(GLFW_KEY_F)) {
@@ -86,8 +93,9 @@ namespace Yarezo {
         if (isKeyDown(GLFW_KEY_ESCAPE)) {
             Application::getAppInstance()->getWindow()->releaseInputHandling();
         }
-
-        p_Camera->setPosition(posVec);
+        if (needsUpdate) {
+            p_Camera->setPosition(posVec);
+        }
     }
 
 }
