@@ -91,12 +91,13 @@ namespace Yarezo::Graphics {
             m_ShaderStages[currentShaderStage].stage = static_cast<VkShaderStageFlagBits>(file.first);
             m_ShaderStages[currentShaderStage].pName = "main";
 
-            if (vkCreateShaderModule(YzVkDevice::instance()->getDevice(), &createInfo, nullptr, &m_ShaderStages[currentShaderStage].module) != VK_SUCCESS) {
+            auto res = vkCreateShaderModule(YzVkDevice::instance()->getDevice(), &createInfo,
+                                            nullptr, &m_ShaderStages[currentShaderStage].module);
+            if (res != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan was unable to create a shaderModule with provided shader code.");
             }
 
             currentShaderStage++;
         }
-
     }
 }

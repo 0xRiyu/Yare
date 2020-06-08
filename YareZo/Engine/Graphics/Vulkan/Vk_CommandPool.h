@@ -15,7 +15,5 @@ namespace Yarezo::Graphics {
     private:
         VkCommandPool m_CommandPool;
     };
-
-
 }
 #endif //YAREZO_VK_COMMANDPOOL_H

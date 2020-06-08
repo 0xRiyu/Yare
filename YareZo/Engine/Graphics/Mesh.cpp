@@ -28,16 +28,12 @@ namespace Yarezo::Graphics {
     void Mesh::createBuffers(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         // Vertex Buffers
         VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
-        VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        VkMemoryPropertyFlags propertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
-        m_VertexBuffer = new YzVkBuffer(usageFlags, propertyFlags, (size_t)bufferSize, vertices.data());
+        m_VertexBuffer = new YzVkBuffer(BufferUsage::VERTEX, (size_t)bufferSize, vertices.data());
 
         // Index Buffers
         bufferSize = sizeof(indices[0]) * indices.size();
-        usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 
-        m_IndexBuffer = new YzVkBuffer(usageFlags, propertyFlags, (size_t)bufferSize, indices.data());
-
+        m_IndexBuffer = new YzVkBuffer(BufferUsage::INDEX, (size_t)bufferSize, indices.data());
     }
 }

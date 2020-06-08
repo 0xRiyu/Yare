@@ -4,19 +4,20 @@
 
 namespace Yarezo::Graphics {
 
-    YzVkFramebuffer::YzVkFramebuffer(const FramebufferInfo& framebufferInfo) {
+    YzVkFramebuffer::YzVkFramebuffer(const FramebufferInfo& fbInfo) {
 
-        VkFramebufferCreateInfo framebufferCreateInfo = {};
-        framebufferCreateInfo.sType = framebufferInfo.type; // VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        framebufferCreateInfo.renderPass = framebufferInfo.renderPass->getRenderPass();
-        framebufferCreateInfo.attachmentCount = (uint32_t)framebufferInfo.attachments.size();
-        framebufferCreateInfo.pAttachments = framebufferInfo.attachments.data();
-        framebufferCreateInfo.width = framebufferInfo.width;
-        framebufferCreateInfo.height = framebufferInfo.height;
-        framebufferCreateInfo.layers = framebufferInfo.layers;
+        VkFramebufferCreateInfo fbCreateInfo = {};
+        fbCreateInfo.sType = fbInfo.type; // VK_STRUCTURE_TYPE_FB_CREATE_INFO;
+        fbCreateInfo.renderPass = fbInfo.renderPass->getRenderPass();
+        fbCreateInfo.attachmentCount = (uint32_t)fbInfo.attachments.size();
+        fbCreateInfo.pAttachments = fbInfo.attachments.data();
+        fbCreateInfo.width = fbInfo.width;
+        fbCreateInfo.height = fbInfo.height;
+        fbCreateInfo.layers = fbInfo.layers;
 
-        if (vkCreateFramebuffer(YzVkDevice::instance()->getDevice(), &framebufferCreateInfo, nullptr, &m_Framebuffer) != VK_SUCCESS) {
-            YZ_CRITICAL("Vulkan failed to create a framebuffer");
+        auto res = vkCreateFramebuffer(YzVkDevice::instance()->getDevice(), &fbCreateInfo, nullptr, &m_Framebuffer);
+        if (res != VK_SUCCESS) {
+            YZ_CRITICAL("Vulkan failed to create a fb");
         }
     }
 

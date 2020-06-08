@@ -41,7 +41,7 @@ namespace Yarezo::Graphics {
     }
 
     bool YzVkRenderer::begin() {
-        VkResult result = m_YzSwapchain->acquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore());
+        auto result = m_YzSwapchain->acquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore());
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             return false;
@@ -54,10 +54,7 @@ namespace Yarezo::Graphics {
 
     bool YzVkRenderer::present(YzVkCommandBuffer* cmdBuffer) {
 
-        cmdBuffer->submitGfxQueue(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                                  m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore(),
-                                  m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore(),
-                                  true);
+        submitGfxQueue(cmdBuffer, true);
 
         VkResult result = m_YzSwapchain->present(m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore());
 
@@ -70,5 +67,33 @@ namespace Yarezo::Graphics {
 
         m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
         return true;
+    }
+
+    void YzVkRenderer::submitGfxQueue(YzVkCommandBuffer* cmdBuffer, bool waitFence) {
+        auto currentWaitSemaphore = m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore();
+        auto currentSignalSemaphore = m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore();
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer->getCommandBuffer();
+        VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        submitInfo.pWaitDstStageMask = &flags;
+        submitInfo.pWaitSemaphores = &currentWaitSemaphore;
+        submitInfo.waitSemaphoreCount = (uint32_t)(currentWaitSemaphore ? 1 : 0);
+        submitInfo.pSignalSemaphores = &currentSignalSemaphore;
+        submitInfo.signalSemaphoreCount =  (uint32_t)(currentSignalSemaphore ? 1 : 0);
+        submitInfo.pNext = VK_NULL_HANDLE;
+
+        if (!waitFence) {
+            vkQueueSubmit(m_Device->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(m_Device->getGraphicsQueue());
+        }
+        else {
+            auto fence = cmdBuffer->getFence();
+            vkQueueSubmit(m_Device->getGraphicsQueue(), 1, &submitInfo, fence);
+            vkWaitForFences(m_Device->getDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+            vkResetFences(m_Device->getDevice(), 1, &fence);
+        }
     }
 }

@@ -67,10 +67,13 @@ namespace Yarezo::Graphics::VkUtil {
         vkQueueSubmit(YzVkDevice::instance()->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(YzVkDevice::instance()->getGraphicsQueue());
 
-        vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(), YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool()->getCommandPool(), 1, &commandBuffer);
+        vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(),
+                             YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool()->getCommandPool(),
+                             1, &commandBuffer);
     }
 
-    VkImageView createImageView(VkImage image, VkImageViewType viewType, VkFormat format, uint32_t layerCount, VkImageAspectFlags aspectFlags) {
+    VkImageView createImageView(VkImage image, VkImageViewType viewType, VkFormat format,
+                                uint32_t layerCount, VkImageAspectFlags aspectFlags) {
         VkImageViewCreateInfo viewInfo = {};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = image;
@@ -83,14 +86,16 @@ namespace Yarezo::Graphics::VkUtil {
         viewInfo.subresourceRange.layerCount = layerCount;
 
         VkImageView imageView;
-        if (vkCreateImageView(YzVkDevice::instance()->getDevice(), &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+        auto res = vkCreateImageView(YzVkDevice::instance()->getDevice(), &viewInfo, nullptr, &imageView);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("failed to create an image view!");
         }
 
         return imageView;
     }
 
-    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling,
+                                 VkFormatFeatureFlags features) {
         for (VkFormat format : candidates) {
             VkFormatProperties props;
             vkGetPhysicalDeviceFormatProperties(YzVkDevice::instance()->getGPU(), format, &props);

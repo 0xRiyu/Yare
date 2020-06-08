@@ -22,24 +22,32 @@ namespace Yarezo::Graphics {
             }
             YZ_INFO("Application is no longer minimized.");
         }
-        YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: " + std::to_string(width) + ", " + std::to_string(height));
+        YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: "
+                + std::to_string(width) + ", " + std::to_string(height));
         auto glfwWindow  = reinterpret_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
         glfwWindow->setWindowProperties(WindowProperties{(uint32_t)width, (uint32_t)height});
     }
 
     static void GLFWkeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-        auto keyHandler = std::dynamic_pointer_cast<KeyHandler>(Application::getAppInstance()->getWindow()->getKeyHandler());
+        auto keyHandler = std::dynamic_pointer_cast<KeyHandler>
+            (Application::getAppInstance()->getWindow()->getKeyHandler());
+
         keyHandler->m_KeyState[key] = action;
     }
 
     static void GLFWmouseCallback(GLFWwindow* window, double mouseX, double mouseY) {
-        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
+        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>
+            (Application::getAppInstance()->getWindow()->getMouseHandler());
+
         mouseHandler->currentMouseX = (float)mouseX;
         mouseHandler->currentMouseY = (float)mouseY;
         mouseHandler->mouseEvent = true;
     }
+
     static void GLFWmouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
+        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>
+            (Application::getAppInstance()->getWindow()->getMouseHandler());
+
         mouseHandler->mouseLeftButtonPressed = (button = GLFW_MOUSE_BUTTON_LEFT && action) ? true : false;
         mouseHandler->mouseRightButtonPressed = (button = GLFW_MOUSE_BUTTON_RIGHT && action) ? true : false;
         mouseHandler->buttonEvent = true;
@@ -47,8 +55,10 @@ namespace Yarezo::Graphics {
         // GUI related
         {
             ImGuiIO& io = ImGui::GetIO();
-            if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) || glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+            if ((io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange) ||
+                glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED) {
                 return;
+            }
 
             io.MousePos = ImVec2(mouseHandler->currentMouseX, mouseHandler->currentMouseY);
             io.MouseDown[0] = mouseHandler->mouseRightButtonPressed;
@@ -59,7 +69,9 @@ namespace Yarezo::Graphics {
     }
 
     static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
-        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
+        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>
+            (Application::getAppInstance()->getWindow()->getMouseHandler());
+
         mouseHandler->setHorizontalScroll((float)horizontalScroll);
         mouseHandler->setVerticalScroll((float)verticalScroll);
         mouseHandler->scrollEvent = true;
@@ -67,7 +79,8 @@ namespace Yarezo::Graphics {
 
     GlfwWindow::GlfwWindow(WindowProperties& properties) {
         m_Properties = properties;
-        m_Camera = std::make_shared<Graphics::Camera>(static_cast<float>(m_Properties.width), static_cast<float>(m_Properties.height));
+        // TODO: A scene should be the camera's over, we just dont have scenes yet
+        m_Camera = std::make_shared<Graphics::Camera>(m_Properties.width, m_Properties.height);
         m_KeyHandler = std::make_shared<KeyHandler>(m_Camera);
         m_MouseHandler = std::make_shared<MouseHandler>(m_Camera);
         init();
@@ -84,13 +97,15 @@ namespace Yarezo::Graphics {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_Window = glfwCreateWindow(m_Properties.width, m_Properties.height, "YareZo!", nullptr, nullptr);
         glfwSetWindowUserPointer(m_Window, this);
-        setIcon("..\\YareZo\\Resources\\Textures\\engineLogo.png");
-        setFrameBufferResizeCallback();
-        setKeyInputCallback();
         glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
-        setMouseInputCallback();
-        setMouseButtonCallback();
-        setScrollInputCallback();
+        setIcon("..\\YareZo\\Resources\\Textures\\engineLogo.png");
+
+        // Callbacks
+        glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
+        glfwSetKeyCallback(m_Window, GLFWkeyCallback);
+        glfwSetCursorPosCallback(m_Window, GLFWmouseCallback);
+        glfwSetMouseButtonCallback(m_Window, GLFWmouseButtonCallback);
+        glfwSetScrollCallback(m_Window, GLFWscrollCallback);
     }
 
     void GlfwWindow::onUpdate() {
@@ -116,21 +131,6 @@ namespace Yarezo::Graphics {
         glfwSetWindowShouldClose(m_Window, 1);
     }
 
-    void GlfwWindow::setKeyInputCallback() {
-        glfwSetKeyCallback(m_Window, GLFWkeyCallback);
-    }
-
-    void GlfwWindow::setMouseInputCallback() {
-        glfwSetCursorPosCallback(m_Window, GLFWmouseCallback);
-    }
-
-    void GlfwWindow::setMouseButtonCallback() {
-        glfwSetMouseButtonCallback(m_Window, GLFWmouseButtonCallback);
-    }
-
-    void GlfwWindow::setScrollInputCallback() {
-        glfwSetScrollCallback(m_Window, GLFWscrollCallback);
-    }
 
     void GlfwWindow::releaseInputHandling() {
         if (windowIsFocused) {
@@ -141,10 +141,6 @@ namespace Yarezo::Graphics {
             io.WantCaptureMouse = true;
             ImGui::SetNextWindowFocus();
         }
-    }
-
-    void GlfwWindow::setFrameBufferResizeCallback() {
-        glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);
     }
 
     void GlfwWindow::setIcon(const std::string& filePath) {

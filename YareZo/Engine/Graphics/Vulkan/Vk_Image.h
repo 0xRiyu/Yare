@@ -33,7 +33,8 @@ namespace Yarezo::Graphics {
         void loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths, YzVkBuffer& buffer);
         void createTexture2D(const YzVkBuffer& buffer, VkFormat format);
         void createTextureCube(const YzVkBuffer& buffer);
-        void transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void transitionImageLayout(VkFormat format, uint32_t layerCount,
+                                   VkImageLayout oldLayout, VkImageLayout newLayout);
         void copyBufferToImage(const YzVkBuffer& buffer, uint32_t faces, uint32_t mipLevels);
 
         void createImage(VkImageType type, VkFormat format, VkImageTiling tiling,

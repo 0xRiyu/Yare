@@ -18,8 +18,8 @@ namespace Yarezo::Graphics {
         YzVkRenderPass(const RenderPassInfo& info);
         ~YzVkRenderPass();
 
-        void beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer);
-        void endRenderPass(YzVkCommandBuffer* const commandBuffer);
+        void beginRenderPass(const YzVkCommandBuffer* commandBuffer, const YzVkFramebuffer* frameBuffer);
+        void endRenderPass(const YzVkCommandBuffer* commandBuffer);
 
         const VkRenderPass& getRenderPass() const { return m_RenderPass; }
     private:

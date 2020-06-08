@@ -61,21 +61,22 @@ namespace Yarezo::Graphics {
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
         std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
-        VkRenderPassCreateInfo renderPassCreateInfo = {};
-        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-        renderPassCreateInfo.pAttachments = attachments.data();
-        renderPassCreateInfo.subpassCount = 1;
-        renderPassCreateInfo.pSubpasses = &subpass;
-        renderPassCreateInfo.dependencyCount = 1;
-        renderPassCreateInfo.pDependencies = &dependency;
+        VkRenderPassCreateInfo rpCreateInfo = {};
+        rpCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        rpCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+        rpCreateInfo.pAttachments = attachments.data();
+        rpCreateInfo.subpassCount = 1;
+        rpCreateInfo.pSubpasses = &subpass;
+        rpCreateInfo.dependencyCount = 1;
+        rpCreateInfo.pDependencies = &dependency;
 
-        if (vkCreateRenderPass(YzVkDevice::instance()->getDevice(), &renderPassCreateInfo, nullptr, &m_RenderPass) != VK_SUCCESS) {
+        auto res = vkCreateRenderPass(YzVkDevice::instance()->getDevice(), &rpCreateInfo, nullptr, &m_RenderPass);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a render pass.");
         }
     }
 
-    void YzVkRenderPass::beginRenderPass(YzVkCommandBuffer* const commandBuffer, YzVkFramebuffer* const frameBuffer) {
+    void YzVkRenderPass::beginRenderPass(const YzVkCommandBuffer* commandBuffer, const YzVkFramebuffer* frameBuffer) {
         VkRenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_RenderPass;
@@ -91,7 +92,7 @@ namespace Yarezo::Graphics {
         vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    void YzVkRenderPass::endRenderPass(YzVkCommandBuffer* const commandBuffer) {
+    void YzVkRenderPass::endRenderPass(const YzVkCommandBuffer* commandBuffer) {
         vkCmdEndRenderPass(commandBuffer->getCommandBuffer());
     }
 }

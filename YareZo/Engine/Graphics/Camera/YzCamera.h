@@ -9,7 +9,7 @@ namespace Yarezo {
     class YzCamera {
     public:
         virtual ~YzCamera() = default;
-        virtual void updateDimensions(const float screenWidth, const float screenHeight) = 0;
+        virtual void updateDimensions(uint32_t screenWidth, uint32_t screenHeight) = 0;
 
         virtual void setPosition(const glm::vec3& in) = 0;
         virtual void setRotation(const glm::vec3& in) = 0;

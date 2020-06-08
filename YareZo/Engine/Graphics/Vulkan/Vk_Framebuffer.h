@@ -18,7 +18,7 @@ namespace Yarezo::Graphics {
 
     class YzVkFramebuffer {
     public:
-        YzVkFramebuffer(const FramebufferInfo& framebufferInfo);
+        YzVkFramebuffer(const FramebufferInfo& fbInfo);
         ~YzVkFramebuffer();
 
         const VkFramebuffer& getFramebuffer() const { return m_Framebuffer; }

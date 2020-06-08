@@ -22,7 +22,8 @@ namespace Yarezo::Graphics {
         poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily;
         poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // Optional
 
-        if (vkCreateCommandPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_CommandPool) != VK_SUCCESS) {
+        auto res = vkCreateCommandPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_CommandPool);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a command pool.");
         }
     }

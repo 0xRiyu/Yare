@@ -22,7 +22,7 @@ namespace Yarezo::Graphics {
 
     private:
         void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
-        void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
+        void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t width, uint32_t height);
         void createDescriptorSet();
         void prepareUniformBuffer();
         void updateUniformBuffer(uint32_t index);

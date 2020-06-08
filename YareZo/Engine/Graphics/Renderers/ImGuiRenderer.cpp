@@ -45,30 +45,33 @@ namespace Yarezo::Graphics {
     void ImGuiRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass) {
         YzVkShader shader("../YareZo/Resources/Shaders", "gui.shader");
 
-        PipelineInfo pipelineInfo = {};
-        pipelineInfo.shader = &shader;
-        pipelineInfo.renderpass = renderPass;
-        pipelineInfo.cullMode = VK_CULL_MODE_NONE;
-        pipelineInfo.depthTestEnable = VK_FALSE;
-        pipelineInfo.depthWriteEnable = VK_FALSE;
-        pipelineInfo.maxObjects = 2;
-        pipelineInfo.width = (size_t)ImGui::GetIO().DisplaySize.x;
-        pipelineInfo.height = (size_t)ImGui::GetIO().DisplaySize.y;
-        pipelineInfo.colorBlendingEnabled = true;
-        pipelineInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_VIEWPORT);
-        pipelineInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
-        pipelineInfo.pushConstants = {VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock)};
-        pipelineInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(ImDrawVert), VK_VERTEX_INPUT_RATE_VERTEX};
+        PipelineInfo pInfo = {};
+        pInfo.shader = &shader;
+        pInfo.renderpass = renderPass;
+        pInfo.cullMode = VK_CULL_MODE_NONE;
+        pInfo.depthTestEnable = VK_FALSE;
+        pInfo.depthWriteEnable = VK_FALSE;
+        pInfo.maxObjects = 2;
+        pInfo.width = (size_t)ImGui::GetIO().DisplaySize.x;
+        pInfo.height = (size_t)ImGui::GetIO().DisplaySize.y;
+        pInfo.colorBlendingEnabled = true;
+        pInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_VIEWPORT);
+        pInfo.dynamicStates.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
+        pInfo.pushConstants = {VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(PushConstBlock)};
+        pInfo.bindingDescription = VkVertexInputBindingDescription{0, sizeof(ImDrawVert),
+                                                                   VK_VERTEX_INPUT_RATE_VERTEX};
 
-        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, pos)});
-        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{1, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, uv)});
-        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{2, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(ImDrawVert, col)});
+        VkVertexInputAttributeDescription pos = {0, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, pos)};
+        VkVertexInputAttributeDescription uv =  {1, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ImDrawVert, uv)};
+        VkVertexInputAttributeDescription col = {2, 0, VK_FORMAT_R8G8B8A8_UNORM, offsetof(ImDrawVert, col)};
+        pInfo.vertexInputAttributes = {pos, uv, col};
 
-        pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                                              1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
+        VkDescriptorSetLayoutBinding sampler = {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
+        pInfo.layoutBindings = { sampler };
 
         m_Pipeline = new YzVkPipeline();
-        m_Pipeline->init(pipelineInfo);
+        m_Pipeline->init(pInfo);
     }
 
     void ImGuiRenderer::createDescriptorSet() {
@@ -203,16 +206,14 @@ namespace Yarezo::Graphics {
         if (m_IndexBuffer == nullptr || m_IndexBuffer->getSize() != indexBufferSize) {
             delete m_IndexBuffer;
             m_IndexBuffer = new YzVkBuffer();
-            m_IndexBuffer->init(VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                indexBufferSize, nullptr);
-            m_IndexBuffer->mapMemory(0, indexBufferSize);
+            m_IndexBuffer->init(BufferUsage::DYNAMIC_INDEX, indexBufferSize, nullptr);
+            m_IndexBuffer->mapMemory(indexBufferSize, 0);
         }
         if (m_VertexBuffer == nullptr || m_VertexBuffer->getSize() != vertexBufferSize) {
             delete m_VertexBuffer;
             m_VertexBuffer = new YzVkBuffer();
-            m_VertexBuffer->init(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-                                 vertexBufferSize, nullptr);
-            m_VertexBuffer->mapMemory(0, vertexBufferSize);
+            m_VertexBuffer->init(BufferUsage::DYNAMIC_VERTEX, vertexBufferSize, nullptr);
+            m_VertexBuffer->mapMemory(vertexBufferSize, 0);
         }
 
 

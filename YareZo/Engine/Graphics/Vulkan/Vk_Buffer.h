@@ -6,19 +6,30 @@
 #include "Graphics/Vulkan/Vk_Utilities.h"
 
 namespace Yarezo::Graphics {
+
+    enum class BufferUsage {
+                            UNIFORM,
+                            DYNAMIC,
+                            VERTEX,
+                            DYNAMIC_VERTEX,
+                            INDEX,
+                            DYNAMIC_INDEX,
+                            TRANSFER
+    };
+
     class YzVkBuffer {
     public:
         YzVkBuffer();
-        YzVkBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags propertyFlags, size_t size, const void* data);
+        YzVkBuffer(BufferUsage usage, size_t size, const void* data);
         ~YzVkBuffer();
 
-        void init(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags propertyFlags, size_t size, const void* data);
+        void init(BufferUsage usage, size_t size, const void* data);
         void setData(size_t size, const void* data, uint64_t offset = 0);
         void setDynamicData(size_t size, const void* data, uint64_t offset = 0);
         void bindIndex(YzVkCommandBuffer* commandBuffer, VkIndexType type);
         void bindVertex(YzVkCommandBuffer* commandBuffer, VkDeviceSize offset);
         void flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-        bool mapMemory(VkDeviceSize offset, VkDeviceSize size);
+        bool mapMemory(VkDeviceSize size, VkDeviceSize offset);
         void unmapMemory();
 
         const VkBuffer& getBuffer() const { return m_Buffer; }
@@ -26,9 +37,10 @@ namespace Yarezo::Graphics {
         size_t getSize() const { return m_Size; }
 
     private:
+        void createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags props);
+
         VkBuffer m_Buffer;
-        VkBufferUsageFlags m_Usage;
-        VkMemoryPropertyFlags m_Properties;
+        BufferUsage  m_Usage;
         VkDeviceMemory m_BufferMemory;
         size_t m_Size = 0;
         void* m_MappedData = nullptr;

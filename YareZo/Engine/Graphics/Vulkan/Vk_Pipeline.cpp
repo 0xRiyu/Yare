@@ -47,7 +47,9 @@ namespace Yarezo::Graphics {
         layoutInfo.bindingCount = static_cast<uint32_t>(m_PipelineInfo.layoutBindings.size());
         layoutInfo.pBindings = m_PipelineInfo.layoutBindings.data();
 
-        if (vkCreateDescriptorSetLayout(YzVkDevice::instance()->getDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout) != VK_SUCCESS) {
+        auto res = vkCreateDescriptorSetLayout(YzVkDevice::instance()->getDevice(),
+                                               &layoutInfo, nullptr, &m_DescriptorSetLayout);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan was unable to create a descriptor set layout.");
         }
     }
@@ -59,7 +61,7 @@ namespace Yarezo::Graphics {
         vertexInputInfo.vertexBindingDescriptionCount = 1;
         vertexInputInfo.pVertexBindingDescriptions = &m_PipelineInfo.bindingDescription;
 
-        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(m_PipelineInfo.vertexInputAttributes.size());
+        vertexInputInfo.vertexAttributeDescriptionCount = (uint32_t)m_PipelineInfo.vertexInputAttributes.size();
         vertexInputInfo.pVertexAttributeDescriptions = m_PipelineInfo.vertexInputAttributes.data();
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
@@ -125,18 +127,21 @@ namespace Yarezo::Graphics {
         depthStencil.back = {}; // Optional
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
-        if (!m_PipelineInfo.colorBlendingEnabled) {
-            colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-            colorBlendAttachment.blendEnable = VK_FALSE;
-        } else {
+
+        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
+                                              VK_COLOR_COMPONENT_G_BIT |
+                                              VK_COLOR_COMPONENT_B_BIT |
+                                              VK_COLOR_COMPONENT_A_BIT;
+        if (m_PipelineInfo.colorBlendingEnabled) {
             colorBlendAttachment.blendEnable = VK_TRUE;
-            colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
             colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
             colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
             colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
             colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
             colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
             colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
+        } else {
+            colorBlendAttachment.blendEnable = VK_FALSE;
         }
 
         VkPipelineColorBlendStateCreateInfo colorBlending = {};
@@ -158,11 +163,11 @@ namespace Yarezo::Graphics {
         pipelineLayoutInfo.pPushConstantRanges = &m_PipelineInfo.pushConstants;
         pipelineLayoutInfo.pushConstantRangeCount = 1;
 
-        if (vkCreatePipelineLayout(YzVkDevice::instance()->getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout) != VK_SUCCESS) {
+        auto res = vkCreatePipelineLayout(YzVkDevice::instance()->getDevice(), &pipelineLayoutInfo,
+                                          nullptr, &m_PipelineLayout);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan Pipeline Layout was unable to be created.");
         }
-
-
 
         VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
         pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -180,21 +185,23 @@ namespace Yarezo::Graphics {
         if (!m_PipelineInfo.dynamicStates.empty()) {
             pipelineDynamicStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
             pipelineDynamicStateCreateInfo.pDynamicStates = m_PipelineInfo.dynamicStates.data();
-            pipelineDynamicStateCreateInfo.dynamicStateCount = static_cast<uint32_t>(m_PipelineInfo.dynamicStates.size());
+            pipelineDynamicStateCreateInfo.dynamicStateCount = (uint32_t)m_PipelineInfo.dynamicStates.size();
             pipelineDynamicStateCreateInfo.flags = 0;
             pipelineCreateInfo.pDynamicState = &pipelineDynamicStateCreateInfo;
         }
+
         pipelineCreateInfo.layout = m_PipelineLayout;
         pipelineCreateInfo.renderPass = m_PipelineInfo.renderpass->getRenderPass();
         pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        if (vkCreateGraphicsPipelines(YzVkDevice::instance()->getDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_GraphicsPipeline) != VK_SUCCESS) {
+        res = vkCreateGraphicsPipelines(YzVkDevice::instance()->getDevice(), VK_NULL_HANDLE, 1,
+                                        &pipelineCreateInfo, nullptr, &m_GraphicsPipeline);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a graphics pipeline.");
         }
-
-
     }
+
     void YzVkPipeline::createDescriptorPool() {
 
         std::vector<VkDescriptorPoolSize> poolSizes(m_PipelineInfo.layoutBindings.size());
@@ -212,9 +219,9 @@ namespace Yarezo::Graphics {
         poolInfo.pPoolSizes = poolSizes.data();
         poolInfo.maxSets = m_PipelineInfo.maxObjects;
 
-        if (vkCreateDescriptorPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool) != VK_SUCCESS) {
+        auto res = vkCreateDescriptorPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan creation of descriptor pool failed.");
         }
-
     }
 }

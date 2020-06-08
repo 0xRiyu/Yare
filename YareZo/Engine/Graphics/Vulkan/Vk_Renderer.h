@@ -24,6 +24,7 @@ namespace Yarezo {
 
         private:
             void init(size_t width, size_t height);
+            void submitGfxQueue(YzVkCommandBuffer* cmdBuffer, bool waitFence);
 
             const int MAX_FRAMES_IN_FLIGHT = 2;
 

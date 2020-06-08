@@ -16,11 +16,6 @@ namespace Yarezo::Graphics {
         virtual void releaseInputHandling() override;
 
     private:
-        virtual void setKeyInputCallback();
-        virtual void setMouseInputCallback();
-        virtual void setMouseButtonCallback();
-        virtual void setScrollInputCallback();
-        virtual void setFrameBufferResizeCallback();
         virtual void setIcon(const std::string& filePath);
 
         inline virtual void* getNativeWindow() const override { return m_Window; };

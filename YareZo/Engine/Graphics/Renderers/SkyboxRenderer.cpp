@@ -8,14 +8,12 @@
 namespace Yarezo::Graphics {
 
     SkyboxRenderer::SkyboxRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-        std::vector<std::string> skyboxTextures = {
-                                                   "../YareZo/Resources/Textures/skybox/posx.jpg",
+        std::vector<std::string> skyboxTextures = {"../YareZo/Resources/Textures/skybox/posx.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negx.jpg",
                                                    "../YareZo/Resources/Textures/skybox/posy.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negy.jpg",
                                                    "../YareZo/Resources/Textures/skybox/posz.jpg",
-                                                   "../YareZo/Resources/Textures/skybox/negz.jpg",
-        };
+                                                   "../YareZo/Resources/Textures/skybox/negz.jpg"};
         m_Material = std::make_shared<Material>(skyboxTextures, MaterialTexType::TextureCube);
         m_CubeMesh = std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj");
 
@@ -49,12 +47,12 @@ namespace Yarezo::Graphics {
                 vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(),
                                         0, 1, &m_DescriptorSet->getDescriptorSet(0), 0 , nullptr);
-                command.meshInstance->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
-                command.meshInstance->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
+                command.meshInst->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
+                command.meshInst->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
                 m_Pipeline->setActive(*commandBuffer);
-                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(),
-                                 static_cast<uint32_t>(command.meshInstance->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)),
-                                 1, 0, 0, 0);
+
+                auto indexCount = command.meshInst->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t);
+                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(indexCount), 1, 0, 0, 0);
                 updateUniformBuffer(0);
             }
         }
@@ -71,7 +69,7 @@ namespace Yarezo::Graphics {
         createDescriptorSet();
     }
 
-    void SkyboxRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    void SkyboxRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t width, uint32_t height) {
         YzVkShader skyboxShader("../YareZo/Resources/Shaders", "skybox.shader");
         PipelineInfo pipelineInfo = {};
         pipelineInfo.shader = &skyboxShader;
@@ -82,17 +80,20 @@ namespace Yarezo::Graphics {
         pipelineInfo.depthWriteEnable = VK_FALSE;
         pipelineInfo.maxObjects = 2;
 
-        pipelineInfo.vertexInputAttributes.clear();
-        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)});
-        pipelineInfo.layoutBindings.clear();
-        pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                                              1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
-        pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                                              1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
-        pipelineInfo.width = windowWidth;
-        pipelineInfo.height = windowHeight;
+        // location, binding, format, offset
+        VkVertexInputAttributeDescription pos = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)};
+        pipelineInfo.vertexInputAttributes = { pos };
+
+        // binding, descriptorType, descriptorCount, stageFlags, pImmuatbleSamplers
+        VkDescriptorSetLayoutBinding viewProj = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+                                                 VK_SHADER_STAGE_VERTEX_BIT, nullptr};
+        VkDescriptorSetLayoutBinding sampler = {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
+                                                VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
+        pipelineInfo.layoutBindings = {viewProj, sampler};
+        pipelineInfo.width = width;
+        pipelineInfo.height = height;
         pipelineInfo.pushConstants = {VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int)};
-        pipelineInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
+        pipelineInfo.bindingDescription = {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
 
         m_Pipeline = new YzVkPipeline();
         m_Pipeline->init(pipelineInfo);
@@ -132,11 +133,8 @@ namespace Yarezo::Graphics {
     }
 
     void SkyboxRenderer::prepareUniformBuffer() {
-        VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        VkMemoryPropertyFlags viewPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
         VkDeviceSize viewBufferSize = sizeof(UniformVS);
-
-        m_UniformBuffer = new YzVkBuffer(usageFlags, viewPropertyFlags, viewBufferSize, nullptr);
+        m_UniformBuffer = new YzVkBuffer(BufferUsage::UNIFORM, viewBufferSize, nullptr);
     }
 
     void SkyboxRenderer::updateUniformBuffer(uint32_t index) {

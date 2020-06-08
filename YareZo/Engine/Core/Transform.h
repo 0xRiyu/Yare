@@ -26,7 +26,7 @@ namespace Yarezo {
         void setScale(const glm::vec3& scale);
 
         glm::vec3 getTranslation()     const { return m_Translation; }
-        glm::vec3 getVec3Rotation()    const { return glm::degrees(glm::eulerAngles(m_Rotation)); }
+        glm::vec3 getVec3Rotation()    const { return glm::eulerAngles(m_Rotation); }
         glm::quat getQuatRotation()    const { return m_Rotation; }
         glm::vec3 getScale()           const { return m_Scale; }
         glm::mat4 getMatrix()          const { return m_Matrix; };

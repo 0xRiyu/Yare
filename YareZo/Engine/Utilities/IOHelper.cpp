@@ -6,6 +6,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <tinyobjloader/tiny_obj_loader.h>
 #include <unordered_map>
@@ -13,7 +14,9 @@
 namespace std {
     template<> struct hash<Yarezo::Vertex> {
         size_t operator()(Yarezo::Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
+            return ((hash<glm::vec3>()(vertex.pos)
+                   ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1)
+                   ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
         }
     };
 }
@@ -37,13 +40,13 @@ namespace Yarezo::Utilities {
         return myLines;
     }
 
-    void loadMesh(const std::string& meshFilePath, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
+    void loadMesh(const std::string& filePath, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, meshFilePath.c_str())) {
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str())) {
             YZ_ERROR(warn + err);
         }
 
@@ -72,6 +75,7 @@ namespace Yarezo::Utilities {
                 }
 
                 indices.push_back(uniqueVertices[vertex]);
+
             }
         }
     }

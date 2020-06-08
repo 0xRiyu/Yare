@@ -1,5 +1,5 @@
-#ifndef YZ_VK_INSTANCE_HPP
-#define YZ_VK_INSTANCE_HPP
+#ifndef YZ_VK_INSTANCE_H
+#define YZ_VK_INSTANCE_H
 
 #include "Graphics/Vulkan/Vk.h"
 #include "Graphics/Vulkan/Vk_CommandPool.h"
@@ -16,9 +16,10 @@ namespace Yarezo {
             void init();
             void cleanUp();
             void createCommandPool();
-            const VkInstance& getVKInstance() const { return m_Instance; }
-            const YzVkCommandPool* getYzCommandPool() const { return m_YzCommandPool; }
-            static inline YzVkInstance* getYzVkInstance(){ return s_YzVkInstance; }
+
+            const VkInstance& getVKInstance()              const { return m_Instance; }
+            const YzVkCommandPool* getYzCommandPool()      const { return m_YzCommandPool; }
+            static inline YzVkInstance* getYzVkInstance()        { return s_YzVkInstance; }
 
         private:
             void createInstance();
@@ -27,9 +28,9 @@ namespace Yarezo {
             std::vector<const char*> getRequiredExtensions();
             bool checkValidationLayerSupport();
 
-        private:
             VkInstance m_Instance = VK_NULL_HANDLE;
             VkDebugUtilsMessengerEXT m_DebugMessenger;
+
             // To be initialized after a device has been created
             YzVkCommandPool* m_YzCommandPool;
 
@@ -48,5 +49,4 @@ namespace Yarezo {
         };
     }
 }
-
-#endif // YZ_VK_INSTANCE_HPP
+#endif // YZ_VK_INSTANCE_H

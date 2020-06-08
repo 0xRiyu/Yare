@@ -19,7 +19,8 @@ namespace Yarezo::Graphics {
         allocInfo.pSetLayouts = &descriptorSetInfo.pipeline->getDescriptorSetLayout();
 
         //This wont need to be cleaned up because it is auto cleaned up when the pool is destroyed
-        if (vkAllocateDescriptorSets(YzVkDevice::instance()->getDevice(), &allocInfo, &m_DescriptorSets) != VK_SUCCESS) {
+        auto res = vkAllocateDescriptorSets(YzVkDevice::instance()->getDevice(), &allocInfo, &m_DescriptorSets);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan was unable to allocate descriptor sets.");
         }
     }
@@ -74,7 +75,8 @@ namespace Yarezo::Graphics {
                 bufferIndex++;
             }
         }
-        vkUpdateDescriptorSets(YzVkDevice::instance()->getDevice(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-
+        vkUpdateDescriptorSets(YzVkDevice::instance()->getDevice(),
+                               static_cast<uint32_t>(descriptorWrites.size()),
+                               descriptorWrites.data(), 0, nullptr);
     }
 }

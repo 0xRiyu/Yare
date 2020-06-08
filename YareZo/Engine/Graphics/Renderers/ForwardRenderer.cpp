@@ -3,6 +3,7 @@
 #include "Graphics/Vulkan/Vk_Utilities.h"
 #include "Graphics/Vulkan/Vk_Devices.h"
 #include "Application/GlobalSettings.h"
+#include "Graphics/MeshFactory.h"
 
 #include "Core/Yzh.h"
 #include "Core/Memory.h"
@@ -11,7 +12,7 @@ namespace Yarezo::Graphics {
 
     ForwardRenderer::ForwardRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/viking_room.obj"));
-        m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj"));
+        m_Meshes.emplace_back(createMesh(PrimativeShape::CUBE));
 
         m_Materials.emplace_back(std::make_shared<Material>()); // Default texture
         m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/viking_room.png"));
@@ -20,7 +21,7 @@ namespace Yarezo::Graphics {
         m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/sprite.jpg"));
 
         Transform transform{glm::vec3(3.0f, -0.15f, 0.0f),
-                            glm::vec3(90.0f, 90.0f, -180.0f),
+                            glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
                             glm::vec3(1.0f, 1.0f, 1.0f)};
         m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[0], m_Materials[1], transform));
 
@@ -70,25 +71,28 @@ namespace Yarezo::Graphics {
     }
 
     void ForwardRenderer::present(YzVkCommandBuffer* commandBuffer) {
-        int index = 0;
 
+        int index = 0;
         if (GlobalSettings::instance()->displayModels) {
             for (auto& command : m_CommandQueue) {
 
-                updateUniformBuffers(index, command.meshInstance->getTransform());
                 uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
+                updateUniformBuffers(index, command.meshInst->getTransform());
                 m_Pipeline->setActive(*commandBuffer);
-                int imageIdx = command.meshInstance->getMaterial()->getImageIdx();
 
-                vkCmdPushConstants(commandBuffer->getCommandBuffer(), m_Pipeline->getPipelineLayout(), VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
+                int imageIdx = command.meshInst->getMaterial()->getImageIdx();
+                vkCmdPushConstants(commandBuffer->getCommandBuffer(), m_Pipeline->getPipelineLayout(),
+                                   VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
+
                 vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u,
                                         1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
-                command.meshInstance->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
-                command.meshInstance->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
+                command.meshInst->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
+                command.meshInst->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
 
-                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(command.meshInstance->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t)), 1, 0, 0, 0);
+                auto indicesCount = command.meshInst->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t);
+                vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(indicesCount), 1, 0, 0, 0);
                 index++;
             }
         }
@@ -112,36 +116,39 @@ namespace Yarezo::Graphics {
         createDescriptorSets();
     }
 
-    void ForwardRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    void ForwardRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t width, uint32_t height) {
         YzVkShader shader("../YareZo/Resources/Shaders", "texture_array.shader");
 
-        PipelineInfo pipelineInfo = {};
-        pipelineInfo.shader = &shader;
-        pipelineInfo.renderpass = renderPass;
-        pipelineInfo.cullMode = VK_CULL_MODE_BACK_BIT;
-        pipelineInfo.depthTestEnable = VK_TRUE;
-        pipelineInfo.depthWriteEnable = VK_TRUE;
-        pipelineInfo.maxObjects = 2;
-        pipelineInfo.width = windowWidth;
-        pipelineInfo.height = windowHeight;
-        pipelineInfo.pushConstants = {VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int)};
-        pipelineInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
+        PipelineInfo pInfo = {};
+        pInfo.shader = &shader;
+        pInfo.renderpass = renderPass;
+        pInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+        pInfo.depthTestEnable = VK_TRUE;
+        pInfo.depthWriteEnable = VK_TRUE;
+        pInfo.maxObjects = 2;
+        pInfo.width = width;
+        pInfo.height = height;
+        pInfo.pushConstants = {VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int)};
+        pInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
 
-        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)});
-        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
-        pipelineInfo.vertexInputAttributes.emplace_back(VkVertexInputAttributeDescription{2, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)});
+        // location, binding, format, offset
+        VkVertexInputAttributeDescription pos =   {0u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)};
+        VkVertexInputAttributeDescription color = {1u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)};
+        VkVertexInputAttributeDescription tex =   {2u, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)};
+        pInfo.vertexInputAttributes = { pos, color, tex };
 
 
-        //                                       Binding, DescriptorType, DescriptorCount, StageFlags, pImmuatbleSamplers
-        pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                                              1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
-        pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-                                                                              1, VK_SHADER_STAGE_VERTEX_BIT, nullptr});
-        pipelineInfo.layoutBindings.emplace_back(VkDescriptorSetLayoutBinding{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                                              MAX_NUM_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr});
+        // binding, descriptorType, descriptorCount, stageFlags, pImmuatbleSamplers
+        VkDescriptorSetLayoutBinding projView = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                                                 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr};
+        VkDescriptorSetLayoutBinding model =    {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
+                                                 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr};
+        VkDescriptorSetLayoutBinding sampler =  {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+                                                 MAX_NUM_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
+        pInfo.layoutBindings = { projView, model, sampler };
 
         m_Pipeline = new YzVkPipeline();
-        m_Pipeline->init(pipelineInfo);
+        m_Pipeline->init(pInfo);
     }
 
     void ForwardRenderer::createDescriptorSets() {
@@ -203,13 +210,10 @@ namespace Yarezo::Graphics {
 
     void ForwardRenderer::prepareUniformBuffers() {
 
-        VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
         VkDeviceSize viewBufferSize = sizeof(UniformVS);
-        VkMemoryPropertyFlags viewPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
 
         m_DynamicAlignment = sizeof(glm::mat4);
-        VkDeviceSize minUboAlignment = YzVkDevice::instance()->getGPUProperties().limits.minUniformBufferOffsetAlignment;
+        auto minUboAlignment = YzVkDevice::instance()->getGPUProperties().limits.minUniformBufferOffsetAlignment;
         if (minUboAlignment > 0) {
             m_DynamicAlignment = (m_DynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
         }
@@ -217,10 +221,8 @@ namespace Yarezo::Graphics {
         VkDeviceSize dynamicBufferSize = MAX_OBJECTS * m_DynamicAlignment;
         m_UboDynamicData.model = (glm::mat4*)alignedAlloc(dynamicBufferSize, m_DynamicAlignment);
 
-        VkMemoryPropertyFlags dynamicPropertyFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-
-        m_UniformBuffers.view = new YzVkBuffer(usageFlags, viewPropertyFlags, viewBufferSize, nullptr);
-        m_UniformBuffers.dynamic = new YzVkBuffer(usageFlags, dynamicPropertyFlags, dynamicBufferSize, nullptr);
+        m_UniformBuffers.view = new YzVkBuffer(BufferUsage::UNIFORM, viewBufferSize, nullptr);
+        m_UniformBuffers.dynamic = new YzVkBuffer(BufferUsage::DYNAMIC, dynamicBufferSize, nullptr);
     }
 
     void ForwardRenderer::updateUniformBuffers(uint32_t index, const Transform& transform) {

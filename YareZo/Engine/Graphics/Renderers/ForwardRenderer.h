@@ -13,7 +13,6 @@
 
 namespace Yarezo::Graphics {
 
-
     class ForwardRenderer  : public YzRenderer {
     public:
         ForwardRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
@@ -25,7 +24,7 @@ namespace Yarezo::Graphics {
 
     private:
         void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
-        void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
+        void createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t width, uint32_t height);
         void createDescriptorSets();
         void prepareUniformBuffers();
         void updateUniformBuffers(uint32_t index, const Transform& transform);
@@ -46,7 +45,7 @@ namespace Yarezo::Graphics {
         } m_UniformBuffers;
 
         UboDataDynamic m_UboDynamicData;
-};
+    };
 
 }
 

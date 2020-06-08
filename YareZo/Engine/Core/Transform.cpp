@@ -6,13 +6,13 @@
 namespace Yarezo {
     Transform::Transform() { }
     Transform::Transform(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale):
-        m_Translation(translation), m_Rotation(glm::quat(glm::radians(rotation))), m_Scale(scale) {
+        m_Translation(translation), m_Rotation(glm::quat(rotation)), m_Scale(scale) {
         updateMatrix();
     }
 
     void Transform::set(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale) {
         m_Translation = translation;
-        m_Rotation = glm::quat(glm::radians(rotation));
+        m_Rotation = glm::quat(rotation);
         m_Scale = scale;
         updateMatrix();
     }
@@ -33,7 +33,7 @@ namespace Yarezo {
     }
 
     void Transform::setRotation(const glm::vec3& rotation) {
-        m_Rotation = glm::quat(glm::radians(rotation));
+        m_Rotation = glm::quat(rotation);
         updateMatrix();
     }
 

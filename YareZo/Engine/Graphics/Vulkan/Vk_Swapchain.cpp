@@ -52,7 +52,8 @@ namespace Yarezo::Graphics {
     }
 
     VkResult YzVkSwapchain::acquireNextImage(VkSemaphore signalSemaphore) {
-        return vkAcquireNextImageKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, UINT64_MAX, signalSemaphore, VK_NULL_HANDLE, &m_CurrentImage);
+        return vkAcquireNextImageKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, UINT64_MAX,
+                                     signalSemaphore, VK_NULL_HANDLE, &m_CurrentImage);
     }
 
     void YzVkSwapchain::createSwapchain(size_t width, size_t height) {
@@ -67,7 +68,8 @@ namespace Yarezo::Graphics {
         // Request one more image to render to than the minimum so we dont wait for driver operations
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 
-        if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
+        if (swapChainSupport.capabilities.maxImageCount > 0 &&
+                imageCount > swapChainSupport.capabilities.maxImageCount) {
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
 
@@ -90,7 +92,8 @@ namespace Yarezo::Graphics {
         }
 
         Graphics::QueueFamilyIndices indices = YzVkDeviceinstance->getQueueFamilyIndicies();
-        uint32_t queueFamilyIndices[] = { static_cast<uint32_t>(indices.graphicsFamily), static_cast<uint32_t>(indices.presentFamily) };
+        uint32_t queueFamilyIndices[] = { static_cast<uint32_t>(indices.graphicsFamily),
+                                          static_cast<uint32_t>(indices.presentFamily) };
 
         if (indices.graphicsFamily != indices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -107,7 +110,8 @@ namespace Yarezo::Graphics {
         createInfo.presentMode = presentMode;
         createInfo.clipped = VK_TRUE;
 
-        if (vkCreateSwapchainKHR(YzVkDeviceinstance->getDevice(), &createInfo, nullptr, &m_Swapchain) != VK_SUCCESS) {
+        auto res = vkCreateSwapchainKHR(YzVkDeviceinstance->getDevice(), &createInfo, nullptr, &m_Swapchain);
+        if (res != VK_SUCCESS) {
             YZ_CRITICAL("SwapChain failed to create");
         }
 
@@ -123,7 +127,8 @@ namespace Yarezo::Graphics {
         m_SwapchainImageViews.resize(getImagesSize());
 
         for (uint32_t i = 0; i < getImagesSize(); i++) {
-            m_SwapchainImageViews[i] = VkUtil::createImageView(m_SwapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, m_SwapchainImageFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT);
+            m_SwapchainImageViews[i] = VkUtil::createImageView(m_SwapchainImages[i], VK_IMAGE_VIEW_TYPE_2D,
+                                                               m_SwapchainImageFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT);
         }
     }
 
@@ -147,7 +152,8 @@ namespace Yarezo::Graphics {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D YzVkSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, size_t width, size_t height) {
+    VkExtent2D YzVkSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities,
+                                               size_t width, size_t height) {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
         }

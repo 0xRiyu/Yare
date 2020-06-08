@@ -15,7 +15,8 @@ namespace Yarezo::Utilities {
                 // to prevent multiple threads initialising multiple instances of the class
                 // we lock it as soon as its being created
                 std::lock_guard<std::mutex> mutex_lock(m_Constructed);
-                // Check to see if another thread has already initialised an instance in the time it took to acquire a lock
+                // Check to see if another thread has already initialized an
+                // instance in the time it took to acquire a lock
                 if (!m_Instance) {
                     m_Instance = new T();
                 }

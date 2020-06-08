@@ -12,11 +12,13 @@ namespace Yarezo::Graphics {
     class Material {
     public:
         Material(const std::string& textureFilePath, MaterialTexType type = MaterialTexType::Texture2D);
-        Material(const std::vector<std::string>& textureFilePaths = {}, MaterialTexType type = MaterialTexType::Texture2D);
+        Material(const std::vector<std::string>& textureFilePaths = {},
+                 MaterialTexType type = MaterialTexType::Texture2D);
+
         virtual ~Material();
 
         void loadTextures();
-        void setImageIdx(int Idx) { m_ImageIdx = Idx; }
+        void setImageIdx(int idx) { m_ImageIdx = idx; }
 
         const YzVkImage* getTextureImage() const { return m_Texture; }
         int              getImageIdx()     const { return m_ImageIdx; }

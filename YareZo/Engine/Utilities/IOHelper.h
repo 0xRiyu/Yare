@@ -10,7 +10,7 @@
 namespace Yarezo::Utilities {
     std::vector<std::string> readFile(const std::string& filename);
 
-    void loadMesh(const std::string& meshFilePath,
+    void loadMesh(const std::string& filePath,
                   std::vector<Vertex>& vertices,
                   std::vector<uint32_t>& indices);
 }

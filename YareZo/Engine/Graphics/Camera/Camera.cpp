@@ -5,11 +5,11 @@
 
 namespace Yarezo::Graphics {
 
-    Camera::Camera(const float screenWidth, const float screenHeight) {
-        m_Aspect = screenWidth / screenHeight;
+    Camera::Camera(uint32_t screenWidth, uint32_t screenHeight) {
+        m_Aspect = static_cast<float>(screenWidth) / screenHeight;
 
         m_Transform = Transform(glm::vec3(1.0f, 2.0f, -4.0f),
-                                glm::vec3(90.0f, -20.5f, 0.0f),
+                                glm::radians(glm::vec3(90.0f, -20.5f, 0.0f)),
                                 glm::vec3(1.0f));
 
         m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
@@ -41,25 +41,25 @@ namespace Yarezo::Graphics {
         updateView();
     }
 
-    void Camera::setFov(const float in) {
+    void Camera::setFov(float in) {
         m_Fov = in;
         updateProj();
     }
 
-    void Camera::setCameraSpeed(const float speed) {
+    void Camera::setCameraSpeed(float speed) {
         m_CameraSpeed = speed;
     }
 
-    void Camera::updateDimensions(const float screenWidth, const float screenHeight) {
-        m_Aspect = screenWidth / screenHeight;
+    void Camera::updateDimensions(uint32_t screenWidth, uint32_t screenHeight) {
+        m_Aspect = static_cast<float>(screenWidth) / screenHeight;
         updateProj();
     }
 
     void Camera::recalculateViewParams() {
 
-        m_LookAt.x = cos(glm::radians(m_Transform.getVec3Rotation().x)) * cos(glm::radians(m_Transform.getVec3Rotation().y));
-        m_LookAt.y = sin(glm::radians(m_Transform.getVec3Rotation().y));
-        m_LookAt.z = sin(glm::radians(m_Transform.getVec3Rotation().x)) * cos(glm::radians(m_Transform.getVec3Rotation().y));
+        m_LookAt.x = cos(m_Transform.getVec3Rotation().x) * cos(m_Transform.getVec3Rotation().y);
+        m_LookAt.y = sin(m_Transform.getVec3Rotation().y);
+        m_LookAt.z = sin(m_Transform.getVec3Rotation().x) * cos(m_Transform.getVec3Rotation().y);
         m_LookAt = glm::normalize(m_LookAt);
 
         auto quat = m_Transform.getQuatRotation();

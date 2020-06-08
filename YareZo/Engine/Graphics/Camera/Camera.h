@@ -9,7 +9,7 @@ namespace Yarezo::Graphics {
     class Camera : public YzCamera {
 
     public:
-        Camera(const float screenWidth, const float screenHeight);
+        Camera(uint32_t screenWidth, uint32_t screenHeight);
         // Todo
         Camera(const Camera& other);
         virtual ~Camera() override;
@@ -18,10 +18,10 @@ namespace Yarezo::Graphics {
         virtual void setPosition(const glm::vec3& in) override;
         virtual void setRotation(const glm::vec3& in) override;
         virtual void setLookAt(const glm::vec3& in) override;
-        virtual void setFov(const float in) override;
-        virtual void setCameraSpeed(const float speed) override;
+        virtual void setFov(float in) override;
+        virtual void setCameraSpeed(float speed) override;
 
-        virtual void updateDimensions(const float screenWidth, const float screenHeight) override;
+        virtual void updateDimensions(uint32_t screenWidth, uint32_t screenHeight) override;
 
     private:
 

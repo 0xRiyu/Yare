@@ -14,7 +14,7 @@
 namespace Yarezo::Graphics {
 
     struct RenderCommand {
-        MeshInstance* meshInstance;
+        MeshInstance* meshInst;
     };
 
     typedef std::vector<RenderCommand> CommandQueue;

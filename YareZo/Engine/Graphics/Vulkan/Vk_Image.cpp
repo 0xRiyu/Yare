@@ -59,9 +59,7 @@ namespace Yarezo::Graphics {
         VkDeviceSize imageSize = width * height * 4 * sizeof(char);
 
         YzVkBuffer stagingBuffer;
-        stagingBuffer.init(VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                           imageSize, data);
+        stagingBuffer.init(BufferUsage::TRANSFER, imageSize, data);
 
         createTexture2D(stagingBuffer, format);
         createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
@@ -80,9 +78,7 @@ namespace Yarezo::Graphics {
             YZ_CRITICAL("stbi_load failed to load a texture from file at :" + filePath);
         }
 
-        buffer.init(VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    imageSize, pixels);
+        buffer.init(BufferUsage::TRANSFER, imageSize, pixels);
 
         stbi_image_free(pixels);
     }
@@ -123,9 +119,7 @@ namespace Yarezo::Graphics {
 
         images -= total_images_size;
 
-        buffer.init(VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                    total_images_size, images);
+        buffer.init(BufferUsage::TRANSFER, total_images_size, images);
     }
 
     void YzVkImage::createTexture2D(const YzVkBuffer& buffer, VkFormat format) {
@@ -162,7 +156,8 @@ namespace Yarezo::Graphics {
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
-    void YzVkImage::transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout) {
+    void YzVkImage::transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout,
+                                          VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -187,7 +182,8 @@ namespace Yarezo::Graphics {
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_HOST_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         }
-        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+                 newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 

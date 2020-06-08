@@ -8,7 +8,7 @@ namespace Yarezo::Graphics {
 
     void YzRenderer::submit(MeshInstance* instance) {
         RenderCommand renderCommand;
-        renderCommand.meshInstance = instance;
+        renderCommand.meshInst = instance;
 
         m_CommandQueue.push_back(renderCommand);
     }

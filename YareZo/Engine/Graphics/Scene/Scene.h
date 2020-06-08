@@ -18,9 +18,5 @@ namespace Yarezo::Graphics {
         std::vector<MeshInstance> m_MeshInstances;
 
     };
-
-
 }
-
-
 #endif //YAREZO_SCENE_H

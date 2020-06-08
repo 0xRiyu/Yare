@@ -107,7 +107,8 @@ namespace Yarezo::Graphics {
         framebufferInfo.layers = 1;
 
         for (uint32_t i = 0; i < m_VulkanRenderer->getYzSwapchain()->getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_VulkanRenderer->getYzSwapchain()->getImageView(i), m_DepthBuffer->getImageView() };
+            framebufferInfo.attachments = { m_VulkanRenderer->getYzSwapchain()->getImageView(i),
+                                            m_DepthBuffer->getImageView() };
             m_FrameBuffers.push_back(new YzVkFramebuffer(framebufferInfo));
         }
     }
