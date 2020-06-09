@@ -17,7 +17,7 @@ namespace Yarezo::Graphics {
 
     // Create a more custom mesh
     Mesh* createCube(float size);
-    // Mesh* createQuad(float width, float height);
+    Mesh* createQuad(float width, float height);
     // Mesh* createSphere(float diameter);
     // Mesh* createTorus();
     // Mesh* createRect(float width, float height, float depth);

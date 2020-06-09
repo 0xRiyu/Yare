@@ -15,8 +15,8 @@ namespace std {
     template<> struct hash<Yarezo::Vertex> {
         size_t operator()(Yarezo::Vertex const& vertex) const {
             return ((hash<glm::vec3>()(vertex.pos)
-                   ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1)
-                   ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
+                   ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1)
+                   ^ (hash<glm::vec2>()(vertex.uv) << 1);
         }
     };
 }
@@ -62,12 +62,12 @@ namespace Yarezo::Utilities {
                     attrib.vertices[3 * index.vertex_index + 2]
                 };
 
-                vertex.texCoord = {
+                vertex.uv = {
                     attrib.texcoords[2 * index.texcoord_index + 0],
                     1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
                 };
 
-                vertex.color = { 1.0f, 1.0f, 1.0f };
+                vertex.normal = { 1.0f, 1.0f, 1.0f };
 
                 if (uniqueVertices.count(vertex) == 0) {
                     uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());

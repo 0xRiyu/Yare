@@ -1,6 +1,7 @@
 #include "Graphics/Renderers/SkyboxRenderer.h"
 #include "Graphics/Vulkan/Vk_Utilities.h"
 #include "Application/GlobalSettings.h"
+#include "Graphics/MeshFactory.h"
 
 #include "Core/Yzh.h"
 #include "Core/Memory.h"
@@ -8,14 +9,20 @@
 namespace Yarezo::Graphics {
 
     SkyboxRenderer::SkyboxRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-        std::vector<std::string> skyboxTextures = {"../YareZo/Resources/Textures/skybox/posx.jpg",
+        std::vector<std::string> skyboxTextures1 = {"../YareZo/Resources/Textures/skybox/posx.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negx.jpg",
                                                    "../YareZo/Resources/Textures/skybox/posy.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negy.jpg",
                                                    "../YareZo/Resources/Textures/skybox/posz.jpg",
                                                    "../YareZo/Resources/Textures/skybox/negz.jpg"};
+        std::vector<std::string> skyboxTextures = {"../YareZo/Resources/Textures/stormy_skybox/stormydays_ft.tga",
+                                                   "../YareZo/Resources/Textures/stormy_skybox/stormydays_bk.tga",
+                                                   "../YareZo/Resources/Textures/stormy_skybox/stormydays_up.tga",
+                                                   "../YareZo/Resources/Textures/stormy_skybox/stormydays_dn.tga",
+                                                   "../YareZo/Resources/Textures/stormy_skybox/stormydays_rt.tga",
+                                                   "../YareZo/Resources/Textures/stormy_skybox/stormydays_lf.tga"};
         m_Material = std::make_shared<Material>(skyboxTextures, MaterialTexType::TextureCube);
-        m_CubeMesh = std::make_shared<Mesh>("../YareZo/Resources/Models/cube.obj");
+        m_CubeMesh = std::make_shared<Mesh>(*createMesh(PrimativeShape::CUBE));
 
         m_SkyboxModel = new MeshInstance(m_CubeMesh, m_Material);
         init(renderPass, windowWidth, windowHeight);

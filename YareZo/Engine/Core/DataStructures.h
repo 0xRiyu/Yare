@@ -6,11 +6,11 @@
 namespace Yarezo {
     struct Vertex {
         glm::vec3 pos;
-        glm::vec3 color;
-        glm::vec2 texCoord;
+        glm::vec2 uv;
+        glm::vec3 normal;
 
         bool operator==(const Vertex& other) const {
-            return pos == other.pos && color == other.color && texCoord == other.texCoord;
+            return pos == other.pos && uv == other.uv && normal == other.normal;
         }
     };
 

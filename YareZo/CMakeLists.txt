@@ -33,8 +33,9 @@ set (YAREZO_SOURCES
     # Graphics
     Engine/Graphics/Mesh.cpp
     Engine/Graphics/MeshFactory.cpp
-    Engine/Graphics/Material.cpp
     Engine/Graphics/MeshInstance.cpp
+    Engine/Graphics/TiledMesh.cpp
+    Engine/Graphics/Material.cpp
     Engine/Graphics/RenderManager.cpp
     Engine/Graphics/Camera/Camera.cpp
     Engine/Graphics/Window/GlfwWindow.cpp
@@ -93,8 +94,9 @@ set (YAREZO_HEADERS
     # Graphics
     Engine/Graphics/Mesh.h
     Engine/Graphics/MeshFactory.h
-    Engine/Graphics/Material.h
     Engine/Graphics/MeshInstance.h
+    Engine/Graphics/TiledMesh.h
+    Engine/Graphics/Material.h
     Engine/Graphics/RenderManager.h
     Engine/Graphics/Camera/YzCamera.h
     Engine/Graphics/Camera/Camera.h

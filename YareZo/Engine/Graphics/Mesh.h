@@ -16,7 +16,7 @@ namespace Yarezo::Graphics {
         YzVkBuffer* getIndexBuffer() const { return m_IndexBuffer; }
         YzVkBuffer* getVertexBuffer() const { return m_VertexBuffer; }
 
-    private:
+    protected:
         void createBuffers(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 
         YzVkBuffer* m_VertexBuffer;

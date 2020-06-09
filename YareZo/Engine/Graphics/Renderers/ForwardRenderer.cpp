@@ -4,6 +4,7 @@
 #include "Graphics/Vulkan/Vk_Devices.h"
 #include "Application/GlobalSettings.h"
 #include "Graphics/MeshFactory.h"
+#include "Graphics/TiledMesh.h"
 
 #include "Core/Yzh.h"
 #include "Core/Memory.h"
@@ -11,14 +12,18 @@
 namespace Yarezo::Graphics {
 
     ForwardRenderer::ForwardRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+
         m_Meshes.emplace_back(std::make_shared<Mesh>("../YareZo/Resources/Models/viking_room.obj"));
         m_Meshes.emplace_back(createMesh(PrimativeShape::CUBE));
+        m_Meshes.emplace_back(createMesh(PrimativeShape::QUAD));
+        m_Meshes.emplace_back(new TiledMesh(50));
 
         m_Materials.emplace_back(std::make_shared<Material>()); // Default texture
         m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/viking_room.png"));
         m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/crate.png"));
         m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/skysphere.png"));
         m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/sprite.jpg"));
+        m_Materials.emplace_back(std::make_shared<Material>("../YareZo/Resources/Textures/tile.png"));
 
         Transform transform{glm::vec3(3.0f, -0.15f, 0.0f),
                             glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
@@ -33,6 +38,11 @@ namespace Yarezo::Graphics {
         m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[3], transform2));
         transform2.setTranslation(0.0f, 0.0f, 1.0f);
         m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[4], transform2));
+
+        Transform transform3;
+        transform3.setTranslation(-25.0f, -0.5f, 25.0f);
+        transform3.setRotation(glm::radians(glm::vec3(180.0f, 0.0f, 0.0f)));
+        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[3], m_Materials[5], transform3));
 
         init(renderPass, windowWidth, windowHeight);
     }
@@ -133,9 +143,9 @@ namespace Yarezo::Graphics {
 
         // location, binding, format, offset
         VkVertexInputAttributeDescription pos =   {0u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)};
-        VkVertexInputAttributeDescription color = {1u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)};
-        VkVertexInputAttributeDescription tex =   {2u, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, texCoord)};
-        pInfo.vertexInputAttributes = { pos, color, tex };
+        VkVertexInputAttributeDescription uv =   {2u, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)};
+        VkVertexInputAttributeDescription normal = {1u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)};
+        pInfo.vertexInputAttributes = { pos, uv, normal };
 
 
         // binding, descriptorType, descriptorCount, stageFlags, pImmuatbleSamplers
