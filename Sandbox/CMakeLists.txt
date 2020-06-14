@@ -19,9 +19,9 @@ add_executable(${PROJECT_NAME} ${SANDBOX_SOURCES} ${SANDBOX_HEADERS})
 #--------------------------------------------------------------------
 # Include directories from the Engine - Soon to restrict to just the interface
 #--------------------------------------------------------------------
-target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/YareZo)
+target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/YareEngine)
 
 #--------------------------------------------------------------------
 # Link to the Engine
 #--------------------------------------------------------------------
-target_link_libraries(${PROJECT_NAME} YareZo::Engine)
+target_link_libraries(${PROJECT_NAME} YareEngine::Source)

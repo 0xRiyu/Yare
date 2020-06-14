@@ -1,5 +1,5 @@
 @echo off
-REM This script will build Yarezo using the MSVC and ninja, it requires vcvarsall.bat/ninja to be in the path
+REM This script will build Yare using the MSVC and ninja, it requires vcvarsall.bat/ninja to be in the path
 REM Example location to find vcvarsall - Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build
 
 if not exist build (
@@ -47,7 +47,7 @@ cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
 goto :ninja
 
 :ninja
-ninja 
+ninja
 cd ..
 if %RUN%==FALSE goto :eof
 if %errorlevel% NEQ 0 GOTO :eof
