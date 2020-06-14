@@ -20,11 +20,11 @@ namespace Yare::Graphics {
         void loadTextures();
         void setImageIdx(int idx) { m_ImageIdx = idx; }
 
-        const YzVkImage* getTextureImage() const { return m_Texture; }
-        int              getImageIdx()     const { return m_ImageIdx; }
+        const Image* getTextureImage() const { return m_Texture; }
+        int          getImageIdx()     const { return m_ImageIdx; }
 
     private:
-        YzVkImage* m_Texture;
+        Image* m_Texture;
         MaterialTexType m_Type;
         int m_ImageIdx = 0;
         std::vector<std::string> m_FilePaths;

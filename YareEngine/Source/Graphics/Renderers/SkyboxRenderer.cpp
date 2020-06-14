@@ -8,7 +8,7 @@
 
 namespace Yare::Graphics {
 
-    SkyboxRenderer::SkyboxRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    SkyboxRenderer::SkyboxRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         std::vector<std::string> skyboxTextures1 = {"../Resources/Textures/skybox/posx.jpg",
                                                    "../Resources/Textures/skybox/negx.jpg",
                                                    "../Resources/Textures/skybox/posy.jpg",
@@ -35,7 +35,7 @@ namespace Yare::Graphics {
         delete m_SkyboxModel;
     }
 
-    void SkyboxRenderer::init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    void SkyboxRenderer::init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         m_Material->loadTextures();
         createGraphicsPipeline(renderPass, windowWidth, windowHeight);
         prepareUniformBuffer();
@@ -48,7 +48,7 @@ namespace Yare::Graphics {
     }
 
 
-    void SkyboxRenderer::present(YzVkCommandBuffer* commandBuffer) {
+    void SkyboxRenderer::present(CommandBuffer* commandBuffer) {
         if (GlobalSettings::instance()->displayBackground) {
             for (auto command : m_CommandQueue) {
                 vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
@@ -65,7 +65,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void SkyboxRenderer::onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) {
+    void SkyboxRenderer::onResize(RenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) {
         // Cleanup
         {
             delete m_Pipeline;
@@ -76,8 +76,8 @@ namespace Yare::Graphics {
         createDescriptorSet();
     }
 
-    void SkyboxRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t width, uint32_t height) {
-        YzVkShader skyboxShader("../Resources/Shaders", "skybox.shader");
+    void SkyboxRenderer::createGraphicsPipeline(RenderPass* renderPass, uint32_t width, uint32_t height) {
+        Shader skyboxShader("../Resources/Shaders", "skybox.shader");
         PipelineInfo pipelineInfo = {};
         pipelineInfo.shader = &skyboxShader;
 
@@ -102,7 +102,7 @@ namespace Yare::Graphics {
         pipelineInfo.pushConstants = {VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int)};
         pipelineInfo.bindingDescription = {0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
 
-        m_Pipeline = new YzVkPipeline();
+        m_Pipeline = new Pipeline();
         m_Pipeline->init(pipelineInfo);
 
     }
@@ -112,7 +112,7 @@ namespace Yare::Graphics {
         descriptorSetInfo.descriptorSetCount = 1;
         descriptorSetInfo.pipeline = m_Pipeline;
 
-        m_DescriptorSet = new YzVkDescriptorSet();
+        m_DescriptorSet = new DescriptorSet();
         m_DescriptorSet->init(descriptorSetInfo);
 
 
@@ -141,7 +141,7 @@ namespace Yare::Graphics {
 
     void SkyboxRenderer::prepareUniformBuffer() {
         VkDeviceSize viewBufferSize = sizeof(UniformVS);
-        m_UniformBuffer = new YzVkBuffer(BufferUsage::UNIFORM, viewBufferSize, nullptr);
+        m_UniformBuffer = new Buffer(BufferUsage::UNIFORM, viewBufferSize, nullptr);
     }
 
     void SkyboxRenderer::updateUniformBuffer(uint32_t index) {

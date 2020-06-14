@@ -24,11 +24,11 @@ namespace Yare::Graphics {
         virtual ~YzRenderer() = default;
 
         virtual void prepareScene() = 0;
-        virtual void present(YzVkCommandBuffer* commandBuffer) = 0;
-        virtual void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) = 0;
+        virtual void present(CommandBuffer* commandBuffer) = 0;
+        virtual void onResize(RenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) = 0;
 
     protected:
-        virtual void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) = 0;
+        virtual void init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) = 0;
         virtual void resetCommandQueue();
         virtual void submit(MeshInstance* instance);
         CommandQueue m_CommandQueue;

@@ -6,18 +6,18 @@
 
 namespace Yare::Graphics {
 
-    YzVkRenderPass::YzVkRenderPass(const RenderPassInfo& info)
+    RenderPass::RenderPass(const RenderPassInfo& info)
         :m_Info(info) {
         init();
     }
 
-    YzVkRenderPass::~YzVkRenderPass() {
+    RenderPass::~RenderPass() {
         if (m_RenderPass) {
-            vkDestroyRenderPass(YzVkDevice::instance()->getDevice(), m_RenderPass, nullptr);
+            vkDestroyRenderPass(Devices::instance()->getDevice(), m_RenderPass, nullptr);
         }
     }
 
-    void YzVkRenderPass::init() {
+    void RenderPass::init() {
         VkAttachmentDescription colorAttachment = {};
         colorAttachment.format = m_Info.imageFormat;
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
@@ -70,13 +70,13 @@ namespace Yare::Graphics {
         rpCreateInfo.dependencyCount = 1;
         rpCreateInfo.pDependencies = &dependency;
 
-        auto res = vkCreateRenderPass(YzVkDevice::instance()->getDevice(), &rpCreateInfo, nullptr, &m_RenderPass);
+        auto res = vkCreateRenderPass(Devices::instance()->getDevice(), &rpCreateInfo, nullptr, &m_RenderPass);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a render pass.");
         }
     }
 
-    void YzVkRenderPass::beginRenderPass(const YzVkCommandBuffer* commandBuffer, const YzVkFramebuffer* frameBuffer) {
+    void RenderPass::beginRenderPass(const CommandBuffer* commandBuffer, const Framebuffer* frameBuffer) {
         VkRenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_RenderPass;
@@ -92,7 +92,7 @@ namespace Yare::Graphics {
         vkCmdBeginRenderPass(commandBuffer->getCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    void YzVkRenderPass::endRenderPass(const YzVkCommandBuffer* commandBuffer) {
+    void RenderPass::endRenderPass(const CommandBuffer* commandBuffer) {
         vkCmdEndRenderPass(commandBuffer->getCommandBuffer());
     }
 }

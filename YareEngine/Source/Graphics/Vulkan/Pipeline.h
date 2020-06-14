@@ -13,8 +13,8 @@
 namespace Yare::Graphics {
 
     struct PipelineInfo {
-        YzVkShader* shader;
-        YzVkRenderPass* renderpass;
+        Shader* shader;
+        RenderPass* renderpass;
         bool depthWriteEnable;
         bool depthTestEnable;
         VkCullModeFlags cullMode;
@@ -29,13 +29,13 @@ namespace Yare::Graphics {
         bool colorBlendingEnabled = false;
     };
 
-    class YzVkPipeline {
+    class Pipeline {
 
     public:
-        YzVkPipeline();
-        ~YzVkPipeline();
+        Pipeline();
+        ~Pipeline();
         void init(PipelineInfo& pipelineInfo);
-        void setActive(const YzVkCommandBuffer& commandBuffer);
+        void setActive(const CommandBuffer& commandBuffer);
 
         const VkDescriptorPool&      getDescriptorPool()       const { return m_DescriptorPool; }
         const VkDescriptorSetLayout& getDescriptorSetLayout()  const { return m_DescriptorSetLayout; }

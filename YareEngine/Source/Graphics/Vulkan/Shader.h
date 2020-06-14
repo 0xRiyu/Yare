@@ -17,10 +17,10 @@ namespace Yare::Graphics {
                            Unknown = 0
     };
 
-    class YzVkShader {
+    class Shader {
     public:
-        YzVkShader(const std::string& filePath, const std::string& shaderName);
-        ~YzVkShader();
+        Shader(const std::string& filePath, const std::string& shaderName);
+        ~Shader();
 
         const uint32_t getStageCount() const { return m_StageCount; }
         VkPipelineShaderStageCreateInfo* getShaderStages() const { return m_ShaderStages; }

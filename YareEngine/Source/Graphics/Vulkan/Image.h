@@ -7,13 +7,13 @@
 #include <string>
 
 namespace Yare::Graphics {
-    class YzVkImage {
+    class Image {
     protected:
         // Only allow the static constructors
-        YzVkImage() {}
+        Image() {}
 
     public:
-        ~YzVkImage();
+        ~Image();
 
         void createTexture2DFromFile(const std::string& filePath);
         void createTextureCubeFromFile(const std::string& filePath);
@@ -29,13 +29,13 @@ namespace Yare::Graphics {
         const VkSampler&       getSampler()   const { return m_Sampler; }
 
     private:
-        void loadTextureFromFileIntoBuffer(const std::string& filePath, YzVkBuffer& buffer);
-        void loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths, YzVkBuffer& buffer);
-        void createTexture2D(const YzVkBuffer& buffer, VkFormat format);
-        void createTextureCube(const YzVkBuffer& buffer);
+        void loadTextureFromFileIntoBuffer(const std::string& filePath, Buffer& buffer);
+        void loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths, Buffer& buffer);
+        void createTexture2D(const Buffer& buffer, VkFormat format);
+        void createTextureCube(const Buffer& buffer);
         void transitionImageLayout(VkFormat format, uint32_t layerCount,
                                    VkImageLayout oldLayout, VkImageLayout newLayout);
-        void copyBufferToImage(const YzVkBuffer& buffer, uint32_t faces, uint32_t mipLevels);
+        void copyBufferToImage(const Buffer& buffer, uint32_t faces, uint32_t mipLevels);
 
         void createImage(VkImageType type, VkFormat format, VkImageTiling tiling,
                          VkImageUsageFlags usage, VkImageCreateFlags flags,
@@ -52,10 +52,10 @@ namespace Yare::Graphics {
         size_t m_TextureChannels = 0;
 
     public:
-        static YzVkImage* createDepthStencilBuffer(size_t width, size_t height, VkFormat format);
-        static YzVkImage* createTexture2D(size_t width, size_t height, VkFormat format, unsigned char* data);
-        static YzVkImage* createTexture2D(const std::string& filePath);
-        static YzVkImage* createTextureCube(const std::vector<std::string>& filePaths);
+        static Image* createDepthStencilBuffer(size_t width, size_t height, VkFormat format);
+        static Image* createTexture2D(size_t width, size_t height, VkFormat format, unsigned char* data);
+        static Image* createTexture2D(const std::string& filePath);
+        static Image* createTextureCube(const std::vector<std::string>& filePaths);
     };
 }
 

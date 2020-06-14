@@ -1,10 +1,10 @@
-#include "Graphics/Vulkan/Instance.h"
+#include "Graphics/Vulkan/Context.h"
 #include "Core/Yzh.h"
 #include "Core/Glfw.h"
 
 namespace Yare::Graphics {
 
-    YzVkInstance* YzVkInstance::s_YzVkInstance = nullptr;
+    VulkanContext* VulkanContext::s_Context = nullptr;
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                                         VkDebugUtilsMessageTypeFlagsEXT messageType,
@@ -37,11 +37,20 @@ namespace Yare::Graphics {
         }
     }
 
-    YzVkInstance::YzVkInstance() {
-        s_YzVkInstance = this;
+    VulkanContext::VulkanContext(size_t width, size_t height) {
+        init(width, height);
+        s_Context = this;
     }
 
-    YzVkInstance::~YzVkInstance() {
+    VulkanContext::~VulkanContext() {
+        m_ImageAvailableSemaphores.clear();
+        m_RenderFinishedSemaphores.clear();
+
+        m_Swapchain.reset();
+        m_CommandPool.reset();
+
+        Devices::release();
+
         if (enableValidationLayers) {
             DestroyDebugUtilsMessengerEXT(m_Instance, m_DebugMessenger, nullptr);
         }
@@ -50,7 +59,90 @@ namespace Yare::Graphics {
         }
     }
 
-    void YzVkInstance::setupDebugMessenger() {
+    void VulkanContext::init(size_t width, size_t height) {
+        // Create our link between our APP and the vulkan library
+        createInstance();
+        // Setup some validation layers such that if theres an issue with us
+        // Interacting with the library, then it may catch our faults.
+        setupDebugMessenger();
+
+        // Create our static device singleton
+        m_Devices = Devices::instance();
+        m_Devices->init(m_Instance);
+
+        m_CommandPool = std::make_shared<CommandPool>();
+
+        // Create a swapchain, a swapchain is responsible for maintaining the images
+        // that will be presented to the user.
+        m_Swapchain = std::make_shared<Swapchain>(width, height);
+
+        m_ImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        m_RenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    }
+
+    void VulkanContext::onResize(size_t width, size_t height) {
+        Devices::instance()->waitIdle();
+        m_Swapchain->onResize(width, height);
+    }
+
+    bool VulkanContext::begin() {
+        auto result = m_Swapchain->acquireNextImage(m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore());
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+            return false;
+        }
+        else if (result != VK_SUCCESS) {
+            YZ_ERROR("Vulkan failed to aquire a swapchain image.");
+        }
+        return true;
+    }
+
+    bool VulkanContext::present(CommandBuffer* cmdBuffer) {
+
+        submitGfxQueue(cmdBuffer, true);
+
+        VkResult result = m_Swapchain->present(m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore());
+
+        if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+            return false;
+        }
+        else if (result != VK_SUCCESS) {
+            YZ_ERROR("Vulkan failed to present a swapchain image.");
+        }
+
+        m_CurrentFrame = (m_CurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        return true;
+    }
+
+    void VulkanContext::submitGfxQueue(CommandBuffer* cmdBuffer, bool waitFence) {
+        auto currentWaitSemaphore = m_ImageAvailableSemaphores[m_CurrentFrame].getSemaphore();
+        auto currentSignalSemaphore = m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore();
+
+        VkSubmitInfo submitInfo = {};
+        submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &cmdBuffer->getCommandBuffer();
+        VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        submitInfo.pWaitDstStageMask = &flags;
+        submitInfo.pWaitSemaphores = &currentWaitSemaphore;
+        submitInfo.waitSemaphoreCount = (uint32_t)(currentWaitSemaphore ? 1 : 0);
+        submitInfo.pSignalSemaphores = &currentSignalSemaphore;
+        submitInfo.signalSemaphoreCount =  (uint32_t)(currentSignalSemaphore ? 1 : 0);
+        submitInfo.pNext = VK_NULL_HANDLE;
+
+        if (!waitFence) {
+            vkQueueSubmit(m_Devices->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+            vkQueueWaitIdle(m_Devices->getGraphicsQueue());
+        }
+        else {
+            auto fence = cmdBuffer->getFence();
+            vkQueueSubmit(m_Devices->getGraphicsQueue(), 1, &submitInfo, fence);
+            vkWaitForFences(m_Devices->getDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
+            vkResetFences(m_Devices->getDevice(), 1, &fence);
+        }
+    }
+
+    void VulkanContext::setupDebugMessenger() {
         // Only setup Validation layers if built in Debug Mode
         if (!enableValidationLayers) return;
 
@@ -63,23 +155,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void YzVkInstance::init() {
-        // Create our link between our APP and the vulkan library
-        createInstance();
-        // Setup some validation layers such that if theres an issue with us
-        // Interacting with the library, then it may catch our faults.
-        setupDebugMessenger();
-    }
-
-    void YzVkInstance::cleanUp() {
-        delete m_YzCommandPool;
-    }
-
-    void YzVkInstance::createCommandPool() {
-         m_YzCommandPool = new YzVkCommandPool();
-    }
-
-    void YzVkInstance::createInstance() {
+    void VulkanContext::createInstance() {
         if (enableValidationLayers && !checkValidationLayerSupport()) {
             YZ_CRITICAL("VK Instance was unable to be created, no validation layers available");
         }
@@ -117,7 +193,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void YzVkInstance::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
+    void VulkanContext::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -129,7 +205,7 @@ namespace Yare::Graphics {
         createInfo.pfnUserCallback = debugCallback;
     }
 
-    std::vector<const char*> YzVkInstance::getRequiredExtensions() {
+    std::vector<const char*> VulkanContext::getRequiredExtensions() {
         uint32_t glfwExtensionCount = 0;
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
@@ -143,7 +219,7 @@ namespace Yare::Graphics {
         return extensions;
     }
 
-    bool YzVkInstance::checkValidationLayerSupport() {
+    bool VulkanContext::checkValidationLayerSupport() {
         uint32_t layerCount;
         bool layerFound = false;
 
@@ -165,4 +241,5 @@ namespace Yare::Graphics {
         }
         return layerFound;
     }
+
 }

@@ -10,7 +10,7 @@ namespace Yare {
     namespace Graphics {
 
         struct DescriptorSetInfo {
-            YzVkPipeline* pipeline;
+            Pipeline* pipeline;
             size_t descriptorSetCount;
         };
 
@@ -25,10 +25,10 @@ namespace Yare {
             uint32_t descriptorCount;
         };
 
-        class YzVkDescriptorSet {
+        class DescriptorSet {
         public:
-            YzVkDescriptorSet();
-            ~YzVkDescriptorSet();
+            DescriptorSet();
+            ~DescriptorSet();
 
             void init(const DescriptorSetInfo& descriptorSetInfo);
             void update(std::vector<BufferInfo>& newBufferInfo);

@@ -31,14 +31,14 @@ namespace Yare::Graphics {
                 }
             }
 
-            m_Texture = YzVkImage::createTextureCube(texturePaths);
+            m_Texture = Image::createTextureCube(texturePaths);
             break;
         }
         case MaterialTexType::Texture2D: {
             if (m_FilePaths.size() >= 1) {
-                m_Texture = YzVkImage::createTexture2D(m_FilePaths[0]);
+                m_Texture = Image::createTexture2D(m_FilePaths[0]);
             } else {
-                m_Texture = YzVkImage::createTexture2D("../Resources/Textures/default.jpg");
+                m_Texture = Image::createTexture2D("../Resources/Textures/default.jpg");
             }
             break;
         }

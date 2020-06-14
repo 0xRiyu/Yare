@@ -33,7 +33,7 @@ namespace Yare::Graphics {
 
         delete m_RenderPass;
 
-        delete m_VulkanRenderer;
+        delete m_VulkanContext;
     }
 
     void RenderManager::renderScene() {
@@ -50,11 +50,11 @@ namespace Yare::Graphics {
         // Renderer will ask the swapchain to get the next image (frame)
         // for us to work with, if the result is OUT_OF_DATA_KHR or SUBOPTIMAL_KHR
         // we need to re-create our pipeline
-        if (!m_VulkanRenderer->begin()) {
+        if (!m_VulkanContext->begin()) {
             onResize();
         }
 
-        m_CurrentBufferID = m_VulkanRenderer->getYzSwapchain()->getCurrentImage();
+        m_CurrentBufferID = m_VulkanContext->getSwapchain()->getCurrentImage();
 
         m_CommandBuffers[m_CurrentBufferID]->beginRecording();
 
@@ -66,20 +66,20 @@ namespace Yare::Graphics {
 
         m_CommandBuffers[m_CurrentBufferID]->endRecording();
 
-        if (!m_VulkanRenderer->present(m_CommandBuffers[m_CurrentBufferID])) {
+        if (!m_VulkanContext->present(m_CommandBuffers[m_CurrentBufferID])) {
             onResize();
         }
     }
 
     void RenderManager::waitDeviceIdle() {
-        YzVkDevice::instance()->waitIdle();
+        Devices::instance()->waitIdle();
     }
 
     void RenderManager::init() {
         auto props = m_WindowRef->getWindowProperties();
         m_WindowWidth =  props.width;
         m_WindowHeight = props.height;
-        m_VulkanRenderer = new YzVkRenderer(m_WindowWidth, m_WindowHeight);
+        m_VulkanContext = new VulkanContext(m_WindowWidth, m_WindowHeight);
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();
@@ -90,14 +90,14 @@ namespace Yare::Graphics {
 
     void RenderManager::createRenderPass() {
         RenderPassInfo renderPassInfo{};
-        renderPassInfo.imageFormat = m_VulkanRenderer->getYzSwapchain()->getImageFormat();
+        renderPassInfo.imageFormat = m_VulkanContext->getSwapchain()->getImageFormat();
         renderPassInfo.extent = VkExtent2D{m_WindowWidth, m_WindowHeight};
-        m_RenderPass = new YzVkRenderPass(renderPassInfo);
+        m_RenderPass = new RenderPass(renderPassInfo);
     }
 
     void RenderManager::createFrameBuffers() {
         VkFormat depthFormat = VkUtil::findDepthFormat();
-        m_DepthBuffer = YzVkImage::createDepthStencilBuffer(m_WindowWidth, m_WindowHeight, depthFormat);
+        m_DepthBuffer = Image::createDepthStencilBuffer(m_WindowWidth, m_WindowHeight, depthFormat);
 
         FramebufferInfo framebufferInfo;
         framebufferInfo.type = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -106,10 +106,10 @@ namespace Yare::Graphics {
         framebufferInfo.height = m_WindowHeight;
         framebufferInfo.layers = 1;
 
-        for (uint32_t i = 0; i < m_VulkanRenderer->getYzSwapchain()->getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_VulkanRenderer->getYzSwapchain()->getImageView(i),
+        for (uint32_t i = 0; i < m_VulkanContext->getSwapchain()->getImageViewSize(); i++) {
+            framebufferInfo.attachments = { m_VulkanContext->getSwapchain()->getImageView(i),
                                             m_DepthBuffer->getImageView() };
-            m_FrameBuffers.push_back(new YzVkFramebuffer(framebufferInfo));
+            m_FrameBuffers.push_back(new Framebuffer(framebufferInfo));
         }
     }
 
@@ -119,7 +119,7 @@ namespace Yare::Graphics {
         for (unsigned int i = 0; i < m_CommandBuffers.size(); i++) {
             m_CurrentBufferID = i;
 
-            m_CommandBuffers[i] = new YzVkCommandBuffer();
+            m_CommandBuffers[i] = new CommandBuffer();
         }
     }
 
@@ -141,7 +141,7 @@ namespace Yare::Graphics {
         }
         m_WindowWidth =  m_WindowRef->getWindowProperties().width;
         m_WindowHeight = m_WindowRef->getWindowProperties().height;
-        m_VulkanRenderer->onResize(m_WindowWidth, m_WindowHeight);
+        m_VulkanContext->onResize(m_WindowWidth, m_WindowHeight);
         createRenderPass();
         createFrameBuffers();
         createCommandBuffers();

@@ -5,10 +5,10 @@
 #include "Graphics/Vulkan/CommandPool.h"
 
 namespace Yare::Graphics {
-    class YzVkCommandBuffer {
+    class CommandBuffer {
     public:
-        YzVkCommandBuffer();
-        ~YzVkCommandBuffer();
+        CommandBuffer();
+        ~CommandBuffer();
 
         void beginRecording();
         void endRecording();

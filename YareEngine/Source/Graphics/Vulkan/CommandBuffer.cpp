@@ -1,33 +1,33 @@
 #include "Graphics/Vulkan/CommandBuffer.h"
-#include "Graphics/Vulkan/Instance.h"
+#include "Graphics/Vulkan/Context.h"
 #include "Graphics/Vulkan/Devices.h"
 #include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
-        YzVkCommandBuffer::YzVkCommandBuffer() {
+        CommandBuffer::CommandBuffer() {
             init();
         }
 
-        YzVkCommandBuffer::~YzVkCommandBuffer() {
+        CommandBuffer::~CommandBuffer() {
             if (m_Fence) {
-                 vkDestroyFence(YzVkDevice::instance()->getDevice(), m_Fence, nullptr);
+                 vkDestroyFence(Devices::instance()->getDevice(), m_Fence, nullptr);
             }
             if (m_CommandBuffer) {
-                vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(),
-                                     YzVkInstance::getYzVkInstance()->getYzCommandPool()->getCommandPool(),
+                vkFreeCommandBuffers(Devices::instance()->getDevice(),
+                                     VulkanContext::getContext()->getCommandPool()->getCommandPool(),
                                      1, &m_CommandBuffer);
             }
         }
 
-        void YzVkCommandBuffer::init() {
+        void CommandBuffer::init() {
             VkCommandBufferAllocateInfo allocInfo = {};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            allocInfo.commandPool = YzVkInstance::getYzVkInstance()->getYzCommandPool()->getCommandPool();
+            allocInfo.commandPool = VulkanContext::getContext()->getCommandPool()->getCommandPool();
             allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             allocInfo.commandBufferCount = 1;
 
-            auto res = vkAllocateCommandBuffers(YzVkDevice::instance()->getDevice(), &allocInfo, &m_CommandBuffer);
+            auto res = vkAllocateCommandBuffers(Devices::instance()->getDevice(), &allocInfo, &m_CommandBuffer);
             if (res != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan Failed to allocate command buffers.");
             }
@@ -35,14 +35,14 @@ namespace Yare::Graphics {
             VkFenceCreateInfo fenceInfo = {};
             fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-            res = vkCreateFence(YzVkDevice::instance()->getDevice(), &fenceInfo, nullptr, &m_Fence);
+            res = vkCreateFence(Devices::instance()->getDevice(), &fenceInfo, nullptr, &m_Fence);
             if (res != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan Failed to create a fence");
             }
-            vkResetFences(YzVkDevice::instance()->getDevice(), 1, &m_Fence);
+            vkResetFences(Devices::instance()->getDevice(), 1, &m_Fence);
         }
 
-    void YzVkCommandBuffer::beginRecording() {
+    void CommandBuffer::beginRecording() {
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT; // Optional
@@ -54,7 +54,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void YzVkCommandBuffer::endRecording() {
+    void CommandBuffer::endRecording() {
         auto res = vkEndCommandBuffer(m_CommandBuffer);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to end recording command buffer.");

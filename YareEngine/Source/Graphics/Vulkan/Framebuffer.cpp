@@ -4,7 +4,7 @@
 
 namespace Yare::Graphics {
 
-    YzVkFramebuffer::YzVkFramebuffer(const FramebufferInfo& fbInfo) {
+    Framebuffer::Framebuffer(const FramebufferInfo& fbInfo) {
 
         VkFramebufferCreateInfo fbCreateInfo = {};
         fbCreateInfo.sType = fbInfo.type; // VK_STRUCTURE_TYPE_FB_CREATE_INFO;
@@ -15,15 +15,15 @@ namespace Yare::Graphics {
         fbCreateInfo.height = fbInfo.height;
         fbCreateInfo.layers = fbInfo.layers;
 
-        auto res = vkCreateFramebuffer(YzVkDevice::instance()->getDevice(), &fbCreateInfo, nullptr, &m_Framebuffer);
+        auto res = vkCreateFramebuffer(Devices::instance()->getDevice(), &fbCreateInfo, nullptr, &m_Framebuffer);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a fb");
         }
     }
 
-    YzVkFramebuffer::~YzVkFramebuffer() {
+    Framebuffer::~Framebuffer() {
         if (m_Framebuffer) {
-            vkDestroyFramebuffer(YzVkDevice::instance()->getDevice(), m_Framebuffer, nullptr);
+            vkDestroyFramebuffer(Devices::instance()->getDevice(), m_Framebuffer, nullptr);
         }
     }
 

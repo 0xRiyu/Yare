@@ -7,21 +7,24 @@
 
 namespace Yare::Graphics {
 
-    YzVkDevice::YzVkDevice() {
-        m_YzVkInstance = YzVkInstance::getYzVkInstance();
-        init();
+    Devices::Devices() {
     }
 
-    YzVkDevice::~YzVkDevice() {
+    Devices::~Devices() {
         if (m_Device) {
             vkDestroyDevice(m_Device, nullptr);
         }
         if (m_Surface) {
-            vkDestroySurfaceKHR(m_YzVkInstance->getVKInstance(), m_Surface, nullptr);
+            vkDestroySurfaceKHR(m_InstanceRef, m_Surface, nullptr);
         }
     }
 
-    void YzVkDevice::init() {
+    void Devices::init(VkInstance instance) {
+        if (m_Surface || m_Device || m_PhysicalDevice) {
+            YZ_INFO("Device has already been initialized.");
+            return;
+        }
+        m_InstanceRef = instance;
         // Surface must be created before picking a physical device
         createSurface();
         // Pick a Gpu that is suitable for rendering
@@ -30,29 +33,29 @@ namespace Yare::Graphics {
         createLogicalDevice();
     }
 
-    void YzVkDevice::waitIdle() {
+    void Devices::waitIdle() {
         vkDeviceWaitIdle(m_Device);
     }
 
-    void YzVkDevice::createSurface() {
+    void Devices::createSurface() {
 
         GLFWwindow* windowInstance = static_cast<GLFWwindow*>(Application::getAppInstance()->getWindow()->getNativeWindow());
 
-        if (glfwCreateWindowSurface(m_YzVkInstance->getVKInstance(), windowInstance, nullptr, &m_Surface) != VK_SUCCESS) {
+        if (glfwCreateWindowSurface(m_InstanceRef, windowInstance, nullptr, &m_Surface) != VK_SUCCESS) {
             YZ_CRITICAL("Could not create a window surface.");
         }
     }
 
-    void YzVkDevice::pickPhysicalDevice() {
+    void Devices::pickPhysicalDevice() {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(m_YzVkInstance->getVKInstance(), &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(m_InstanceRef, &deviceCount, nullptr);
 
         if (deviceCount == 0) {
             YZ_CRITICAL("Failed to find GPUs with Vulkan Support!");
         }
 
         std::vector<VkPhysicalDevice> devices(deviceCount);
-        vkEnumeratePhysicalDevices(m_YzVkInstance->getVKInstance(), &deviceCount, devices.data());
+        vkEnumeratePhysicalDevices(m_InstanceRef, &deviceCount, devices.data());
 
         for (const auto& device : devices) {
             if (isDeviceSuitable(device)) {
@@ -67,7 +70,7 @@ namespace Yare::Graphics {
         vkGetPhysicalDeviceProperties(m_PhysicalDevice, &m_PhysicalDeviceProperties);
     }
 
-    void YzVkDevice::createLogicalDevice() {
+    void Devices::createLogicalDevice() {
         QueueFamilyIndices indices = findQueueFamilies(m_PhysicalDevice);
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -110,7 +113,7 @@ namespace Yare::Graphics {
         vkGetDeviceQueue(m_Device, indices.presentFamily, 0, &m_PresentQueue);
     }
 
-    bool YzVkDevice::isDeviceSuitable(VkPhysicalDevice device) {
+    bool Devices::isDeviceSuitable(VkPhysicalDevice device) {
         QueueFamilyIndices indices = findQueueFamilies(device);
 
         bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -126,7 +129,7 @@ namespace Yare::Graphics {
         return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
     }
 
-    bool YzVkDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool Devices::checkDeviceExtensionSupport(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
@@ -142,7 +145,7 @@ namespace Yare::Graphics {
         return requiredExtensions.empty();
     }
 
-    QueueFamilyIndices YzVkDevice::findQueueFamilies(VkPhysicalDevice device) {
+    QueueFamilyIndices Devices::findQueueFamilies(VkPhysicalDevice device) {
         QueueFamilyIndices indices;
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -172,15 +175,15 @@ namespace Yare::Graphics {
         return indices;
     }
 
-    QueueFamilyIndices YzVkDevice::getQueueFamilyIndicies() {
+    QueueFamilyIndices Devices::getQueueFamilyIndicies() {
         return findQueueFamilies(m_PhysicalDevice);
     }
 
-    SwapChainSupportDetails YzVkDevice::getSwapChainSupport() {
+    SwapChainSupportDetails Devices::getSwapChainSupport() {
         return querySwapChainSupport(m_PhysicalDevice);
     }
 
-    SwapChainSupportDetails YzVkDevice::querySwapChainSupport(VkPhysicalDevice device) {
+    SwapChainSupportDetails Devices::querySwapChainSupport(VkPhysicalDevice device) {
         SwapChainSupportDetails details;
 
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, m_Surface, &details.capabilities);

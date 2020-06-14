@@ -11,7 +11,7 @@
 
 namespace Yare::Graphics {
 
-    ForwardRenderer::ForwardRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    ForwardRenderer::ForwardRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
 
         m_Meshes.emplace_back(std::make_shared<Mesh>("../Resources/Models/viking_room.obj"));
         m_Meshes.emplace_back(createMesh(PrimativeShape::CUBE));
@@ -59,7 +59,7 @@ namespace Yare::Graphics {
 
     }
 
-    void ForwardRenderer::init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    void ForwardRenderer::init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         for (auto material : m_Materials) {
             material->loadTextures();
         }
@@ -80,7 +80,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void ForwardRenderer::present(YzVkCommandBuffer* commandBuffer) {
+    void ForwardRenderer::present(CommandBuffer* commandBuffer) {
 
         int index = 0;
         if (GlobalSettings::instance()->displayModels) {
@@ -108,7 +108,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void ForwardRenderer::onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) {
+    void ForwardRenderer::onResize(RenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) {
         // Cleanup
         {
             if (m_UboDynamicData.model) {
@@ -126,8 +126,8 @@ namespace Yare::Graphics {
         createDescriptorSets();
     }
 
-    void ForwardRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass, uint32_t width, uint32_t height) {
-        YzVkShader shader("../Resources/Shaders", "texture_array.shader");
+    void ForwardRenderer::createGraphicsPipeline(RenderPass* renderPass, uint32_t width, uint32_t height) {
+        Shader shader("../Resources/Shaders", "texture_array.shader");
 
         PipelineInfo pInfo = {};
         pInfo.shader = &shader;
@@ -157,7 +157,7 @@ namespace Yare::Graphics {
                                                  MAX_NUM_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
         pInfo.layoutBindings = { projView, model, sampler };
 
-        m_Pipeline = new YzVkPipeline();
+        m_Pipeline = new Pipeline();
         m_Pipeline->init(pInfo);
     }
 
@@ -168,7 +168,7 @@ namespace Yare::Graphics {
         descriptorSetInfo.pipeline = m_Pipeline;
 
         // First create the descriptor set, but the buffers are empty
-        m_DescriptorSet = new YzVkDescriptorSet();
+        m_DescriptorSet = new DescriptorSet();
         m_DescriptorSet->init(descriptorSetInfo);
 
 
@@ -223,7 +223,7 @@ namespace Yare::Graphics {
         VkDeviceSize viewBufferSize = sizeof(UniformVS);
 
         m_DynamicAlignment = sizeof(glm::mat4);
-        auto minUboAlignment = YzVkDevice::instance()->getGPUProperties().limits.minUniformBufferOffsetAlignment;
+        auto minUboAlignment = Devices::instance()->getGPUProperties().limits.minUniformBufferOffsetAlignment;
         if (minUboAlignment > 0) {
             m_DynamicAlignment = (m_DynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
         }
@@ -231,8 +231,8 @@ namespace Yare::Graphics {
         VkDeviceSize dynamicBufferSize = MAX_OBJECTS * m_DynamicAlignment;
         m_UboDynamicData.model = (glm::mat4*)alignedAlloc(dynamicBufferSize, m_DynamicAlignment);
 
-        m_UniformBuffers.view = new YzVkBuffer(BufferUsage::UNIFORM, viewBufferSize, nullptr);
-        m_UniformBuffers.dynamic = new YzVkBuffer(BufferUsage::DYNAMIC, dynamicBufferSize, nullptr);
+        m_UniformBuffers.view = new Buffer(BufferUsage::UNIFORM, viewBufferSize, nullptr);
+        m_UniformBuffers.dynamic = new Buffer(BufferUsage::DYNAMIC, dynamicBufferSize, nullptr);
     }
 
     void ForwardRenderer::updateUniformBuffers(uint32_t index, const Transform& transform) {

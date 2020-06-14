@@ -17,17 +17,17 @@ namespace Yare::Graphics {
                             TRANSFER
     };
 
-    class YzVkBuffer {
+    class Buffer {
     public:
-        YzVkBuffer();
-        YzVkBuffer(BufferUsage usage, size_t size, const void* data);
-        ~YzVkBuffer();
+        Buffer();
+        Buffer(BufferUsage usage, size_t size, const void* data);
+        ~Buffer();
 
         void init(BufferUsage usage, size_t size, const void* data);
         void setData(size_t size, const void* data, uint64_t offset = 0);
         void setDynamicData(size_t size, const void* data, uint64_t offset = 0);
-        void bindIndex(YzVkCommandBuffer* commandBuffer, VkIndexType type);
-        void bindVertex(YzVkCommandBuffer* commandBuffer, VkDeviceSize offset);
+        void bindIndex(CommandBuffer* commandBuffer, VkIndexType type);
+        void bindVertex(CommandBuffer* commandBuffer, VkDeviceSize offset);
         void flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         bool mapMemory(VkDeviceSize size, VkDeviceSize offset);
         void unmapMemory();

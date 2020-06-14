@@ -4,21 +4,21 @@
 
 namespace Yare::Graphics {
 
-    YzVkSemaphore::YzVkSemaphore() {
+    Semaphore::Semaphore() {
         init();
     }
 
-    YzVkSemaphore::~YzVkSemaphore() {
+    Semaphore::~Semaphore() {
         if (m_Semaphore) {
-            vkDestroySemaphore(Graphics::YzVkDevice::instance()->getDevice(), m_Semaphore, nullptr);
+            vkDestroySemaphore(Devices::instance()->getDevice(), m_Semaphore, nullptr);
         }
     }
 
-    void YzVkSemaphore::init() {
+    void Semaphore::init() {
         VkSemaphoreCreateInfo sInfo = {};
         sInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        auto res = vkCreateSemaphore(Graphics::YzVkDevice::instance()->getDevice(), &sInfo, nullptr, &m_Semaphore);
+        auto res = vkCreateSemaphore(Devices::instance()->getDevice(), &sInfo, nullptr, &m_Semaphore);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a semaphore");
         }

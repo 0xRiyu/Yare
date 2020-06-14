@@ -6,10 +6,10 @@
 #include <vector>
 
 namespace Yare::Graphics {
-    class YzVkSwapchain {
+    class Swapchain {
     public:
-        YzVkSwapchain(size_t width, size_t height);
-        ~YzVkSwapchain();
+        Swapchain(size_t width, size_t height);
+        ~Swapchain();
 
         VkResult present(VkSemaphore waitSemaphore);
         VkResult acquireNextImage(VkSemaphore signalSemaphore);

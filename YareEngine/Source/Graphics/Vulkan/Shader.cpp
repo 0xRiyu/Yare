@@ -13,24 +13,24 @@ namespace Yare::Graphics {
     }
 
 
-    YzVkShader::YzVkShader(const std::string& filePath, const std::string& shaderName)
+    Shader::Shader(const std::string& filePath, const std::string& shaderName)
         :m_ShaderStages(nullptr), m_ShaderName(shaderName), m_FilePath(filePath) {
         m_ShaderSource = Utilities::readFile(filePath + "/" + shaderName);
         readShaderFiles();
     }
 
-    YzVkShader::~YzVkShader() {
+    Shader::~Shader() {
         unloadModules();
         delete[] m_ShaderStages;
     }
 
-    void YzVkShader::unloadModules() {
+    void Shader::unloadModules() {
         for (uint8_t i = 0; i < m_StageCount; i++) {
-            vkDestroyShaderModule(YzVkDevice::instance()->getDevice(), m_ShaderStages[i].module, nullptr);
+            vkDestroyShaderModule(Devices::instance()->getDevice(), m_ShaderStages[i].module, nullptr);
         }
     }
 
-    void YzVkShader::readShaderFiles() {
+    void Shader::readShaderFiles() {
         m_StageCount = 0;
         uint32_t currentShaderStage = 0;
 
@@ -91,7 +91,7 @@ namespace Yare::Graphics {
             m_ShaderStages[currentShaderStage].stage = static_cast<VkShaderStageFlagBits>(file.first);
             m_ShaderStages[currentShaderStage].pName = "main";
 
-            auto res = vkCreateShaderModule(YzVkDevice::instance()->getDevice(), &createInfo,
+            auto res = vkCreateShaderModule(Devices::instance()->getDevice(), &createInfo,
                                             nullptr, &m_ShaderStages[currentShaderStage].module);
             if (res != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan was unable to create a shaderModule with provided shader code.");

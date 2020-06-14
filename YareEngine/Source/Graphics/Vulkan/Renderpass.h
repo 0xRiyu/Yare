@@ -6,20 +6,20 @@
 
 namespace Yare::Graphics {
     // Forward declaration
-    class YzVkFramebuffer;
+    class Framebuffer;
 
     struct RenderPassInfo {
         VkFormat imageFormat;
         VkExtent2D extent;
     };
 
-    class YzVkRenderPass {
+    class RenderPass {
     public:
-        YzVkRenderPass(const RenderPassInfo& info);
-        ~YzVkRenderPass();
+        RenderPass(const RenderPassInfo& info);
+        ~RenderPass();
 
-        void beginRenderPass(const YzVkCommandBuffer* commandBuffer, const YzVkFramebuffer* frameBuffer);
-        void endRenderPass(const YzVkCommandBuffer* commandBuffer);
+        void beginRenderPass(const CommandBuffer* commandBuffer, const Framebuffer* frameBuffer);
+        void endRenderPass(const CommandBuffer* commandBuffer);
 
         const VkRenderPass& getRenderPass() const { return m_RenderPass; }
     private:

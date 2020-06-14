@@ -13,15 +13,15 @@ namespace Yare::Graphics {
 
     class ImGuiRenderer : public YzRenderer {
     public:
-        ImGuiRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
+        ImGuiRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         ~ImGuiRenderer();
         void prepareScene() override;
-        void present(YzVkCommandBuffer* commandBuffer) override;
-        void onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
+        void present(CommandBuffer* commandBuffer) override;
+        void onResize(RenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) override;
 
     private:
-        void init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
-        void createGraphicsPipeline(YzVkRenderPass* renderPass);
+        void init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) override;
+        void createGraphicsPipeline(RenderPass* renderPass);
         void createDescriptorSet();
         void newFrame();
         void postFrame();
@@ -32,11 +32,11 @@ namespace Yare::Graphics {
             glm::vec2 translate = {};
         } m_PushConstBlock;
 
-        YzVkImage* m_Font;
-        YzVkPipeline* m_Pipeline;
-        YzVkBuffer* m_IndexBuffer = nullptr;
-        YzVkBuffer* m_VertexBuffer = nullptr;
-        YzVkDescriptorSet* m_DescriptorSet;
+        Image* m_Font;
+        Pipeline* m_Pipeline;
+        Buffer* m_IndexBuffer = nullptr;
+        Buffer* m_VertexBuffer = nullptr;
+        DescriptorSet* m_DescriptorSet;
     };
 
 }

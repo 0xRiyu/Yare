@@ -3,23 +3,23 @@
 #include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
-    YzVkBuffer::YzVkBuffer() {
+    Buffer::Buffer() {
     }
 
-    YzVkBuffer::YzVkBuffer(BufferUsage usage, size_t size, const void* data) {
+    Buffer::Buffer(BufferUsage usage, size_t size, const void* data) {
         init(usage, size, data);
     }
 
-    YzVkBuffer::~YzVkBuffer() {
+    Buffer::~Buffer() {
         if (m_Buffer) {
-            vkDestroyBuffer(YzVkDevice::instance()->getDevice(), m_Buffer, nullptr);
+            vkDestroyBuffer(Devices::instance()->getDevice(), m_Buffer, nullptr);
             if (m_BufferMemory) {
-                vkFreeMemory(YzVkDevice::instance()->getDevice(), m_BufferMemory, nullptr);
+                vkFreeMemory(Devices::instance()->getDevice(), m_BufferMemory, nullptr);
             }
         }
     }
 
-    void YzVkBuffer::init(BufferUsage usage, size_t size, const void* data) {
+    void Buffer::init(BufferUsage usage, size_t size, const void* data) {
         m_Size = size;
         m_Usage = usage;
         VkBufferUsageFlags usageFlags;
@@ -63,7 +63,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void YzVkBuffer::setData(size_t size, const void* data, uint64_t offset) {
+    void Buffer::setData(size_t size, const void* data, uint64_t offset) {
         if (mapMemory(size, 0)) {
             auto p = static_cast<char*>(m_MappedData) + offset;
             memcpy((void*)p, data, size);
@@ -74,7 +74,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void YzVkBuffer::setDynamicData(size_t size, const void* data, uint64_t offset) {
+    void Buffer::setDynamicData(size_t size, const void* data, uint64_t offset) {
         if (mapMemory(VK_WHOLE_SIZE, 0)) {
             auto p = static_cast<char*>(m_MappedData) + offset;
             memcpy(p, data, size);
@@ -86,7 +86,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void YzVkBuffer::bindIndex(YzVkCommandBuffer* commandBuffer, VkIndexType type) {
+    void Buffer::bindIndex(CommandBuffer* commandBuffer, VkIndexType type) {
         // Check that the index buffer bit was set inside the usageflags before binding
         if (m_Usage == BufferUsage::INDEX || m_Usage == BufferUsage::DYNAMIC_INDEX) {
             vkCmdBindIndexBuffer(commandBuffer->getCommandBuffer(), m_Buffer, 0, type);
@@ -96,7 +96,7 @@ namespace Yare::Graphics {
 
     }
 
-    void YzVkBuffer::bindVertex(YzVkCommandBuffer* commandBuffer, VkDeviceSize offset) {
+    void Buffer::bindVertex(CommandBuffer* commandBuffer, VkDeviceSize offset) {
         // check that the vertex buffer bit was set inside the usageFlags before binding
         if (m_Usage == BufferUsage::VERTEX || m_Usage == BufferUsage::DYNAMIC_VERTEX) {
             VkDeviceSize offset = 0;
@@ -106,8 +106,8 @@ namespace Yare::Graphics {
         }
     }
 
-    bool YzVkBuffer::mapMemory(VkDeviceSize size, VkDeviceSize offset) {
-        auto res = vkMapMemory(YzVkDevice::instance()->getDevice(), m_BufferMemory, offset, size, 0, &m_MappedData);
+    bool Buffer::mapMemory(VkDeviceSize size, VkDeviceSize offset) {
+        auto res = vkMapMemory(Devices::instance()->getDevice(), m_BufferMemory, offset, size, 0, &m_MappedData);
         if (res != VK_SUCCESS) {
             YZ_ERROR("Failed to map buffer memory");
             return false;
@@ -115,44 +115,44 @@ namespace Yare::Graphics {
         return true;
     }
 
-    void YzVkBuffer::unmapMemory() {
-        vkUnmapMemory(YzVkDevice::instance()->getDevice(), m_BufferMemory);
+    void Buffer::unmapMemory() {
+        vkUnmapMemory(Devices::instance()->getDevice(), m_BufferMemory);
     }
 
-    void YzVkBuffer::flush(VkDeviceSize size, VkDeviceSize offset) {
+    void Buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
         VkMappedMemoryRange mappedRange = {};
         mappedRange.sType =  VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
         mappedRange.memory = m_BufferMemory;
         mappedRange.offset = offset;
         mappedRange.size = size;
-        vkFlushMappedMemoryRanges(YzVkDevice::instance()->getDevice(), 1, &mappedRange);
+        vkFlushMappedMemoryRanges(Devices::instance()->getDevice(), 1, &mappedRange);
     }
 
-    void YzVkBuffer::createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags props) {
+    void Buffer::createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags props) {
         VkBufferCreateInfo bufferInfo = {};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferInfo.size = m_Size;
         bufferInfo.usage = usage;
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        auto res = vkCreateBuffer(YzVkDevice::instance()->getDevice(), &bufferInfo, nullptr, &m_Buffer);
+        auto res = vkCreateBuffer(Devices::instance()->getDevice(), &bufferInfo, nullptr, &m_Buffer);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan was unable to create a buffer.");
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(YzVkDevice::instance()->getDevice(), m_Buffer, &memRequirements);
+        vkGetBufferMemoryRequirements(Devices::instance()->getDevice(), m_Buffer, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
         allocInfo.memoryTypeIndex = VkUtil::findMemoryType(memRequirements.memoryTypeBits, props);
 
-        res = vkAllocateMemory(YzVkDevice::instance()->getDevice(), &allocInfo, nullptr, &m_BufferMemory);
+        res = vkAllocateMemory(Devices::instance()->getDevice(), &allocInfo, nullptr, &m_BufferMemory);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to allocate buffer memory!");
         }
 
-        vkBindBufferMemory(YzVkDevice::instance()->getDevice(), m_Buffer, m_BufferMemory, 0);
+        vkBindBufferMemory(Devices::instance()->getDevice(), m_Buffer, m_BufferMemory, 0);
     }
 }

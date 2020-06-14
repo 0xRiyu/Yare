@@ -49,9 +49,8 @@ set (YARE_ENGINE_SOURCES
     Source/Graphics/Vulkan/Image.cpp
     Source/Graphics/Vulkan/Buffer.cpp
     Source/Graphics/Vulkan/Shader.cpp
+    Source/Graphics/Vulkan/Context.cpp
     Source/Graphics/Vulkan/Devices.cpp
-    Source/Graphics/Vulkan/Instance.cpp
-    Source/Graphics/Vulkan/Renderer.cpp
     Source/Graphics/Vulkan/Pipeline.cpp
     Source/Graphics/Vulkan/Swapchain.cpp
     Source/Graphics/Vulkan/Utilities.cpp
@@ -113,10 +112,9 @@ set (YARE_ENGINE_HEADERS
     Source/Graphics/Vulkan/Image.h
     Source/Graphics/Vulkan/Buffer.h
     Source/Graphics/Vulkan/Shader.h
+    Source/Graphics/Vulkan/Context.h
     Source/Graphics/Vulkan/Devices.h
     Source/Graphics/Vulkan/Pipeline.h
-    Source/Graphics/Vulkan/Instance.h
-    Source/Graphics/Vulkan/Renderer.h
     Source/Graphics/Vulkan/Swapchain.h
     Source/Graphics/Vulkan/Utilities.h
     Source/Graphics/Vulkan/Semaphore.h

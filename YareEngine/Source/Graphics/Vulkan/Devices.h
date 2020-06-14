@@ -3,7 +3,6 @@
 
 #include "Utilities/T_Singleton.h"
 #include "Graphics/Vulkan/Vk.h"
-#include "Graphics/Vulkan/Instance.h"
 
 #include <vector>
 
@@ -24,12 +23,12 @@ namespace Yare::Graphics {
         std::vector<VkPresentModeKHR> presentModes;
     };
 
-    class YzVkDevice : public Utilities::T_Singleton<YzVkDevice> {
+    class Devices : public Utilities::T_Singleton<Devices> {
 
     public:
-        YzVkDevice();
-        ~YzVkDevice();
-        void init();
+        Devices();
+        ~Devices();
+        void init(VkInstance instance);
 
         void waitIdle();
 
@@ -38,7 +37,6 @@ namespace Yare::Graphics {
         const VkPhysicalDevice& getGPU()        const { return m_PhysicalDevice; }
         const VkQueue& getGraphicsQueue()       const { return m_GraphicsQueue; }
         const VkQueue& getPresentQueue()        const { return m_PresentQueue; }
-        const YzVkInstance* getYzVkInstance()   const { return m_YzVkInstance; }
         const VkPhysicalDeviceProperties& getGPUProperties() const { return m_PhysicalDeviceProperties; }
 
         QueueFamilyIndices getQueueFamilyIndicies();
@@ -61,7 +59,7 @@ namespace Yare::Graphics {
         VkQueue m_GraphicsQueue             = VK_NULL_HANDLE;
         VkQueue m_PresentQueue              = VK_NULL_HANDLE;
 
-        YzVkInstance* m_YzVkInstance;
+        VkInstance m_InstanceRef = VK_NULL_HANDLE;
 
         const std::vector<const char*> m_DeviceExtensions{
                                                           VK_KHR_SWAPCHAIN_EXTENSION_NAME

@@ -5,10 +5,10 @@
 
 namespace Yare::Graphics {
 
-    class YzVkSemaphore {
+    class Semaphore {
     public:
-        YzVkSemaphore();
-        ~YzVkSemaphore();
+        Semaphore();
+        ~Semaphore();
 
         void init();
 

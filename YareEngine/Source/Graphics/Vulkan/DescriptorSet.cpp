@@ -4,13 +4,13 @@
 
 namespace Yare::Graphics {
 
-    YzVkDescriptorSet::YzVkDescriptorSet() {
+    DescriptorSet::DescriptorSet() {
     }
 
-    YzVkDescriptorSet::~YzVkDescriptorSet() {
+    DescriptorSet::~DescriptorSet() {
     }
 
-    void YzVkDescriptorSet::init(const DescriptorSetInfo& descriptorSetInfo) {
+    void DescriptorSet::init(const DescriptorSetInfo& descriptorSetInfo) {
 
         VkDescriptorSetAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -19,13 +19,13 @@ namespace Yare::Graphics {
         allocInfo.pSetLayouts = &descriptorSetInfo.pipeline->getDescriptorSetLayout();
 
         //This wont need to be cleaned up because it is auto cleaned up when the pool is destroyed
-        auto res = vkAllocateDescriptorSets(YzVkDevice::instance()->getDevice(), &allocInfo, &m_DescriptorSets);
+        auto res = vkAllocateDescriptorSets(Devices::instance()->getDevice(), &allocInfo, &m_DescriptorSets);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan was unable to allocate descriptor sets.");
         }
     }
 
-    void YzVkDescriptorSet::update(std::vector<BufferInfo>& newBufferInfo) {
+    void DescriptorSet::update(std::vector<BufferInfo>& newBufferInfo) {
 
         std::vector<VkWriteDescriptorSet> descriptorWrites = {};
 
@@ -75,7 +75,7 @@ namespace Yare::Graphics {
                 bufferIndex++;
             }
         }
-        vkUpdateDescriptorSets(YzVkDevice::instance()->getDevice(),
+        vkUpdateDescriptorSets(Devices::instance()->getDevice(),
                                static_cast<uint32_t>(descriptorWrites.size()),
                                descriptorWrites.data(), 0, nullptr);
     }

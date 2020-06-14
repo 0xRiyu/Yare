@@ -5,31 +5,31 @@
 
 namespace Yare::Graphics {
 
-    YzVkSwapchain::YzVkSwapchain(size_t width, size_t height) {
+    Swapchain::Swapchain(size_t width, size_t height) {
         init(width, height);
     }
 
-    YzVkSwapchain::~YzVkSwapchain() {
+    Swapchain::~Swapchain() {
         for (auto& imageView : m_SwapchainImageViews) {
-            vkDestroyImageView(YzVkDevice::instance()->getDevice(), imageView, nullptr);
+            vkDestroyImageView(Devices::instance()->getDevice(), imageView, nullptr);
         }
 
         if (m_Swapchain) {
-            vkDestroySwapchainKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, nullptr);
+            vkDestroySwapchainKHR(Devices::instance()->getDevice(), m_Swapchain, nullptr);
         }
     }
 
-    void YzVkSwapchain::onResize(size_t width, size_t height) {
+    void Swapchain::onResize(size_t width, size_t height) {
         //Cleanup
         {
             for (auto& imageView : m_SwapchainImageViews) {
-                vkDestroyImageView(YzVkDevice::instance()->getDevice(), imageView, nullptr);
+                vkDestroyImageView(Devices::instance()->getDevice(), imageView, nullptr);
             }
         }
         init(width, height);
     }
 
-    void YzVkSwapchain::init(size_t width, size_t height) {
+    void Swapchain::init(size_t width, size_t height) {
         // Create a swapchain, a swapchain is responsible for maintaining the images
         // that will be presented to the user.
         createSwapchain(width, height);
@@ -38,7 +38,7 @@ namespace Yare::Graphics {
         createImageViews();
     }
 
-    VkResult YzVkSwapchain::present(VkSemaphore waitSemaphore) {
+    VkResult Swapchain::present(VkSemaphore waitSemaphore) {
         VkPresentInfoKHR presentInfo = {};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -48,16 +48,16 @@ namespace Yare::Graphics {
         presentInfo.pSwapchains = &m_Swapchain;
         presentInfo.pImageIndices = &m_CurrentImage;
         presentInfo.pResults = nullptr; // Optional
-        return vkQueuePresentKHR(YzVkDevice::instance()->getPresentQueue(), &presentInfo);
+        return vkQueuePresentKHR(Devices::instance()->getPresentQueue(), &presentInfo);
     }
 
-    VkResult YzVkSwapchain::acquireNextImage(VkSemaphore signalSemaphore) {
-        return vkAcquireNextImageKHR(YzVkDevice::instance()->getDevice(), m_Swapchain, UINT64_MAX,
+    VkResult Swapchain::acquireNextImage(VkSemaphore signalSemaphore) {
+        return vkAcquireNextImageKHR(Devices::instance()->getDevice(), m_Swapchain, UINT64_MAX,
                                      signalSemaphore, VK_NULL_HANDLE, &m_CurrentImage);
     }
 
-    void YzVkSwapchain::createSwapchain(size_t width, size_t height) {
-        auto YzVkDeviceinstance = YzVkDevice::instance();
+    void Swapchain::createSwapchain(size_t width, size_t height) {
+        auto YzVkDeviceinstance = Devices::instance();
 
         SwapChainSupportDetails swapChainSupport = YzVkDeviceinstance->getSwapChainSupport();
 
@@ -123,7 +123,7 @@ namespace Yare::Graphics {
         m_SwapchainExtent = extent;
     }
 
-    void YzVkSwapchain::createImageViews() {
+    void Swapchain::createImageViews() {
         m_SwapchainImageViews.resize(getImagesSize());
 
         for (uint32_t i = 0; i < getImagesSize(); i++) {
@@ -132,7 +132,7 @@ namespace Yare::Graphics {
         }
     }
 
-    VkSurfaceFormatKHR YzVkSwapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+    VkSurfaceFormatKHR Swapchain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
         for (const auto& availableFormat : availableFormats) {
             if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM &&
                 availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
@@ -142,7 +142,7 @@ namespace Yare::Graphics {
         return availableFormats[0];
     }
 
-    VkPresentModeKHR YzVkSwapchain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+    VkPresentModeKHR Swapchain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
         for (const auto& availablePresentMode : availablePresentModes) {
             if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR ||
                 availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
@@ -152,7 +152,7 @@ namespace Yare::Graphics {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D YzVkSwapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities,
+    VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities,
                                                size_t width, size_t height) {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;

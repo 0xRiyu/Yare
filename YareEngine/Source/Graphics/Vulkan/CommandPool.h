@@ -4,10 +4,10 @@
 #include "Graphics/Vulkan/Vk.h"
 
 namespace Yare::Graphics {
-    class YzVkCommandPool {
+    class CommandPool {
     public:
-        YzVkCommandPool();
-        ~YzVkCommandPool();
+        CommandPool();
+        ~CommandPool();
 
         void init();
         const VkCommandPool& getCommandPool() const { return m_CommandPool; }

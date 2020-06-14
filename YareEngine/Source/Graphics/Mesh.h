@@ -13,14 +13,14 @@ namespace Yare::Graphics {
         Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
         virtual ~Mesh();
 
-        YzVkBuffer* getIndexBuffer() const { return m_IndexBuffer; }
-        YzVkBuffer* getVertexBuffer() const { return m_VertexBuffer; }
+        Buffer* getIndexBuffer() const { return m_IndexBuffer; }
+        Buffer* getVertexBuffer() const { return m_VertexBuffer; }
 
     protected:
         void createBuffers(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
 
-        YzVkBuffer* m_VertexBuffer;
-        YzVkBuffer* m_IndexBuffer;
+        Buffer* m_VertexBuffer;
+        Buffer* m_IndexBuffer;
         std::string m_FilePath;
     };
 }

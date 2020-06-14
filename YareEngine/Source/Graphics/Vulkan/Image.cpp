@@ -8,43 +8,43 @@
 
 namespace Yare::Graphics {
 
-    YzVkImage::~YzVkImage() {
+    Image::~Image() {
         if (m_ImageView) {
-            vkDestroyImageView(Graphics::YzVkDevice::instance()->getDevice(), m_ImageView, nullptr);
+            vkDestroyImageView(Devices::instance()->getDevice(), m_ImageView, nullptr);
         }
         if (m_Image) {
-            vkDestroyImage(Graphics::YzVkDevice::instance()->getDevice(), m_Image, nullptr);
+            vkDestroyImage(Devices::instance()->getDevice(), m_Image, nullptr);
         }
         if (m_ImageMemory) {
-            vkFreeMemory(Graphics::YzVkDevice::instance()->getDevice(), m_ImageMemory, nullptr);
+            vkFreeMemory(Devices::instance()->getDevice(), m_ImageMemory, nullptr);
         }
         if (m_Sampler) {
-            vkDestroySampler(Graphics::YzVkDevice::instance()->getDevice(), m_Sampler, nullptr);
+            vkDestroySampler(Devices::instance()->getDevice(), m_Sampler, nullptr);
         }
     }
 
-    void YzVkImage::createTexture2DFromFile(const std::string& filePath) {
-        YzVkBuffer stagingBuffer;
+    void Image::createTexture2DFromFile(const std::string& filePath) {
+        Buffer stagingBuffer;
         loadTextureFromFileIntoBuffer(filePath, stagingBuffer);
         createTexture2D(stagingBuffer, VK_FORMAT_R8G8B8A8_SRGB);
         createSampler(VK_SAMPLER_ADDRESS_MODE_REPEAT);
     }
 
-    void YzVkImage::createTextureCubeFromFile(const std::string& filePath) {
-        YzVkBuffer stagingBuffer;
+    void Image::createTextureCubeFromFile(const std::string& filePath) {
+        Buffer stagingBuffer;
         loadTextureFromFileIntoBuffer(filePath, stagingBuffer);
         createTextureCube(stagingBuffer);
         createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
-    void YzVkImage::createTextureCubeFromFiles(const std::vector<std::string>& filePaths) {
-        YzVkBuffer stagingBuffer;
+    void Image::createTextureCubeFromFiles(const std::vector<std::string>& filePaths) {
+        Buffer stagingBuffer;
         loadTexturesFromFilesIntoBuffer(filePaths, stagingBuffer);
         createTextureCube(stagingBuffer);
         createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
-    void YzVkImage::createEmptyTexture(size_t width, size_t height, VkFormat format,
+    void Image::createEmptyTexture(size_t width, size_t height, VkFormat format,
                                        VkImageTiling tiling, VkImageUsageFlags usage,
                                        VkMemoryPropertyFlags properties, VkImageAspectFlagBits flagBits) {
         m_TextureWidth = width;
@@ -53,19 +53,19 @@ namespace Yare::Graphics {
         m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, format, 1, flagBits);
     }
 
-    void YzVkImage::createTexture2DFromData(size_t width, size_t height, VkFormat format, unsigned char* data) {
+    void Image::createTexture2DFromData(size_t width, size_t height, VkFormat format, unsigned char* data) {
         m_TextureWidth = width;
         m_TextureHeight = height;
         VkDeviceSize imageSize = width * height * 4 * sizeof(char);
 
-        YzVkBuffer stagingBuffer;
+        Buffer stagingBuffer;
         stagingBuffer.init(BufferUsage::TRANSFER, imageSize, data);
 
         createTexture2D(stagingBuffer, format);
         createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
-    void YzVkImage::loadTextureFromFileIntoBuffer(const std::string& filePath, YzVkBuffer& buffer) {
+    void Image::loadTextureFromFileIntoBuffer(const std::string& filePath, Buffer& buffer) {
 
         int texWidth, texHeight, texChannels;
         stbi_uc* pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -83,8 +83,8 @@ namespace Yare::Graphics {
         stbi_image_free(pixels);
     }
 
-    void YzVkImage::loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths,
-                                                    YzVkBuffer& buffer) {
+    void Image::loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths,
+                                                    Buffer& buffer) {
         // allocate some memory for us to store our images in sequence
         // width * height * r/g/b/a * 20 images
         uint32_t max_size = 2048 * 2048 * 4 * 20;
@@ -122,7 +122,7 @@ namespace Yare::Graphics {
         buffer.init(BufferUsage::TRANSFER, total_images_size, images);
     }
 
-    void YzVkImage::createTexture2D(const YzVkBuffer& buffer, VkFormat format) {
+    void Image::createTexture2D(const Buffer& buffer, VkFormat format) {
         createImage(VK_IMAGE_TYPE_2D, format,
                     VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     0,
@@ -138,7 +138,7 @@ namespace Yare::Graphics {
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
-    void YzVkImage::createTextureCube(const YzVkBuffer& buffer) {
+    void Image::createTextureCube(const Buffer& buffer) {
         createImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
                     VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
                     VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
@@ -156,7 +156,7 @@ namespace Yare::Graphics {
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
-    void YzVkImage::transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout,
+    void Image::transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout,
                                           VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -208,7 +208,7 @@ namespace Yare::Graphics {
         VkUtil::endSingleTimeCommands(commandBuffer);
     }
 
-    void YzVkImage::copyBufferToImage(const YzVkBuffer& buffer, uint32_t faces, uint32_t mipLevels) {
+    void Image::copyBufferToImage(const Buffer& buffer, uint32_t faces, uint32_t mipLevels) {
 
         std::vector<VkBufferImageCopy> bufferCopyRegions;
 
@@ -238,7 +238,7 @@ namespace Yare::Graphics {
         VkUtil::endSingleTimeCommands(commandBuffer);
     }
 
-    void YzVkImage::createImage(VkImageType type, VkFormat format, VkImageTiling tiling,
+    void Image::createImage(VkImageType type, VkFormat format, VkImageTiling tiling,
                                 VkImageUsageFlags usage, VkImageCreateFlags flags,
                                 VkMemoryPropertyFlags properties) {
         VkImageCreateInfo imageInfo = {};
@@ -262,28 +262,28 @@ namespace Yare::Graphics {
             imageInfo.arrayLayers = 1;
         }
 
-        if (vkCreateImage(Graphics::YzVkDevice::instance()->getDevice(), &imageInfo, nullptr, &m_Image) != VK_SUCCESS) {
+        if (vkCreateImage(Devices::instance()->getDevice(), &imageInfo, nullptr, &m_Image) != VK_SUCCESS) {
             YZ_CRITICAL("Failed to create an image.");
         }
 
         VkMemoryRequirements memRequirements;
-        vkGetImageMemoryRequirements(Graphics::YzVkDevice::instance()->getDevice(), m_Image, &memRequirements);
+        vkGetImageMemoryRequirements(Devices::instance()->getDevice(), m_Image, &memRequirements);
 
         VkMemoryAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = Graphics::VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        allocInfo.memoryTypeIndex = VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        if (vkAllocateMemory(Graphics::YzVkDevice::instance()->getDevice(), &allocInfo, nullptr, &m_ImageMemory) != VK_SUCCESS) {
+        if (vkAllocateMemory(Devices::instance()->getDevice(), &allocInfo, nullptr, &m_ImageMemory) != VK_SUCCESS) {
             YZ_CRITICAL("failed to allocate image memory!");
         }
 
-        if (vkBindImageMemory(Graphics::YzVkDevice::instance()->getDevice(), m_Image, m_ImageMemory, 0) != VK_SUCCESS) {
+        if (vkBindImageMemory(Devices::instance()->getDevice(), m_Image, m_ImageMemory, 0) != VK_SUCCESS) {
             YZ_ERROR("Failed to bind image memory");
         }
     }
 
-    void YzVkImage::createSampler(VkSamplerAddressMode mode) {
+    void Image::createSampler(VkSamplerAddressMode mode) {
         VkSamplerCreateInfo samplerInfo = {};
         samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
         samplerInfo.magFilter = VK_FILTER_LINEAR;
@@ -302,33 +302,33 @@ namespace Yare::Graphics {
         samplerInfo.minLod = 0.0f;
         samplerInfo.maxLod = 0.0f;
 
-        if (vkCreateSampler(Graphics::YzVkDevice::instance()->getDevice(), &samplerInfo, nullptr, &m_Sampler) != VK_SUCCESS) {
+        if (vkCreateSampler(Devices::instance()->getDevice(), &samplerInfo, nullptr, &m_Sampler) != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a sampler.");
         }
     }
 
-    YzVkImage* YzVkImage::createDepthStencilBuffer(size_t width, size_t height, VkFormat format) {
-        YzVkImage* image = new YzVkImage();
+    Image* Image::createDepthStencilBuffer(size_t width, size_t height, VkFormat format) {
+        Image* image = new Image();
         image->createEmptyTexture(width, height, format, VK_IMAGE_TILING_OPTIMAL,
                                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
                                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
         return image;
     }
 
-    YzVkImage* YzVkImage::createTexture2D(size_t width, size_t height, VkFormat format, unsigned char* data) {
-        YzVkImage* image = new YzVkImage();
+    Image* Image::createTexture2D(size_t width, size_t height, VkFormat format, unsigned char* data) {
+        Image* image = new Image();
         image->createTexture2DFromData(width, height, format, data);
         return image;
     }
 
-    YzVkImage* YzVkImage::createTexture2D(const std::string& filePath) {
-        YzVkImage* image = new YzVkImage();
+    Image* Image::createTexture2D(const std::string& filePath) {
+        Image* image = new Image();
         image->createTexture2DFromFile(filePath);
         return image;
     }
 
-    YzVkImage* YzVkImage::createTextureCube(const std::vector<std::string>& filePaths) {
-        YzVkImage* image = new YzVkImage();
+    Image* Image::createTextureCube(const std::vector<std::string>& filePaths) {
+        Image* image = new Image();
         if (filePaths.empty()) {
             YZ_ERROR("Texture Cube filepaths vector is empty.");
         }

@@ -29,11 +29,11 @@ namespace Yare::Graphics {
         // Vertex Buffers
         VkDeviceSize bufferSize = sizeof(Vertex) * vertices.size();
 
-        m_VertexBuffer = new YzVkBuffer(BufferUsage::VERTEX, (size_t)bufferSize, vertices.data());
+        m_VertexBuffer = new Buffer(BufferUsage::VERTEX, (size_t)bufferSize, vertices.data());
 
         // Index Buffers
         bufferSize = sizeof(indices[0]) * indices.size();
 
-        m_IndexBuffer = new YzVkBuffer(BufferUsage::INDEX, (size_t)bufferSize, indices.data());
+        m_IndexBuffer = new Buffer(BufferUsage::INDEX, (size_t)bufferSize, indices.data());
     }
 }

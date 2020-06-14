@@ -7,11 +7,10 @@
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_vulkan.h"
 
-#include "Graphics/Vulkan/Instance.h"
 #include "Graphics/Vulkan/Devices.h"
 
 namespace Yare::Graphics {
-    ImGuiRenderer::ImGuiRenderer(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    ImGuiRenderer::ImGuiRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         init(renderPass, windowWidth, windowHeight);
     }
 
@@ -22,7 +21,7 @@ namespace Yare::Graphics {
         delete m_VertexBuffer;
     }
 
-    void ImGuiRenderer::init(YzVkRenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
+    void ImGuiRenderer::init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
 
         ImGui::StyleColorsDark();
         // Color scheme
@@ -42,8 +41,8 @@ namespace Yare::Graphics {
         createDescriptorSet();
     }
 
-    void ImGuiRenderer::createGraphicsPipeline(YzVkRenderPass* renderPass) {
-        YzVkShader shader("../Resources/Shaders", "gui.shader");
+    void ImGuiRenderer::createGraphicsPipeline(RenderPass* renderPass) {
+        Shader shader("../Resources/Shaders", "gui.shader");
 
         PipelineInfo pInfo = {};
         pInfo.shader = &shader;
@@ -70,7 +69,7 @@ namespace Yare::Graphics {
                                                 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
         pInfo.layoutBindings = { sampler };
 
-        m_Pipeline = new YzVkPipeline();
+        m_Pipeline = new Pipeline();
         m_Pipeline->init(pInfo);
     }
 
@@ -83,9 +82,9 @@ namespace Yare::Graphics {
         io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
         VkDeviceSize uploadSize = texWidth*texHeight * 4 * sizeof(char);
 
-        m_Font = YzVkImage::createTexture2D(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, fontData);
+        m_Font = Image::createTexture2D(texWidth, texHeight, VK_FORMAT_R8G8B8A8_UNORM, fontData);
 
-        m_DescriptorSet = new YzVkDescriptorSet();
+        m_DescriptorSet = new DescriptorSet();
         m_DescriptorSet->init({m_Pipeline, 1});
 
         std::vector<BufferInfo> bufferInfos = {};
@@ -115,7 +114,7 @@ namespace Yare::Graphics {
         updateBuffers();
     }
 
-    void ImGuiRenderer::present(YzVkCommandBuffer* commandBuffer){
+    void ImGuiRenderer::present(CommandBuffer* commandBuffer){
         ImGuiIO& io = ImGui::GetIO();
 
         vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
@@ -174,7 +173,7 @@ namespace Yare::Graphics {
         }
     }
 
-    void ImGuiRenderer::onResize(YzVkRenderPass* renderPass, uint32_t newWidth, uint32_t newHeight){
+    void ImGuiRenderer::onResize(RenderPass* renderPass, uint32_t newWidth, uint32_t newHeight){
         // Cleanup
         {
             delete m_Font;
@@ -205,13 +204,13 @@ namespace Yare::Graphics {
 
         if (m_IndexBuffer == nullptr || m_IndexBuffer->getSize() != indexBufferSize) {
             delete m_IndexBuffer;
-            m_IndexBuffer = new YzVkBuffer();
+            m_IndexBuffer = new Buffer();
             m_IndexBuffer->init(BufferUsage::DYNAMIC_INDEX, indexBufferSize, nullptr);
             m_IndexBuffer->mapMemory(indexBufferSize, 0);
         }
         if (m_VertexBuffer == nullptr || m_VertexBuffer->getSize() != vertexBufferSize) {
             delete m_VertexBuffer;
-            m_VertexBuffer = new YzVkBuffer();
+            m_VertexBuffer = new Buffer();
             m_VertexBuffer->init(BufferUsage::DYNAMIC_VERTEX, vertexBufferSize, nullptr);
             m_VertexBuffer->mapMemory(vertexBufferSize, 0);
         }

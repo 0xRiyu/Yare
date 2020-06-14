@@ -4,25 +4,25 @@
 
 namespace Yare::Graphics {
 
-    YzVkPipeline::YzVkPipeline() {
+    Pipeline::Pipeline() {
     }
 
-    YzVkPipeline::~YzVkPipeline() {
+    Pipeline::~Pipeline() {
         if (m_DescriptorSetLayout) {
-            vkDestroyDescriptorSetLayout(YzVkDevice::instance()->getDevice(), m_DescriptorSetLayout, nullptr);
+            vkDestroyDescriptorSetLayout(Devices::instance()->getDevice(), m_DescriptorSetLayout, nullptr);
         }
         if (m_PipelineLayout) {
-            vkDestroyPipelineLayout(YzVkDevice::instance()->getDevice(), m_PipelineLayout, nullptr);
+            vkDestroyPipelineLayout(Devices::instance()->getDevice(), m_PipelineLayout, nullptr);
         }
         if (m_GraphicsPipeline) {
-            vkDestroyPipeline(YzVkDevice::instance()->getDevice(), m_GraphicsPipeline, nullptr);
+            vkDestroyPipeline(Devices::instance()->getDevice(), m_GraphicsPipeline, nullptr);
         }
         if (m_DescriptorPool) {
-            vkDestroyDescriptorPool(YzVkDevice::instance()->getDevice(), m_DescriptorPool, nullptr);
+            vkDestroyDescriptorPool(Devices::instance()->getDevice(), m_DescriptorPool, nullptr);
         }
     }
 
-    void YzVkPipeline::init(PipelineInfo& pipelineInfo) {
+    void Pipeline::init(PipelineInfo& pipelineInfo) {
         m_PipelineInfo = pipelineInfo;
         // A descriptor is a special opaque shader variable that shaders use to access buffer and image
         // resources in an indirect fashion. It can be thought of as a "pointer" to a resource.
@@ -36,25 +36,25 @@ namespace Yare::Graphics {
         createDescriptorPool();
     }
 
-    void YzVkPipeline::setActive(const YzVkCommandBuffer& commandBuffer) {
+    void Pipeline::setActive(const CommandBuffer& commandBuffer) {
         vkCmdBindPipeline(commandBuffer.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_GraphicsPipeline);
     }
 
-    void YzVkPipeline::createDescriptorSetLayout() {
+    void Pipeline::createDescriptorSetLayout() {
 
         VkDescriptorSetLayoutCreateInfo layoutInfo = {};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.bindingCount = static_cast<uint32_t>(m_PipelineInfo.layoutBindings.size());
         layoutInfo.pBindings = m_PipelineInfo.layoutBindings.data();
 
-        auto res = vkCreateDescriptorSetLayout(YzVkDevice::instance()->getDevice(),
+        auto res = vkCreateDescriptorSetLayout(Devices::instance()->getDevice(),
                                                &layoutInfo, nullptr, &m_DescriptorSetLayout);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan was unable to create a descriptor set layout.");
         }
     }
 
-    void YzVkPipeline::createGraphicsPipeline() {
+    void Pipeline::createGraphicsPipeline() {
 
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -163,7 +163,7 @@ namespace Yare::Graphics {
         pipelineLayoutInfo.pPushConstantRanges = &m_PipelineInfo.pushConstants;
         pipelineLayoutInfo.pushConstantRangeCount = 1;
 
-        auto res = vkCreatePipelineLayout(YzVkDevice::instance()->getDevice(), &pipelineLayoutInfo,
+        auto res = vkCreatePipelineLayout(Devices::instance()->getDevice(), &pipelineLayoutInfo,
                                           nullptr, &m_PipelineLayout);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan Pipeline Layout was unable to be created.");
@@ -195,14 +195,14 @@ namespace Yare::Graphics {
         pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        res = vkCreateGraphicsPipelines(YzVkDevice::instance()->getDevice(), VK_NULL_HANDLE, 1,
+        res = vkCreateGraphicsPipelines(Devices::instance()->getDevice(), VK_NULL_HANDLE, 1,
                                         &pipelineCreateInfo, nullptr, &m_GraphicsPipeline);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a graphics pipeline.");
         }
     }
 
-    void YzVkPipeline::createDescriptorPool() {
+    void Pipeline::createDescriptorPool() {
 
         std::vector<VkDescriptorPoolSize> poolSizes(m_PipelineInfo.layoutBindings.size());
 
@@ -219,7 +219,7 @@ namespace Yare::Graphics {
         poolInfo.pPoolSizes = poolSizes.data();
         poolInfo.maxSets = m_PipelineInfo.maxObjects;
 
-        auto res = vkCreateDescriptorPool(YzVkDevice::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool);
+        auto res = vkCreateDescriptorPool(Devices::instance()->getDevice(), &poolInfo, nullptr, &m_DescriptorPool);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan creation of descriptor pool failed.");
         }

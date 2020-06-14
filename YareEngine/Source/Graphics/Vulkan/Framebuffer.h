@@ -13,13 +13,13 @@ namespace Yare::Graphics {
         uint32_t height;
         uint32_t layers = 1;
         std::vector<VkImageView> attachments;
-        YzVkRenderPass* renderPass;
+        RenderPass* renderPass;
     };
 
-    class YzVkFramebuffer {
+    class Framebuffer {
     public:
-        YzVkFramebuffer(const FramebufferInfo& fbInfo);
-        ~YzVkFramebuffer();
+        Framebuffer(const FramebufferInfo& fbInfo);
+        ~Framebuffer();
 
         const VkFramebuffer& getFramebuffer() const { return m_Framebuffer; }
 

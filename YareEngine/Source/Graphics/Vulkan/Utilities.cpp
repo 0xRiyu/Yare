@@ -1,5 +1,6 @@
 #include "Graphics/Vulkan/Utilities.h"
 #include "Graphics/Vulkan/Devices.h"
+#include "Graphics/Vulkan/Context.h"
 #include "Utilities/Logger.h"
 
 #include <fstream>
@@ -8,7 +9,7 @@ namespace Yare::Graphics::VkUtil {
 
     uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) {
         VkPhysicalDeviceMemoryProperties memProperties;
-        vkGetPhysicalDeviceMemoryProperties(YzVkDevice::instance()->getGPU(), &memProperties);
+        vkGetPhysicalDeviceMemoryProperties(Devices::instance()->getGPU(), &memProperties);
 
         for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
             if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
@@ -41,11 +42,11 @@ namespace Yare::Graphics::VkUtil {
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool()->getCommandPool();
+        allocInfo.commandPool = VulkanContext::getContext()->getCommandPool()->getCommandPool();
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
-        vkAllocateCommandBuffers(YzVkDevice::instance()->getDevice(), &allocInfo, &commandBuffer);
+        vkAllocateCommandBuffers(Devices::instance()->getDevice(), &allocInfo, &commandBuffer);
 
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -64,11 +65,11 @@ namespace Yare::Graphics::VkUtil {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        vkQueueSubmit(YzVkDevice::instance()->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
-        vkQueueWaitIdle(YzVkDevice::instance()->getGraphicsQueue());
+        vkQueueSubmit(Devices::instance()->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(Devices::instance()->getGraphicsQueue());
 
-        vkFreeCommandBuffers(YzVkDevice::instance()->getDevice(),
-                             YzVkDevice::instance()->getYzVkInstance()->getYzCommandPool()->getCommandPool(),
+        vkFreeCommandBuffers(Devices::instance()->getDevice(),
+                             VulkanContext::getContext()->getCommandPool()->getCommandPool(),
                              1, &commandBuffer);
     }
 
@@ -86,7 +87,7 @@ namespace Yare::Graphics::VkUtil {
         viewInfo.subresourceRange.layerCount = layerCount;
 
         VkImageView imageView;
-        auto res = vkCreateImageView(YzVkDevice::instance()->getDevice(), &viewInfo, nullptr, &imageView);
+        auto res = vkCreateImageView(Devices::instance()->getDevice(), &viewInfo, nullptr, &imageView);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("failed to create an image view!");
         }
@@ -98,7 +99,7 @@ namespace Yare::Graphics::VkUtil {
                                  VkFormatFeatureFlags features) {
         for (VkFormat format : candidates) {
             VkFormatProperties props;
-            vkGetPhysicalDeviceFormatProperties(YzVkDevice::instance()->getGPU(), format, &props);
+            vkGetPhysicalDeviceFormatProperties(Devices::instance()->getGPU(), format, &props);
 
             if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
                 return format;
