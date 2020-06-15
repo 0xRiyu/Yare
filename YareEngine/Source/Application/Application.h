@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "Core/Core.h"
-#include "Graphics/Window/YzWindow.h"
+#include "Graphics/Window/Window.h"
 
 namespace Yare {
 
@@ -14,12 +14,11 @@ namespace Yare {
         virtual ~Application();
         void run();
 
-        std::shared_ptr<Graphics::YzWindow> getWindow() const { return m_Window; }
+        std::shared_ptr<Graphics::Window> getWindow() const { return m_Window; }
 
         inline static Application* getAppInstance() { return s_AppInstance; }
-        static bool logFPS;
     private:
-        std::shared_ptr<Graphics::YzWindow> m_Window;
+        std::shared_ptr<Graphics::Window> m_Window;
         static Application* s_AppInstance;
     };
 

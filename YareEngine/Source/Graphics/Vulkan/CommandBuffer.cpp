@@ -15,7 +15,7 @@ namespace Yare::Graphics {
             }
             if (m_CommandBuffer) {
                 vkFreeCommandBuffers(Devices::instance()->getDevice(),
-                                     VulkanContext::getContext()->getCommandPool()->getCommandPool(),
+                                     VulkanContext::getContext()->getCommandPool()->getPool(),
                                      1, &m_CommandBuffer);
             }
         }
@@ -23,7 +23,7 @@ namespace Yare::Graphics {
         void CommandBuffer::init() {
             VkCommandBufferAllocateInfo allocInfo = {};
             allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            allocInfo.commandPool = VulkanContext::getContext()->getCommandPool()->getCommandPool();
+            allocInfo.commandPool = VulkanContext::getContext()->getCommandPool()->getPool();
             allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             allocInfo.commandBufferCount = 1;
 

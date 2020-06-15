@@ -1,5 +1,5 @@
-#ifndef YARE_YZ_RENDERER_H
-#define YARE_YZ_RENDERER_H
+#ifndef YARE_RENDERER_H
+#define YARE_RENDERER_H
 
 #include "Graphics/MeshInstance.h"
 #include "Graphics/Vulkan/CommandBuffer.h"
@@ -19,9 +19,9 @@ namespace Yare::Graphics {
 
     typedef std::vector<RenderCommand> CommandQueue;
 
-    class YzRenderer {
+    class Renderer {
     public:
-        virtual ~YzRenderer() = default;
+        virtual ~Renderer() = default;
 
         virtual void prepareScene() = 0;
         virtual void present(CommandBuffer* commandBuffer) = 0;
@@ -34,4 +34,4 @@ namespace Yare::Graphics {
         CommandQueue m_CommandQueue;
     };
 }
-#endif // YARE_YZ_RENDERER_H
+#endif // YARE_RENDERER_H

@@ -1,10 +1,10 @@
-#include "Graphics/Camera/Camera.h"
+#include "Graphics/Camera/FpsCamera.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Yare::Graphics {
 
-    Camera::Camera(uint32_t screenWidth, uint32_t screenHeight) {
+    FpsCamera::FpsCamera(uint32_t screenWidth, uint32_t screenHeight) {
         m_Aspect = static_cast<float>(screenWidth) / screenHeight;
 
         m_Transform = Transform(glm::vec3(1.0f, 2.0f, -4.0f),
@@ -20,41 +20,41 @@ namespace Yare::Graphics {
         updateProj();
     }
 
-    Camera::~Camera() {
+    FpsCamera::~FpsCamera() {
     }
 
-    void Camera::setPosition(const glm::vec3& in) {
+    void FpsCamera::setPosition(const glm::vec3& in) {
         m_Transform.setTranslation(in);
         updateView();
     }
 
-    void Camera::setRotation(const glm::vec3& in) {
+    void FpsCamera::setRotation(const glm::vec3& in) {
         m_Transform.setRotation(in);
 
         recalculateViewParams();
         updateView();
     }
 
-    void Camera::setLookAt(const glm::vec3& in) {
+    void FpsCamera::setLookAt(const glm::vec3& in) {
         m_LookAt = in;
         updateView();
     }
 
-    void Camera::setFov(float in) {
+    void FpsCamera::setFov(float in) {
         m_Fov = in;
         updateProj();
     }
 
-    void Camera::setCameraSpeed(float speed) {
+    void FpsCamera::setCameraSpeed(float speed) {
         m_CameraSpeed = speed;
     }
 
-    void Camera::updateDimensions(uint32_t screenWidth, uint32_t screenHeight) {
+    void FpsCamera::updateDimensions(uint32_t screenWidth, uint32_t screenHeight) {
         m_Aspect = static_cast<float>(screenWidth) / screenHeight;
         updateProj();
     }
 
-    void Camera::recalculateViewParams() {
+    void FpsCamera::recalculateViewParams() {
 
         m_LookAt.x = cos(m_Transform.getVec3Rotation().x) * cos(m_Transform.getVec3Rotation().y);
         m_LookAt.y = sin(m_Transform.getVec3Rotation().y);
@@ -69,11 +69,11 @@ namespace Yare::Graphics {
         m_Up = glm::normalize(glm::cross(right, m_LookAt));
     }
 
-    void Camera::updateView() {
+    void FpsCamera::updateView() {
         m_ViewMatrix = glm::lookAtRH(m_Transform.getTranslation(), m_Transform.getTranslation() + m_LookAt, m_Up);
     }
 
-    void Camera::updateProj() {
+    void FpsCamera::updateProj() {
         m_ProjectionMatrix = glm::perspective(glm::radians(m_Fov), m_Aspect, 0.1f, 100.0f);
     }
 }

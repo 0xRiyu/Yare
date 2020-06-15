@@ -1,7 +1,7 @@
 #ifndef YARE_SKYBOX_RENDERER_H
 #define YARE_SKYBOX_RENDERER_H
 
-#include "Graphics/Renderers/YzRenderer.h"
+#include "Graphics/Renderers/Renderer.h"
 
 #include "Graphics/Vulkan/Pipeline.h"
 #include "Graphics/Vulkan/Buffer.h"
@@ -11,7 +11,7 @@
 
 namespace Yare::Graphics {
 
-    class SkyboxRenderer : public YzRenderer {
+    class SkyboxRenderer : public Renderer {
     public:
         SkyboxRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         ~SkyboxRenderer() override;

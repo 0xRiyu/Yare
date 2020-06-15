@@ -7,21 +7,20 @@
 #include "Graphics/Vulkan/RenderPass.h"
 #include "Graphics/Vulkan/Image.h"
 
-#include "Graphics/Window/YzWindow.h"
+#include "Graphics/Window/Window.h"
 
-#include "Graphics/Renderers/YzRenderer.h"
+#include "Graphics/Renderers/Renderer.h"
 
 namespace Yare::Graphics {
 
     class RenderManager {
     public:
-        RenderManager(const std::shared_ptr<YzWindow> window);
+        RenderManager(const std::shared_ptr<Window> window);
         ~RenderManager();
 
         void renderScene();
         void begin();
         void end();
-        void waitDeviceIdle();
 
     protected:
         void init();
@@ -33,19 +32,18 @@ namespace Yare::Graphics {
 
     private:
         // Constructs the instance, devices and swapchain required for rendering
-        VulkanContext*                           m_VulkanContext;
+        VulkanContext*                       m_VulkanContext;
         std::vector<Framebuffer*>            m_FrameBuffers;
         std::vector<CommandBuffer*>          m_CommandBuffers;
         RenderPass*                          m_RenderPass;
         Image*                               m_DepthBuffer;
-        const std::shared_ptr<YzWindow>          m_WindowRef;
+        const std::shared_ptr<Window>        m_WindowRef;
         // TODO: Find a better naming scheme
-        std::vector<YzRenderer*>                 m_Renderers;
+        std::vector<Renderer*>               m_Renderers;
 
         uint32_t m_CurrentBufferID = 0;
         uint32_t m_WindowWidth = 0;
         uint32_t m_WindowHeight = 0;
-
     };
 }
 

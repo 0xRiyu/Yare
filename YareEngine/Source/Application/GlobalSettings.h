@@ -10,6 +10,7 @@ namespace Yare {
         GlobalSettings() {}
         bool displayModels = true;
         bool displayBackground = true;
+        bool logFps = false;
         double fps = 0;
     };
 }

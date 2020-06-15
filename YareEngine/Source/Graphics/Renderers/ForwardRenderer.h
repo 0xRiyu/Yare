@@ -1,7 +1,7 @@
 #ifndef YARE_FORWARD_RENDERER_H
 #define YARE_FORWARD_RENDERER_H
 
-#include "Graphics/Renderers/YzRenderer.h"
+#include "Graphics/Renderers/Renderer.h"
 #include "Graphics/Vulkan/Pipeline.h"
 #include "Graphics/Vulkan/Buffer.h"
 #include "Graphics/Vulkan/DescriptorSet.h"
@@ -12,7 +12,7 @@
 
 namespace Yare::Graphics {
 
-    class ForwardRenderer  : public YzRenderer {
+    class ForwardRenderer  : public Renderer {
     public:
         ForwardRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight);
         ~ForwardRenderer() override;

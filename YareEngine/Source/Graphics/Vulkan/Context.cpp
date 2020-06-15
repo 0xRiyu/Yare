@@ -1,5 +1,6 @@
 #include "Graphics/Vulkan/Context.h"
-#include "Core/Yzh.h"
+#include "Application/Application.h"
+#include "Utilities/Logger.h"
 #include "Core/Glfw.h"
 
 namespace Yare::Graphics {
@@ -162,9 +163,9 @@ namespace Yare::Graphics {
 
         VkApplicationInfo appInfo = {};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "YareZo Vulkan Renderer";
+        appInfo.pApplicationName = "Yare Vulkan Renderer";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        appInfo.pEngineName = "YareZo";
+        appInfo.pEngineName = "Yare";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.apiVersion = VK_API_VERSION_1_1;
 

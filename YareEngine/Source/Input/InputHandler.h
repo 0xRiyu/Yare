@@ -2,9 +2,9 @@
 #define YARE_INPUTHANDLER_H
 
 namespace Yare {
-    class YzInputHandler {
+    class InputHandler {
     public:
-        virtual ~YzInputHandler() = default;
+        virtual ~InputHandler() = default;
         virtual void handle() = 0;
     };
 }

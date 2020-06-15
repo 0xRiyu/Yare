@@ -1,15 +1,17 @@
 #include "Graphics/Window/GlfwWindow.h"
-#include "Graphics/Camera/Camera.h"
+#include "Graphics/Camera/FpsCamera.h"
+#include "Application/Application.h"
+#include "Utilities/Logger.h"
+
 #include "Input/KeyHandler.h"
 #include "Input/MouseHandler.h"
-#include "Core/Yzh.h"
 
 #include <imgui/imgui.h>
 #include <stb/stb_image.h>
 
 namespace Yare::Graphics {
 
-    std::shared_ptr<YzWindow> YzWindow::createNewWindow(WindowProperties& properties) {
+    std::shared_ptr<Window> Window::createNewWindow(WindowProperties& properties) {
         return std::make_shared<GlfwWindow>(properties);
     }
 
@@ -80,7 +82,7 @@ namespace Yare::Graphics {
     GlfwWindow::GlfwWindow(WindowProperties& properties) {
         m_Properties = properties;
         // TODO: A scene should be the camera's over, we just dont have scenes yet
-        m_Camera = std::make_shared<Graphics::Camera>(m_Properties.width, m_Properties.height);
+        m_Camera = std::make_shared<FpsCamera>(m_Properties.width, m_Properties.height);
         m_KeyHandler = std::make_shared<KeyHandler>(m_Camera);
         m_MouseHandler = std::make_shared<MouseHandler>(m_Camera);
         init();
@@ -95,10 +97,10 @@ namespace Yare::Graphics {
     void GlfwWindow::init() {
         glfwInit();
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        m_Window = glfwCreateWindow(m_Properties.width, m_Properties.height, "YareZo!", nullptr, nullptr);
+        m_Window = glfwCreateWindow(m_Properties.width, m_Properties.height, "Yare!", nullptr, nullptr);
         glfwSetWindowUserPointer(m_Window, this);
         glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
-        setIcon("..\\YareZo\\Resources\\Textures\\engineLogo.png");
+        setIcon("../Resources/Textures/engineLogo.png");
 
         // Callbacks
         glfwSetFramebufferSizeCallback(m_Window, framebufferResizeCallback);

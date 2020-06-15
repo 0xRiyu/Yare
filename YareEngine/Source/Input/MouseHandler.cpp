@@ -1,5 +1,5 @@
 #include "Input/MouseHandler.h"
-#include "Core/Yzh.h"
+#include "Utilities/Logger.h"
 
 #ifndef GLM_FORCE_RADIANS
 #define GLM_FORCE_RADIANS
@@ -10,7 +10,7 @@
 
 namespace Yare {
 
-    MouseHandler::MouseHandler(const std::shared_ptr<YzCamera> currentCamera)
+    MouseHandler::MouseHandler(const std::shared_ptr<Graphics::Camera> currentCamera)
     :p_Camera(currentCamera) {
         YZ_INFO("Mouse Input Handler Created");
     }

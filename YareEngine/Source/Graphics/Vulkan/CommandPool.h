@@ -10,7 +10,7 @@ namespace Yare::Graphics {
         ~CommandPool();
 
         void init();
-        const VkCommandPool& getCommandPool() const { return m_CommandPool; }
+        const VkCommandPool& getPool() const { return m_CommandPool; }
 
     private:
         VkCommandPool m_CommandPool;

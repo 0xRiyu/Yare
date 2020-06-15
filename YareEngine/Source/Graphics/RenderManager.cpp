@@ -9,12 +9,14 @@
 
 namespace Yare::Graphics {
 
-    RenderManager::RenderManager(const std::shared_ptr<YzWindow> window):
+    RenderManager::RenderManager(const std::shared_ptr<Window> window):
         m_WindowRef(window) {
         init();
     }
 
     RenderManager::~RenderManager() {
+        Devices::instance()->waitIdle();
+
         for (auto renderer : m_Renderers){
             delete renderer;
         }
@@ -69,10 +71,6 @@ namespace Yare::Graphics {
         if (!m_VulkanContext->present(m_CommandBuffers[m_CurrentBufferID])) {
             onResize();
         }
-    }
-
-    void RenderManager::waitDeviceIdle() {
-        Devices::instance()->waitIdle();
     }
 
     void RenderManager::init() {

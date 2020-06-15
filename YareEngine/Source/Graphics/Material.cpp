@@ -1,5 +1,4 @@
 #include "Graphics/Material.h"
-#include "Core/Yzh.h"
 
 namespace Yare::Graphics {
 

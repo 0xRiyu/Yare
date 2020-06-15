@@ -1,17 +1,17 @@
 #ifndef YARE_MOUSEHANDER_H
 #define YARE_MOUSEHANDER_H
 
-#include "Input/YzInputHandler.h"
-#include "Graphics/Camera/YzCamera.h"
+#include "Input/InputHandler.h"
+#include "Graphics/Camera/Camera.h"
 
 #include <memory>
 
 namespace Yare {
 
-    class MouseHandler: public YzInputHandler {
+    class MouseHandler: public InputHandler {
 
     public:
-        MouseHandler(const std::shared_ptr<YzCamera> currentCamera);
+        MouseHandler(const std::shared_ptr<Graphics::Camera> currentCamera);
         virtual ~MouseHandler();
 
         virtual void handle() override;
@@ -36,7 +36,7 @@ namespace Yare {
         float prevMouseY = 0.0f;
 
     private:
-        std::shared_ptr<YzCamera> p_Camera;
+        std::shared_ptr<Graphics::Camera> p_Camera;
         const float mouseSensitivity = 0.1f;
         float m_HorizontalScroll = 0.0f;
         float m_VerticalScroll = 0.0f;

@@ -37,10 +37,10 @@ set (YARE_ENGINE_SOURCES
     Source/Graphics/TiledMesh.cpp
     Source/Graphics/Material.cpp
     Source/Graphics/RenderManager.cpp
-    Source/Graphics/Camera/Camera.cpp
+    Source/Graphics/Camera/FpsCamera.cpp
     Source/Graphics/Window/GlfwWindow.cpp
     Source/Graphics/Scene/Scene.cpp
-    Source/Graphics/Renderers/YzRenderer.cpp
+    Source/Graphics/Renderers/Renderer.cpp
     Source/Graphics/Renderers/ImGuiRenderer.cpp
     Source/Graphics/Renderers/SkyboxRenderer.cpp
     Source/Graphics/Renderers/ForwardRenderer.cpp
@@ -83,7 +83,6 @@ set (YARE_ENGINE_HEADERS
     Source/Application/GlobalSettings.h
 
     # Core
-    Source/Core/Yzh.h
     Source/Core/Glfw.h
     Source/Core/Core.h
     Source/Core/Memory.h
@@ -97,12 +96,12 @@ set (YARE_ENGINE_HEADERS
     Source/Graphics/TiledMesh.h
     Source/Graphics/Material.h
     Source/Graphics/RenderManager.h
-    Source/Graphics/Camera/YzCamera.h
     Source/Graphics/Camera/Camera.h
-    Source/Graphics/Window/YzWindow.h
+    Source/Graphics/Camera/FpsCamera.h
+    Source/Graphics/Window/Window.h
     Source/Graphics/Window/GlfwWindow.h
     Source/Graphics/Scene/Scene.h
-    Source/Graphics/Renderers/YzRenderer.h
+    Source/Graphics/Renderers/Renderer.h
     Source/Graphics/Renderers/ImGuiRenderer.h
     Source/Graphics/Renderers/SkyboxRenderer.h
     Source/Graphics/Renderers/ForwardRenderer.h
@@ -125,7 +124,7 @@ set (YARE_ENGINE_HEADERS
     Source/Graphics/Vulkan/CommandBuffer.h
 
     # Handlers
-    Source/Input/YzInputHandler.h
+    Source/Input/InputHandler.h
     Source/Input/KeyHandler.h
     Source/Input/MouseHandler.h
 

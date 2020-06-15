@@ -1,12 +1,12 @@
-#include "Graphics/Renderers/YzRenderer.h"
+#include "Graphics/Renderers/Renderer.h"
 
 namespace Yare::Graphics {
 
-    void YzRenderer::resetCommandQueue() {
+    void Renderer::resetCommandQueue() {
         m_CommandQueue.clear();
     }
 
-    void YzRenderer::submit(MeshInstance* instance) {
+    void Renderer::submit(MeshInstance* instance) {
         RenderCommand renderCommand;
         renderCommand.meshInst = instance;
 

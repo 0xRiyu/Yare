@@ -2,10 +2,10 @@
 #define YARE_GLFWWINDOW_H
 
 #include "Core/Glfw.h"
-#include "Graphics/Window/YzWindow.h"
+#include "Graphics/Window/Window.h"
 
 namespace Yare::Graphics {
-    class GlfwWindow : public YzWindow {
+    class GlfwWindow : public Window {
     public:
         GlfwWindow(WindowProperties& properties);
         virtual ~GlfwWindow();

@@ -1,5 +1,7 @@
 #include "Input/KeyHandler.h"
-#include "Core/Yzh.h"
+#include "Application/GlobalSettings.h"
+#include "Application/Application.h"
+#include "Utilities/Logger.h"
 
 #ifndef GLM_FORCE_RADIANS
 #define GLM_FORCE_RADIANS
@@ -11,7 +13,7 @@
 
 namespace Yare {
 
-    KeyHandler::KeyHandler(std::shared_ptr<YzCamera> currentCamera)
+    KeyHandler::KeyHandler(std::shared_ptr<Graphics::Camera> currentCamera)
     :p_Camera(currentCamera) {
 
         for (int i = 0; i < MAX_KEYS; i++)
@@ -86,7 +88,7 @@ namespace Yare {
 
         if ((isKeyDown(GLFW_KEY_LEFT_CONTROL) || isKeyDown(GLFW_KEY_RIGHT_CONTROL)) && isKeyPressed(GLFW_KEY_F)) {
             YZ_INFO("FPS Logging Toggled");
-            Application::logFPS = !Application::logFPS;
+            GlobalSettings::instance()->logFps = !GlobalSettings::instance()->logFps;
             m_KeyState[GLFW_KEY_F] = 0;
         }
 

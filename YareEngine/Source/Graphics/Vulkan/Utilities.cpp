@@ -42,7 +42,7 @@ namespace Yare::Graphics::VkUtil {
         VkCommandBufferAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        allocInfo.commandPool = VulkanContext::getContext()->getCommandPool()->getCommandPool();
+        allocInfo.commandPool = VulkanContext::getContext()->getCommandPool()->getPool();
         allocInfo.commandBufferCount = 1;
 
         VkCommandBuffer commandBuffer;
@@ -69,7 +69,7 @@ namespace Yare::Graphics::VkUtil {
         vkQueueWaitIdle(Devices::instance()->getGraphicsQueue());
 
         vkFreeCommandBuffers(Devices::instance()->getDevice(),
-                             VulkanContext::getContext()->getCommandPool()->getCommandPool(),
+                             VulkanContext::getContext()->getCommandPool()->getPool(),
                              1, &commandBuffer);
     }
 

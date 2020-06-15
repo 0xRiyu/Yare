@@ -1,8 +1,6 @@
 #include "Graphics/Mesh.h"
 #include "Utilities/IOHelper.h"
 
-#include "Core/Yzh.h"
-
 namespace Yare::Graphics {
 
     Mesh::Mesh(const std::string& meshFilePath)

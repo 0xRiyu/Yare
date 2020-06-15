@@ -18,14 +18,12 @@
 namespace Yare {
 
     Application* Application::s_AppInstance = nullptr;
-    bool Application::logFPS = false;
 
     Application::Application() {
         if (s_AppInstance) {
             throw std::runtime_error("Attempted to create an Application after one has previously been created.");
         }
         s_AppInstance = this;
-        GlobalSettings::instance();
         ImGui::CreateContext();
     }
 
@@ -40,35 +38,33 @@ namespace Yare {
 
         //Create a window
         Graphics::WindowProperties props = {1600, 1200};
-        m_Window = Graphics::YzWindow::createNewWindow(props);
+        m_Window = Graphics::Window::createNewWindow(props);
 
         Graphics::RenderManager renderManager{m_Window};
 
-        double previousFPSTime = glfwGetTime();
-        double previousFrameTime = glfwGetTime();
+        auto previousFPSTime = glfwGetTime();
+        auto previousFrameTime = glfwGetTime();
         int frameCount = 0;
 
         while (!m_Window->shouldClose()) {
-            double currentTime = glfwGetTime();
-            frameCount++;
-            double deltaFrameTime = currentTime - previousFrameTime;
-            double deltaFPSTime = currentTime - previousFPSTime;
-            m_Window->getCamera()->setCameraSpeed((float)deltaFrameTime * 5);
-            // Output some fps info every 5s to determine if we nuke performace
-            if (deltaFPSTime >= 1.0) {
-                if (logFPS) YZ_INFO("FPS: " + std::to_string(frameCount));
-                GlobalSettings::instance()->fps = frameCount;
-                frameCount = 0;
-                previousFPSTime = currentTime;
+            renderManager.renderScene();
+            m_Window->onUpdate();
+
+            // FPS
+            {
+                auto currentTime = glfwGetTime();
+                auto deltaFPSTime = currentTime - previousFPSTime;
+                m_Window->getCamera()->setCameraSpeed((float)(currentTime - previousFrameTime) * 5);
+                if (deltaFPSTime >= 1.0) {
+                    if (GlobalSettings::instance()->logFps) YZ_INFO("FPS: " + std::to_string(frameCount));
+                    GlobalSettings::instance()->fps = frameCount;
+                    previousFPSTime = currentTime;
+                    frameCount = 0;
+                }
+                previousFrameTime = currentTime;
+                frameCount++;
             }
 
-            previousFrameTime = currentTime;
-
-            renderManager.renderScene();
-
-            m_Window->onUpdate();
         }
-
-        renderManager.waitDeviceIdle();
     }
 }
