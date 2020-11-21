@@ -13,4 +13,4 @@ add_compile_definitions(YZ_PLATFORM_WINDOWS
 add_subdirectory(YareEngine)
 add_subdirectory(Sandbox)
 
-file(COPY YareEngine/Resources DESTINATION .)
+file(COPY YareEngine/Res DESTINATION .)

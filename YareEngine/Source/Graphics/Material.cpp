@@ -26,7 +26,7 @@ namespace Yare::Graphics {
                     texturePaths[i] = m_FilePaths[index];
                     index++;
                 } else {
-                    texturePaths[i] = "../Resources/Textures/default.jpg";
+                    texturePaths[i] = "../Res/Textures/default.jpg";
                 }
             }
 
@@ -37,7 +37,7 @@ namespace Yare::Graphics {
             if (m_FilePaths.size() >= 1) {
                 m_Texture = Image::createTexture2D(m_FilePaths[0]);
             } else {
-                m_Texture = Image::createTexture2D("../Resources/Textures/default.jpg");
+                m_Texture = Image::createTexture2D("../Res/Textures/default.jpg");
             }
             break;
         }

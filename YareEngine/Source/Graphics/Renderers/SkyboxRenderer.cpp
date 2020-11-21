@@ -9,18 +9,18 @@
 namespace Yare::Graphics {
 
     SkyboxRenderer::SkyboxRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-        std::vector<std::string> skyboxTextures1 = {"../Resources/Textures/skybox/posx.jpg",
-                                                   "../Resources/Textures/skybox/negx.jpg",
-                                                   "../Resources/Textures/skybox/posy.jpg",
-                                                   "../Resources/Textures/skybox/negy.jpg",
-                                                   "../Resources/Textures/skybox/posz.jpg",
-                                                   "../Resources/Textures/skybox/negz.jpg"};
-        std::vector<std::string> skyboxTextures = {"../Resources/Textures/stormy_skybox/stormydays_ft.tga",
-                                                   "../Resources/Textures/stormy_skybox/stormydays_bk.tga",
-                                                   "../Resources/Textures/stormy_skybox/stormydays_up.tga",
-                                                   "../Resources/Textures/stormy_skybox/stormydays_dn.tga",
-                                                   "../Resources/Textures/stormy_skybox/stormydays_rt.tga",
-                                                   "../Resources/Textures/stormy_skybox/stormydays_lf.tga"};
+        std::vector<std::string> skyboxTextures1 = {"../Res/Textures/skybox/posx.jpg",
+                                                   "../Res/Textures/skybox/negx.jpg",
+                                                   "../Res/Textures/skybox/posy.jpg",
+                                                   "../Res/Textures/skybox/negy.jpg",
+                                                   "../Res/Textures/skybox/posz.jpg",
+                                                   "../Res/Textures/skybox/negz.jpg"};
+        std::vector<std::string> skyboxTextures = {"../Res/Textures/stormy_skybox/stormydays_ft.tga",
+                                                   "../Res/Textures/stormy_skybox/stormydays_bk.tga",
+                                                   "../Res/Textures/stormy_skybox/stormydays_up.tga",
+                                                   "../Res/Textures/stormy_skybox/stormydays_dn.tga",
+                                                   "../Res/Textures/stormy_skybox/stormydays_rt.tga",
+                                                   "../Res/Textures/stormy_skybox/stormydays_lf.tga"};
         m_Material = std::make_shared<Material>(skyboxTextures, MaterialTexType::TextureCube);
         m_CubeMesh = std::make_shared<Mesh>(*createMesh(PrimativeShape::CUBE));
 
@@ -77,7 +77,7 @@ namespace Yare::Graphics {
     }
 
     void SkyboxRenderer::createGraphicsPipeline(RenderPass* renderPass, uint32_t width, uint32_t height) {
-        Shader skyboxShader("../Resources/Shaders", "skybox.shader");
+        Shader skyboxShader("../Res/Shaders", "skybox.shader");
         PipelineInfo pipelineInfo = {};
         pipelineInfo.shader = &skyboxShader;
 

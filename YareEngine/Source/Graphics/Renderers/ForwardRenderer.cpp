@@ -15,17 +15,17 @@ namespace Yare::Graphics {
 
     ForwardRenderer::ForwardRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
 
-        m_Meshes.emplace_back(std::make_shared<Mesh>("../Resources/Models/viking_room.obj"));
+        m_Meshes.emplace_back(std::make_shared<Mesh>("../Res/Models/viking_room.obj"));
         m_Meshes.emplace_back(createMesh(PrimativeShape::CUBE));
         m_Meshes.emplace_back(createMesh(PrimativeShape::QUAD));
         m_Meshes.emplace_back(new TiledMesh(50));
 
         m_Materials.emplace_back(std::make_shared<Material>()); // Default texture
-        m_Materials.emplace_back(std::make_shared<Material>("../Resources/Textures/viking_room.png"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Resources/Textures/crate.png"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Resources/Textures/skysphere.png"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Resources/Textures/sprite.jpg"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Resources/Textures/tile.png"));
+        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/viking_room.png"));
+        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/crate.png"));
+        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/skysphere.png"));
+        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/sprite.jpg"));
+        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/tile.png"));
 
         Transform transform{glm::vec3(3.0f, -0.15f, 0.0f),
                             glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
@@ -129,7 +129,7 @@ namespace Yare::Graphics {
     }
 
     void ForwardRenderer::createGraphicsPipeline(RenderPass* renderPass, uint32_t width, uint32_t height) {
-        Shader shader("../Resources/Shaders", "texture_array.shader");
+        Shader shader("../Res/Shaders", "texture_array.shader");
 
         PipelineInfo pInfo = {};
         pInfo.shader = &shader;

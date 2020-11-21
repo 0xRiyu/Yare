@@ -36,14 +36,14 @@ namespace Yare::Graphics {
         ImGuiIO& io = ImGui::GetIO();
         io.DisplaySize = ImVec2((float)windowWidth, (float)windowHeight);
         io.DisplayFramebufferScale = ImVec2(1.0f, 1.0f);
-        io.Fonts->AddFontFromFileTTF("../Resources/Fonts/Cousine-Regular.ttf", 24.0f);
+        io.Fonts->AddFontFromFileTTF("../Res/Fonts/Cousine-Regular.ttf", 24.0f);
 
         createGraphicsPipeline(renderPass);
         createDescriptorSet();
     }
 
     void ImGuiRenderer::createGraphicsPipeline(RenderPass* renderPass) {
-        Shader shader("../Resources/Shaders", "gui.shader");
+        Shader shader("../Res/Shaders", "gui.shader");
 
         PipelineInfo pInfo = {};
         pInfo.shader = &shader;
