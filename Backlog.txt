@@ -1,0 +1,4 @@
+- Ability to switch between scenes quickly
+- Ability to render large amounts of similar meshes (Forestry)
+- Ability to render lighting from Day/Night time
+- Ability to render water

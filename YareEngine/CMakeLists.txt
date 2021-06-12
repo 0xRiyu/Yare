@@ -165,6 +165,8 @@ find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME}
     PUBLIC Vulkan::Vulkan)
 
+target_precompile_headers(${PROJECT_NAME} PRIVATE [["Utilities/Logger.h"]] <memory> <string> <vector>)
+
 if (WIN32)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
           target_link_libraries(${PROJECT_NAME}

@@ -19,6 +19,7 @@ namespace Yare::Graphics {
         m_Meshes.emplace_back(createMesh(PrimativeShape::CUBE));
         m_Meshes.emplace_back(createMesh(PrimativeShape::QUAD));
         m_Meshes.emplace_back(new TiledMesh(50));
+        m_Meshes.emplace_back(std::make_shared<Mesh>("../Res/Models/Lowpoly_tree_sample.obj"));
 
         m_Materials.emplace_back(std::make_shared<Material>()); // Default texture
         m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/viking_room.png"));
@@ -40,6 +41,8 @@ namespace Yare::Graphics {
         m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[3], transform2));
         transform2.setTranslation(0.0f, 0.0f, 1.0f);
         m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[4], transform2));
+        transform2.setTranslation(0.0f, 0.0f, 2.0f);
+        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[4], m_Materials[0], transform2));
 
         Transform transform3;
         transform3.setTranslation(-25.0f, -0.5f, 25.0f);
