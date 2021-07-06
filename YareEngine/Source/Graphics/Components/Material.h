@@ -1,6 +1,7 @@
 #ifndef YARE_MATERIAL_H
 #define YARE_MATERIAL_H
 
+#include "Component.h"
 #include "Graphics/Vulkan/Image.h"
 
 #include <string>
@@ -9,7 +10,7 @@ namespace Yare::Graphics {
 
     enum class MaterialTexType { TextureCube, Texture2D };
 
-    class Material {
+    class Material : public Component {
     public:
         Material(const std::string& textureFilePath, MaterialTexType type = MaterialTexType::Texture2D);
         Material(const std::vector<std::string>& textureFilePaths = {},

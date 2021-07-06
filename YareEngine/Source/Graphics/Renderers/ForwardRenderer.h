@@ -31,7 +31,7 @@ namespace Yare::Graphics {
         // TODO Move this into some content management class
         std::vector<std::shared_ptr<Mesh>> m_Meshes;
         std::vector<std::shared_ptr<Material>> m_Materials;
-        std::vector<std::shared_ptr<MeshInstance>> m_MeshInstances;
+        std::vector<std::shared_ptr<Entity>> m_Entities;
 
         uint64_t m_DynamicAlignment = 0;
 

@@ -29,7 +29,6 @@ namespace Yare::Graphics {
         void createCommandBuffers();
         void onResize();
 
-
     private:
         // Constructs the instance, devices and swapchain required for rendering
         VulkanContext*                       m_VulkanContext;

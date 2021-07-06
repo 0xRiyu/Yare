@@ -24,7 +24,7 @@ namespace Yare::Graphics {
         m_Material = std::make_shared<Material>(skyboxTextures, MaterialTexType::TextureCube);
         m_CubeMesh = std::make_shared<Mesh>(*createMesh(PrimativeShape::CUBE));
 
-        m_SkyboxModel = new MeshInstance(m_CubeMesh, m_Material);
+        m_SkyboxModel = new Entity(m_CubeMesh, m_Material);
         init(renderPass, windowWidth, windowHeight);
     }
 
@@ -54,11 +54,11 @@ namespace Yare::Graphics {
                 vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(),
                                         0, 1, &m_DescriptorSet->getDescriptorSet(0), 0 , nullptr);
-                command.meshInst->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
-                command.meshInst->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
+                command.entity->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
+                command.entity->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
                 m_Pipeline->setActive(*commandBuffer);
 
-                auto indexCount = command.meshInst->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t);
+                auto indexCount = command.entity->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t);
                 vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(indexCount), 1, 0, 0, 0);
                 updateUniformBuffer(0);
             }

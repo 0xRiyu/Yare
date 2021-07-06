@@ -1,0 +1,15 @@
+- Terrain generation 
+	- noise map
+
+- Water generation
+- Grass
+- Debug logging for draw timings
+- click and drag objects in scene
+- light sources
+- multiple scenes
+- mipmapping
+- lots of trees
+- clouds
+- wireframes
+- xyz plane viewer
+- skydome sync with daytime

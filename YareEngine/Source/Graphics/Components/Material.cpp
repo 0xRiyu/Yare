@@ -1,4 +1,4 @@
-#include "Graphics/Material.h"
+#include "Material.h"
 
 namespace Yare::Graphics {
 

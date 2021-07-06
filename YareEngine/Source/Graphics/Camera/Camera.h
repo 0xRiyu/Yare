@@ -1,7 +1,7 @@
 #ifndef YARE_CAMERA_H
 #define YARE_CAMERA_H
 
-#include "Core/Transform.h"
+#include "Graphics/Components/Transform.h"
 
 namespace Yare::Graphics {
 

@@ -28,17 +28,16 @@ set (YARE_ENGINE_SOURCES
 
     # Core
     Source/Core/Memory.cpp
-    Source/Core/Transform.cpp
 
     # Graphics
-    Source/Graphics/Mesh.cpp
+    Source/Graphics/Components/Mesh.cpp
+    Source/Graphics/Components/Material.cpp
+    Source/Graphics/Components/Transform.cpp
     Source/Graphics/MeshFactory.cpp
-    Source/Graphics/MeshInstance.cpp
-    Source/Graphics/TiledMesh.cpp
-    Source/Graphics/Material.cpp
     Source/Graphics/RenderManager.cpp
     Source/Graphics/Camera/FpsCamera.cpp
     Source/Graphics/Window/GlfwWindow.cpp
+    Source/Graphics/Scene/Entity.cpp
     Source/Graphics/Scene/Scene.cpp
     Source/Graphics/Renderers/Renderer.cpp
     Source/Graphics/Renderers/ImGuiRenderer.cpp
@@ -86,20 +85,19 @@ set (YARE_ENGINE_HEADERS
     Source/Core/Glfw.h
     Source/Core/Core.h
     Source/Core/Memory.h
-    Source/Core/Transform.h
     Source/Core/DataStructures.h
 
     # Graphics
-    Source/Graphics/Mesh.h
+    Source/Graphics/Components/Mesh.h
+    Source/Graphics/Components/Material.h
+    Source/Graphics/Components/Transform.h
     Source/Graphics/MeshFactory.h
-    Source/Graphics/MeshInstance.h
-    Source/Graphics/TiledMesh.h
-    Source/Graphics/Material.h
     Source/Graphics/RenderManager.h
     Source/Graphics/Camera/Camera.h
     Source/Graphics/Camera/FpsCamera.h
     Source/Graphics/Window/Window.h
     Source/Graphics/Window/GlfwWindow.h
+    Source/Graphics/Scene/Entity.h
     Source/Graphics/Scene/Scene.h
     Source/Graphics/Renderers/Renderer.h
     Source/Graphics/Renderers/ImGuiRenderer.h

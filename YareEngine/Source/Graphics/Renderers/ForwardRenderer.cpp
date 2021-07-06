@@ -7,47 +7,37 @@
 #include "Graphics/Vulkan/Utilities.h"
 #include "Graphics/Vulkan/Devices.h"
 #include "Graphics/MeshFactory.h"
-#include "Graphics/TiledMesh.h"
 
 #include "Core/Memory.h"
 
 namespace Yare::Graphics {
 
     ForwardRenderer::ForwardRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-
-        m_Meshes.emplace_back(std::make_shared<Mesh>("../Res/Models/viking_room.obj"));
+        m_Meshes.push_back(std::make_shared<Mesh>("../Res/Models/viking_room.obj"));
         m_Meshes.emplace_back(createMesh(PrimativeShape::CUBE));
-        m_Meshes.emplace_back(createMesh(PrimativeShape::QUAD));
-        m_Meshes.emplace_back(new TiledMesh(50));
-        m_Meshes.emplace_back(std::make_shared<Mesh>("../Res/Models/Lowpoly_tree_sample.obj"));
+        m_Meshes.emplace_back(createQuadPlane(100, 100));
+        m_Meshes.push_back(std::make_shared<Mesh>("../Res/Models/Lowpoly_tree_sample.obj"));
 
-        m_Materials.emplace_back(std::make_shared<Material>()); // Default texture
-        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/viking_room.png"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/crate.png"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/skysphere.png"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/sprite.jpg"));
-        m_Materials.emplace_back(std::make_shared<Material>("../Res/Textures/tile.png"));
+        m_Materials.push_back(std::make_shared<Material>()); // Default texture
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/viking_room.png"));
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/crate.png"));
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/skysphere.png"));
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/sprite.jpg"));
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/tile.png"));
 
         Transform transform{glm::vec3(3.0f, -0.15f, 0.0f),
                             glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
                             glm::vec3(1.0f, 1.0f, 1.0f)};
-        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[0], m_Materials[1], transform));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[0], m_Materials[1], transform));
 
         Transform transform2;
-        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[1], transform2));
-        transform2.setTranslation(1.0f, 0.0f, 0.0f);
-        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[2], transform2));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[1], transform2));
+        transform2.setTranslation(-50.0f, -0.5f, -50.0f);
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[2], m_Materials[2], transform2));
         transform2.setTranslation(0.0f, 1.0f, 0.0f);
-        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[3], transform2));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[3], transform2));
         transform2.setTranslation(0.0f, 0.0f, 1.0f);
-        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[1], m_Materials[4], transform2));
-        transform2.setTranslation(0.0f, 0.0f, 2.0f);
-        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[4], m_Materials[0], transform2));
-
-        Transform transform3;
-        transform3.setTranslation(-25.0f, -0.5f, 25.0f);
-        transform3.setRotation(glm::radians(glm::vec3(180.0f, 0.0f, 0.0f)));
-        m_MeshInstances.emplace_back(std::make_shared<MeshInstance>(m_Meshes[3], m_Materials[5], transform3));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[4], transform2));
 
         init(renderPass, windowWidth, windowHeight);
     }
@@ -80,22 +70,21 @@ namespace Yare::Graphics {
     void ForwardRenderer::prepareScene() {
         resetCommandQueue();
 
-        for (const auto meshInstance : m_MeshInstances){
-            submit(meshInstance.get());
+        for (const auto entity : m_Entities){
+            submit(entity.get());
         }
     }
 
     void ForwardRenderer::present(CommandBuffer* commandBuffer) {
-
-        int index = 0;
         if (GlobalSettings::instance()->displayModels) {
+            int index = 0;
             for (auto& command : m_CommandQueue) {
 
                 uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
-                updateUniformBuffers(index, command.meshInst->getTransform());
+                updateUniformBuffers(index, command.entity->getTransform());
                 m_Pipeline->setActive(*commandBuffer);
 
-                int imageIdx = command.meshInst->getMaterial()->getImageIdx();
+                int imageIdx = command.entity->getMaterial()->getImageIdx();
                 vkCmdPushConstants(commandBuffer->getCommandBuffer(), m_Pipeline->getPipelineLayout(),
                                    VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
 
@@ -103,10 +92,10 @@ namespace Yare::Graphics {
                                         VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u,
                                         1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
 
-                command.meshInst->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
-                command.meshInst->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
+                command.entity->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
+                command.entity->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
 
-                auto indicesCount = command.meshInst->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t);
+                auto indicesCount = command.entity->getMesh()->getIndexBuffer()->getSize() / sizeof(uint32_t);
                 vkCmdDrawIndexed(commandBuffer->getCommandBuffer(), static_cast<uint32_t>(indicesCount), 1, 0, 0, 0);
                 index++;
             }
@@ -167,7 +156,6 @@ namespace Yare::Graphics {
     }
 
     void ForwardRenderer::createDescriptorSets() {
-
         DescriptorSetInfo descriptorSetInfo;
         descriptorSetInfo.descriptorSetCount = 1;
         descriptorSetInfo.pipeline = m_Pipeline;
@@ -224,7 +212,6 @@ namespace Yare::Graphics {
     }
 
     void ForwardRenderer::prepareUniformBuffers() {
-
         VkDeviceSize viewBufferSize = sizeof(UniformVS);
 
         m_DynamicAlignment = sizeof(glm::mat4);

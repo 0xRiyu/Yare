@@ -18,6 +18,7 @@ namespace Yare::Graphics {
     // Create a more custom mesh
     Mesh* createCube(float size);
     Mesh* createQuad(float width, float height);
+    Mesh* createQuadPlane(size_t width, size_t height);
     // Mesh* createSphere(float diameter);
     // Mesh* createTorus();
     // Mesh* createRect(float width, float height, float depth);

@@ -5,13 +5,14 @@
 #define GLM_FORCE_RADIANS
 #endif
 
+#include "Component.h"
 #include <glm/ext.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 namespace Yare {
-    class Transform {
+    class Transform : public Component {
     public:
         Transform();
         Transform(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale);

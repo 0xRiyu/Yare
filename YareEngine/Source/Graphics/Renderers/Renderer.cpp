@@ -6,9 +6,9 @@ namespace Yare::Graphics {
         m_CommandQueue.clear();
     }
 
-    void Renderer::submit(MeshInstance* instance) {
+    void Renderer::submit(Entity* instance) {
         RenderCommand renderCommand;
-        renderCommand.meshInst = instance;
+        renderCommand.entity = instance;
 
         m_CommandQueue.push_back(renderCommand);
     }

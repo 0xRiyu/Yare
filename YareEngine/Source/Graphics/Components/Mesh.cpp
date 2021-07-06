@@ -1,17 +1,10 @@
-#include "Graphics/Mesh.h"
+#include "Mesh.h"
 #include "Utilities/IOHelper.h"
 
 namespace Yare::Graphics {
 
-    Mesh::Mesh(const std::string& meshFilePath)
-        :m_FilePath(meshFilePath) {
-        if (!meshFilePath.empty()) {
-            std::vector<Vertex> vertices;
-            std::vector<uint32_t> indices;
-
-            Utilities::loadMesh(meshFilePath, vertices, indices);
-            createBuffers(vertices, indices);
-        }
+    Mesh::Mesh(const std::string& meshFilePath) {
+        loadMeshFromFile(meshFilePath);
     }
 
     Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
@@ -21,6 +14,22 @@ namespace Yare::Graphics {
     Mesh::~Mesh() {
         delete m_VertexBuffer;
         delete m_IndexBuffer;
+    }
+
+    void Mesh::loadMeshFromFile(const std::string& meshFilePath) {
+        if (m_VertexBuffer || m_IndexBuffer) {
+            throw std::runtime_error("Mesh already has buffers allocated.");
+        }
+
+        m_FilePath = meshFilePath;
+
+        if (!meshFilePath.empty()) {
+            std::vector<Vertex> vertices;
+            std::vector<uint32_t> indices;
+
+            Utilities::loadMesh(meshFilePath, vertices, indices);
+            createBuffers(vertices, indices);
+        }
     }
 
     void Mesh::createBuffers(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {

@@ -30,7 +30,7 @@ namespace Yare::Graphics {
     private:
         std::shared_ptr<Mesh> m_CubeMesh;
         std::shared_ptr<Material> m_Material;
-        MeshInstance* m_SkyboxModel;
+        Entity* m_SkyboxModel;
         Pipeline* m_Pipeline;
         DescriptorSet* m_DescriptorSet;
         Buffer* m_UniformBuffer;

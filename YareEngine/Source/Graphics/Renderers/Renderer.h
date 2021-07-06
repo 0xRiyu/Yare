@@ -1,7 +1,7 @@
 #ifndef YARE_RENDERER_H
 #define YARE_RENDERER_H
 
-#include "Graphics/MeshInstance.h"
+#include "Graphics/Scene/Entity.h"
 #include "Graphics/Vulkan/CommandBuffer.h"
 #include "Graphics/Vulkan/RenderPass.h"
 
@@ -14,7 +14,7 @@
 namespace Yare::Graphics {
 
     struct RenderCommand {
-        MeshInstance* meshInst;
+        Entity* entity;
     };
 
     typedef std::vector<RenderCommand> CommandQueue;
@@ -30,7 +30,7 @@ namespace Yare::Graphics {
     protected:
         virtual void init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) = 0;
         virtual void resetCommandQueue();
-        virtual void submit(MeshInstance* instance);
+        virtual void submit(Entity* instance);
         CommandQueue m_CommandQueue;
     };
 }
