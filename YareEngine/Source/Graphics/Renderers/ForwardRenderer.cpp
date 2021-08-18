@@ -15,29 +15,32 @@ namespace Yare::Graphics {
     ForwardRenderer::ForwardRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
         m_Meshes.push_back(std::make_shared<Mesh>("../Res/Models/viking_room.obj"));
         m_Meshes.emplace_back(createMesh(PrimativeShape::CUBE));
-        m_Meshes.emplace_back(createQuadPlane(100, 100));
+        m_Meshes.emplace_back(createQuadPlane(15, 15));
         m_Meshes.push_back(std::make_shared<Mesh>("../Res/Models/Lowpoly_tree_sample.obj"));
 
         m_Materials.push_back(std::make_shared<Material>()); // Default texture
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/viking_room.png"));
-        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/crate.png"));
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/mossytiles.jpg"));
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/skysphere.png"));
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/sprite.jpg"));
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/tile.png"));
 
-        Transform transform{glm::vec3(3.0f, -0.15f, 0.0f),
+        Transform transform{glm::vec3(3.0f, -0.42f, 0.0f),
                             glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
                             glm::vec3(1.0f, 1.0f, 1.0f)};
         m_Entities.push_back(std::make_shared<Entity>(m_Meshes[0], m_Materials[1], transform));
 
         Transform transform2;
-        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[1], transform2));
-        transform2.setTranslation(-50.0f, -0.5f, -50.0f);
+        Transform transform3;
+        transform3.setScale(glm::vec3(0.05, 0.05, 0.05));
+        transform3.setTranslation(1.5f, -0.5f, 0.0f);
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[3], m_Materials[0], transform3));
+        transform2.setTranslation(-7.5f, -0.5f, -7.5f);
         m_Entities.push_back(std::make_shared<Entity>(m_Meshes[2], m_Materials[2], transform2));
-        transform2.setTranslation(0.0f, 1.0f, 0.0f);
-        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[3], transform2));
-        transform2.setTranslation(0.0f, 0.0f, 1.0f);
+        transform2.setTranslation(0.0f, 0.0f, 0.0f);
         m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[4], transform2));
+        transform2.setTranslation(-1.5f, 0.0f, 0.0f);
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[3], transform2));
 
         init(renderPass, windowWidth, windowHeight);
     }
