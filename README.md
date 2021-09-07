@@ -27,4 +27,4 @@ Linux - buildlinux.sh - Requires g++ compiler, Ninja, and CMake.
 ./buildlinux.sh release run regen
 
 ### Screenshots
-![05.23.2020](/Screenshots/08.18.2021-sandbox.png "Multiple models rendered with a skybox pipeline")
+![05.23.2020](/Screenshots/08.18.2021-sandbox.jpg "Multiple models rendered with a skybox pipeline")
