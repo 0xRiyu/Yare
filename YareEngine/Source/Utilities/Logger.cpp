@@ -6,28 +6,27 @@
 #include <ctime>
 #include <iostream>
 #include <string>
-#include <ctime>
 
 namespace Yare {
 
     std::shared_ptr<spdlog::logger> Logger::m_EngineLogger;
-    std::string Logger::m_FileOutputPath;
-    std::string Logger::m_currentLogFileName;
+    std::string                     Logger::m_FileOutputPath;
+    std::string                     Logger::m_currentLogFileName;
 
     void Logger::init() {
         // Get the Date/Time stamp to generate a new logfile
-        time_t timeinfo  = std::time(nullptr);
-        char buff[50];
-        tm* ltime;
+        time_t timeinfo = std::time(nullptr);
+        char   buff[50];
+        tm*    ltime;
 
         // Get local time then append the logname to the end
         // MSVC disable warning of non-secure localtime and strcat
         // localtime_s and strcat_s aren't available on unix gcc
-#pragma warning( disable : 4996 )
+#pragma warning(disable : 4996)
         ltime = localtime(&timeinfo);
         std::strftime(buff, sizeof(buff), "%Y-%m-%d_%H-%M-%S", ltime);
         strcat(buff, "-Yare_Engine_Log.txt");
-#pragma warning ( default : 4996 )
+#pragma warning(default : 4996)
         m_currentLogFileName = buff;
 
         std::vector<spdlog::sink_ptr> sinks;
@@ -44,4 +43,4 @@ namespace Yare {
     void Logger::update() {
         // Update the logger
     }
-}
+}  // namespace Yare

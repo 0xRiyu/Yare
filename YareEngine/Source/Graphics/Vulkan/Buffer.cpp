@@ -1,14 +1,12 @@
 #include "Graphics/Vulkan/Buffer.h"
+
 #include "Graphics/Vulkan/Devices.h"
 #include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
-    Buffer::Buffer() {
-    }
+    Buffer::Buffer() {}
 
-    Buffer::Buffer(BufferUsage usage, size_t size, const void* data) {
-        init(usage, size, data);
-    }
+    Buffer::Buffer(BufferUsage usage, size_t size, const void* data) { init(usage, size, data); }
 
     Buffer::~Buffer() {
         if (m_Buffer) {
@@ -22,38 +20,38 @@ namespace Yare::Graphics {
     void Buffer::init(BufferUsage usage, size_t size, const void* data) {
         m_Size = size;
         m_Usage = usage;
-        VkBufferUsageFlags usageFlags;
+        VkBufferUsageFlags    usageFlags;
         VkMemoryPropertyFlags propFlags;
 
-        switch(usage) {
-        case BufferUsage::UNIFORM:
-            usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-            propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-            break;
-        case BufferUsage::DYNAMIC:
-            usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-            propFlags =  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-            break;
-        case BufferUsage::VERTEX:
-            usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-            propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-            break;
-        case BufferUsage::DYNAMIC_VERTEX:
-            usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-            propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-            break;
-        case BufferUsage::INDEX:
-            usageFlags =  VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-            propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-            break;
-        case BufferUsage::DYNAMIC_INDEX:
-            usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-            propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
-            break;
-        case BufferUsage::TRANSFER:
-            usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-            propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
-            break;
+        switch (usage) {
+            case BufferUsage::UNIFORM:
+                usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+                break;
+            case BufferUsage::DYNAMIC:
+                usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                break;
+            case BufferUsage::VERTEX:
+                usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+                propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+                break;
+            case BufferUsage::DYNAMIC_VERTEX:
+                usageFlags = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+                propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                break;
+            case BufferUsage::INDEX:
+                usageFlags = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+                propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+                break;
+            case BufferUsage::DYNAMIC_INDEX:
+                usageFlags = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+                propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                break;
+            case BufferUsage::TRANSFER:
+                usageFlags = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                propFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+                break;
         }
 
         createBuffer(usageFlags, propFlags);
@@ -68,8 +66,7 @@ namespace Yare::Graphics {
             auto p = static_cast<char*>(m_MappedData) + offset;
             memcpy((void*)p, data, size);
             unmapMemory();
-        }
-        else {
+        } else {
             YZ_ERROR("Mapping failed - Not copying data to buffer");
         }
     }
@@ -80,8 +77,7 @@ namespace Yare::Graphics {
             memcpy(p, data, size);
             flush(size, 0);
             unmapMemory();
-        }
-        else {
+        } else {
             YZ_ERROR("Mapping failed - Not copying data to buffer");
         }
     }
@@ -93,7 +89,6 @@ namespace Yare::Graphics {
         } else {
             YZ_WARN("Buffer was not of type Index. Did you intend to bind in this way?");
         }
-
     }
 
     void Buffer::bindVertex(CommandBuffer* commandBuffer, VkDeviceSize offset) {
@@ -115,13 +110,11 @@ namespace Yare::Graphics {
         return true;
     }
 
-    void Buffer::unmapMemory() {
-        vkUnmapMemory(Devices::instance()->getDevice(), m_BufferMemory);
-    }
+    void Buffer::unmapMemory() { vkUnmapMemory(Devices::instance()->getDevice(), m_BufferMemory); }
 
     void Buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
         VkMappedMemoryRange mappedRange = {};
-        mappedRange.sType =  VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+        mappedRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
         mappedRange.memory = m_BufferMemory;
         mappedRange.offset = offset;
         mappedRange.size = size;
@@ -155,4 +148,4 @@ namespace Yare::Graphics {
 
         vkBindBufferMemory(Devices::instance()->getDevice(), m_Buffer, m_BufferMemory, 0);
     }
-}
+}  // namespace Yare::Graphics

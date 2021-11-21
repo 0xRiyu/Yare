@@ -6,7 +6,7 @@
 namespace Yare::Graphics {
 
     class Semaphore {
-    public:
+       public:
         Semaphore();
         ~Semaphore();
 
@@ -14,8 +14,8 @@ namespace Yare::Graphics {
 
         const VkSemaphore& getSemaphore() const { return m_Semaphore; }
 
-    private:
+       private:
         VkSemaphore m_Semaphore = VK_NULL_HANDLE;
     };
-}
-#endif // YARE_SEMAPHORE_H
+}  // namespace Yare::Graphics
+#endif  // YARE_SEMAPHORE_H

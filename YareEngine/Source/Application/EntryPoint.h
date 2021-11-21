@@ -9,4 +9,4 @@ int main() {
     delete app;
 }
 
-#endif //YARE_ENTRYPOINT_H
+#endif  // YARE_ENTRYPOINT_H

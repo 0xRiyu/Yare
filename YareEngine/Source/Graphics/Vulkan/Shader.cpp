@@ -1,20 +1,20 @@
 #include "Graphics/Vulkan/Shader.h"
+
+#include <map>
+
 #include "Graphics/Vulkan/Devices.h"
 #include "Graphics/Vulkan/Utilities.h"
 #include "Utilities/IOHelper.h"
 #include "Utilities/Logger.h"
-#include <map>
 
 namespace Yare::Graphics {
 
     bool begins_with(const std::string& input, const std::string& match) {
-        return input.size() >= match.size()
-            && equal(match.begin(), match.end(), input.begin());
+        return input.size() >= match.size() && equal(match.begin(), match.end(), input.begin());
     }
 
-
     Shader::Shader(const std::string& filePath, const std::string& shaderName)
-        :m_ShaderStages(nullptr), m_ShaderName(shaderName), m_FilePath(filePath) {
+        : m_ShaderStages(nullptr), m_ShaderName(shaderName), m_FilePath(filePath) {
         m_ShaderSource = Utilities::readFile(filePath + "/" + shaderName);
         readShaderFiles();
     }
@@ -43,35 +43,31 @@ namespace Yare::Graphics {
                     shaderFiles.insert(std::pair<ShaderType, std::string>(ShaderType::Vertex, *(std::next(iter))));
                     m_StageCount++;
                     continue;
-                }
-                else if (current_line.find("FRAGMENT") != std::string::npos) {
+                } else if (current_line.find("FRAGMENT") != std::string::npos) {
                     shaderFiles.insert(std::pair<ShaderType, std::string>(ShaderType::Fragment, *(std::next(iter))));
                     m_StageCount++;
                     continue;
-                }
-                else if (current_line.find("GEOMETRY") != std::string::npos) {
+                } else if (current_line.find("GEOMETRY") != std::string::npos) {
                     shaderFiles.insert(std::pair<ShaderType, std::string>(ShaderType::Geometry, *(std::next(iter))));
                     m_StageCount++;
                     continue;
-                }
-                else if (current_line.find("COMPUTE") != std::string::npos) {
+                } else if (current_line.find("COMPUTE") != std::string::npos) {
                     shaderFiles.insert(std::pair<ShaderType, std::string>(ShaderType::Compute, *(std::next(iter))));
                     m_StageCount++;
                     continue;
-                }
-                else if (current_line.find("TESSELLATION CONTROL") != std::string::npos) {
-                    shaderFiles.insert(std::pair<ShaderType, std::string>(ShaderType::Tessellation_Control, *(std::next(iter))));
+                } else if (current_line.find("TESSELLATION CONTROL") != std::string::npos) {
+                    shaderFiles.insert(
+                        std::pair<ShaderType, std::string>(ShaderType::Tessellation_Control, *(std::next(iter))));
                     m_StageCount++;
                     continue;
-                }
-                else if (current_line.find("TESSELLATION EVALUATION") != std::string::npos) {
-                    shaderFiles.insert(std::pair<ShaderType, std::string>(ShaderType::Tessellation_Evaluation, *(std::next(iter))));
+                } else if (current_line.find("TESSELLATION EVALUATION") != std::string::npos) {
+                    shaderFiles.insert(
+                        std::pair<ShaderType, std::string>(ShaderType::Tessellation_Evaluation, *(std::next(iter))));
                     m_StageCount++;
                     continue;
-                }
-                else {
-                    YZ_CRITICAL("Line " + std::to_string(iter - m_ShaderSource.begin() + 1) + " in file '" + m_ShaderName +
-                                "'  has //SHADER:, but contained an unknown shader type");
+                } else {
+                    YZ_CRITICAL("Line " + std::to_string(iter - m_ShaderSource.begin() + 1) + " in file '" +
+                                m_ShaderName + "'  has //SHADER:, but contained an unknown shader type");
                 }
             }
         }
@@ -91,8 +87,8 @@ namespace Yare::Graphics {
             m_ShaderStages[currentShaderStage].stage = static_cast<VkShaderStageFlagBits>(file.first);
             m_ShaderStages[currentShaderStage].pName = "main";
 
-            auto res = vkCreateShaderModule(Devices::instance()->getDevice(), &createInfo,
-                                            nullptr, &m_ShaderStages[currentShaderStage].module);
+            auto res = vkCreateShaderModule(Devices::instance()->getDevice(), &createInfo, nullptr,
+                                            &m_ShaderStages[currentShaderStage].module);
             if (res != VK_SUCCESS) {
                 YZ_CRITICAL("Vulkan was unable to create a shaderModule with provided shader code.");
             }
@@ -100,4 +96,4 @@ namespace Yare::Graphics {
             currentShaderStage++;
         }
     }
-}
+}  // namespace Yare::Graphics

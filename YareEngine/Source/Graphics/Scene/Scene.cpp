@@ -2,8 +2,7 @@
 
 namespace Yare::Graphics {
 
-    Scene::Scene() {
-    }
+    Scene::Scene() {}
 
     Entity* Scene::addEntity(const std::string& entity_name) {
         m_EntityNames.push_back(entity_name);
@@ -18,4 +17,4 @@ namespace Yare::Graphics {
         }
         return nullptr;
     }
-}
+}  // namespace Yare::Graphics

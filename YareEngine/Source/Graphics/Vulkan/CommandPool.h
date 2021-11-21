@@ -5,15 +5,15 @@
 
 namespace Yare::Graphics {
     class CommandPool {
-    public:
+       public:
         CommandPool();
         ~CommandPool();
 
-        void init();
+        void                 init();
         const VkCommandPool& getPool() const { return m_CommandPool; }
 
-    private:
+       private:
         VkCommandPool m_CommandPool;
     };
-}
-#endif //YARE_COMMANDPOOL_H
+}  // namespace Yare::Graphics
+#endif  // YARE_COMMANDPOOL_H

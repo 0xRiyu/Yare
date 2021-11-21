@@ -1,18 +1,18 @@
 #ifndef YARE_KEYHANDLER_H
 #define YARE_KEYHANDLER_H
 
+#include <memory>
+
+#include "Core/Glfw.h"
 #include "Graphics/Camera/Camera.h"
 #include "Input/InputHandler.h"
-#include "Core/Glfw.h"
-
-#include <memory>
 
 #define MAX_BUTTONS GLFW_MOUSE_BUTTON_LAST
 #define MAX_KEYS GLFW_KEY_LAST
 
 namespace Yare {
-    class KeyHandler: public InputHandler {
-    public:
+    class KeyHandler : public InputHandler {
+       public:
         KeyHandler(std::shared_ptr<Graphics::Camera> currentCamera);
         virtual ~KeyHandler();
 
@@ -23,10 +23,9 @@ namespace Yare {
         int  m_KeyState[MAX_KEYS];
         bool m_Buttons[MAX_BUTTONS];
 
-    private:
+       private:
         std::shared_ptr<Graphics::Camera> p_Camera;
-
     };
-}
+}  // namespace Yare
 
-#endif //YARE_KEYHANDLER_H
+#endif  // YARE_KEYHANDLER_H

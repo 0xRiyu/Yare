@@ -7,9 +7,8 @@ namespace Yare::Graphics {
     FpsCamera::FpsCamera(uint32_t screenWidth, uint32_t screenHeight) {
         m_Aspect = static_cast<float>(screenWidth) / screenHeight;
 
-        m_Transform = Transform(glm::vec3(1.0f, 2.0f, -4.0f),
-                                glm::radians(glm::vec3(90.0f, -20.5f, 0.0f)),
-                                glm::vec3(1.0f));
+        m_Transform =
+            Transform(glm::vec3(1.0f, 2.0f, -4.0f), glm::radians(glm::vec3(90.0f, -20.5f, 0.0f)), glm::vec3(1.0f));
 
         m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
         m_Fov = 50.0f;
@@ -20,8 +19,7 @@ namespace Yare::Graphics {
         updateProj();
     }
 
-    FpsCamera::~FpsCamera() {
-    }
+    FpsCamera::~FpsCamera() {}
 
     void FpsCamera::setPosition(const glm::vec3& in) {
         m_Transform.setTranslation(in);
@@ -45,9 +43,7 @@ namespace Yare::Graphics {
         updateProj();
     }
 
-    void FpsCamera::setCameraSpeed(float speed) {
-        m_CameraSpeed = speed;
-    }
+    void FpsCamera::setCameraSpeed(float speed) { m_CameraSpeed = speed; }
 
     void FpsCamera::updateDimensions(uint32_t screenWidth, uint32_t screenHeight) {
         m_Aspect = static_cast<float>(screenWidth) / screenHeight;
@@ -55,14 +51,12 @@ namespace Yare::Graphics {
     }
 
     void FpsCamera::recalculateViewParams() {
-
         m_LookAt.x = cos(m_Transform.getVec3Rotation().x) * cos(m_Transform.getVec3Rotation().y);
         m_LookAt.y = sin(m_Transform.getVec3Rotation().y);
         m_LookAt.z = sin(m_Transform.getVec3Rotation().x) * cos(m_Transform.getVec3Rotation().y);
         m_LookAt = glm::normalize(m_LookAt);
 
         auto quat = m_Transform.getQuatRotation();
-
 
         m_Up = glm::vec3(0.0f, 1.0f, 0.0f);
         glm::vec3 right = glm::normalize(glm::cross(m_LookAt, m_Up));
@@ -73,7 +67,5 @@ namespace Yare::Graphics {
         m_ViewMatrix = glm::lookAtRH(m_Transform.getTranslation(), m_Transform.getTranslation() + m_LookAt, m_Up);
     }
 
-    void FpsCamera::updateProj() {
-        m_ProjectionMatrix = glm::perspective(glm::radians(m_Fov), m_Aspect, 0.1f, 100.0f);
-    }
-}
+    void FpsCamera::updateProj() { m_ProjectionMatrix = glm::perspective(glm::radians(m_Fov), m_Aspect, 0.1f, 100.0f); }
+}  // namespace Yare::Graphics

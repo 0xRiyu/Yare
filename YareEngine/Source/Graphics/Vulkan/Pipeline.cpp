@@ -1,11 +1,11 @@
 #include "Graphics/Vulkan/Pipeline.h"
+
 #include "Graphics/Vulkan/Devices.h"
 #include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
-    Pipeline::Pipeline() {
-    }
+    Pipeline::Pipeline() {}
 
     Pipeline::~Pipeline() {
         if (m_DescriptorSetLayout) {
@@ -32,7 +32,8 @@ namespace Yare::Graphics {
         // Pipeline yay
         createGraphicsPipeline();
 
-        // Descriptor sets can't be created directly, they must be allocated from a pool like command buffers. We create those here.
+        // Descriptor sets can't be created directly, they must be allocated from a pool like command buffers. We create
+        // those here.
         createDescriptorPool();
     }
 
@@ -41,21 +42,19 @@ namespace Yare::Graphics {
     }
 
     void Pipeline::createDescriptorSetLayout() {
-
         VkDescriptorSetLayoutCreateInfo layoutInfo = {};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.bindingCount = static_cast<uint32_t>(m_PipelineInfo.layoutBindings.size());
         layoutInfo.pBindings = m_PipelineInfo.layoutBindings.data();
 
-        auto res = vkCreateDescriptorSetLayout(Devices::instance()->getDevice(),
-                                               &layoutInfo, nullptr, &m_DescriptorSetLayout);
+        auto res =
+            vkCreateDescriptorSetLayout(Devices::instance()->getDevice(), &layoutInfo, nullptr, &m_DescriptorSetLayout);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan was unable to create a descriptor set layout.");
         }
     }
 
     void Pipeline::createGraphicsPipeline() {
-
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputInfo.vertexBindingDescriptionCount = 1;
@@ -78,8 +77,8 @@ namespace Yare::Graphics {
         viewport.maxDepth = 1.0f;
 
         VkRect2D scissor = {};
-        scissor.offset = { 0,0 };
-        scissor.extent = { (uint32_t)m_PipelineInfo.width, (uint32_t)m_PipelineInfo.height };
+        scissor.offset = {0, 0};
+        scissor.extent = {(uint32_t)m_PipelineInfo.width, (uint32_t)m_PipelineInfo.height};
 
         VkPipelineViewportStateCreateInfo viewportState = {};
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -101,18 +100,18 @@ namespace Yare::Graphics {
         rasterizer.cullMode = m_PipelineInfo.cullMode;
         rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
-        rasterizer.depthBiasConstantFactor = 0.0f; //optional
-        rasterizer.depthBiasClamp = 0.0f; //optional
-        rasterizer.depthBiasSlopeFactor = 0.0f; //optional
+        rasterizer.depthBiasConstantFactor = 0.0f;  // optional
+        rasterizer.depthBiasClamp = 0.0f;           // optional
+        rasterizer.depthBiasSlopeFactor = 0.0f;     // optional
 
         VkPipelineMultisampleStateCreateInfo multisampling = {};
 
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampling.sampleShadingEnable = VK_FALSE;
         multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-        multisampling.minSampleShading = 1.0f; //optional
-        multisampling.pSampleMask = nullptr; //optional
-        multisampling.alphaToCoverageEnable = VK_FALSE; //optional
+        multisampling.minSampleShading = 1.0f;           // optional
+        multisampling.pSampleMask = nullptr;             // optional
+        multisampling.alphaToCoverageEnable = VK_FALSE;  // optional
 
         VkPipelineDepthStencilStateCreateInfo depthStencil = {};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
@@ -121,17 +120,15 @@ namespace Yare::Graphics {
         depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
         depthStencil.depthBoundsTestEnable = VK_FALSE;
         depthStencil.stencilTestEnable = VK_FALSE;
-        depthStencil.minDepthBounds = 0.0f; // Optional
-        depthStencil.maxDepthBounds = 1.0f; // Optional
-        depthStencil.front = {}; // Optional
-        depthStencil.back = {}; // Optional
+        depthStencil.minDepthBounds = 0.0f;  // Optional
+        depthStencil.maxDepthBounds = 1.0f;  // Optional
+        depthStencil.front = {};             // Optional
+        depthStencil.back = {};              // Optional
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};
 
-        colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
-                                              VK_COLOR_COMPONENT_G_BIT |
-                                              VK_COLOR_COMPONENT_B_BIT |
-                                              VK_COLOR_COMPONENT_A_BIT;
+        colorBlendAttachment.colorWriteMask =
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
         if (m_PipelineInfo.colorBlendingEnabled) {
             colorBlendAttachment.blendEnable = VK_TRUE;
             colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
@@ -147,14 +144,13 @@ namespace Yare::Graphics {
         VkPipelineColorBlendStateCreateInfo colorBlending = {};
         colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
         colorBlending.logicOpEnable = VK_FALSE;
-        colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
+        colorBlending.logicOp = VK_LOGIC_OP_COPY;  // Optional
         colorBlending.attachmentCount = 1;
         colorBlending.pAttachments = &colorBlendAttachment;
         colorBlending.blendConstants[0] = 0.0f;
         colorBlending.blendConstants[1] = 0.0f;
         colorBlending.blendConstants[2] = 0.0f;
         colorBlending.blendConstants[3] = 0.0f;
-
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -163,8 +159,8 @@ namespace Yare::Graphics {
         pipelineLayoutInfo.pPushConstantRanges = &m_PipelineInfo.pushConstants;
         pipelineLayoutInfo.pushConstantRangeCount = 1;
 
-        auto res = vkCreatePipelineLayout(Devices::instance()->getDevice(), &pipelineLayoutInfo,
-                                          nullptr, &m_PipelineLayout);
+        auto res =
+            vkCreatePipelineLayout(Devices::instance()->getDevice(), &pipelineLayoutInfo, nullptr, &m_PipelineLayout);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan Pipeline Layout was unable to be created.");
         }
@@ -195,15 +191,14 @@ namespace Yare::Graphics {
         pipelineCreateInfo.subpass = 0;
         pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
 
-        res = vkCreateGraphicsPipelines(Devices::instance()->getDevice(), VK_NULL_HANDLE, 1,
-                                        &pipelineCreateInfo, nullptr, &m_GraphicsPipeline);
+        res = vkCreateGraphicsPipelines(Devices::instance()->getDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo,
+                                        nullptr, &m_GraphicsPipeline);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("Vulkan failed to create a graphics pipeline.");
         }
     }
 
     void Pipeline::createDescriptorPool() {
-
         std::vector<VkDescriptorPoolSize> poolSizes(m_PipelineInfo.layoutBindings.size());
 
         int bindingIndex = 0;
@@ -224,4 +219,4 @@ namespace Yare::Graphics {
             YZ_CRITICAL("Vulkan creation of descriptor pool failed.");
         }
     }
-}
+}  // namespace Yare::Graphics

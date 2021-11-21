@@ -7,9 +7,9 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/ext.hpp>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/ext.hpp>
 
 namespace Yare::Graphics {
 
@@ -20,18 +20,18 @@ namespace Yare::Graphics {
     typedef std::vector<RenderCommand> CommandQueue;
 
     class Renderer {
-    public:
+       public:
         virtual ~Renderer() = default;
 
         virtual void prepareScene() = 0;
         virtual void present(CommandBuffer* commandBuffer) = 0;
         virtual void onResize(RenderPass* renderPass, uint32_t newWidth, uint32_t newHeight) = 0;
 
-    protected:
+       protected:
         virtual void init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) = 0;
         virtual void resetCommandQueue();
         virtual void submit(Entity* instance);
         CommandQueue m_CommandQueue;
     };
-}
-#endif // YARE_RENDERER_H
+}  // namespace Yare::Graphics
+#endif  // YARE_RENDERER_H

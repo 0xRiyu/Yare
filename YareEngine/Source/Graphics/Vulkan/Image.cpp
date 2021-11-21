@@ -1,10 +1,11 @@
 #include "Graphics/Vulkan/Image.h"
-#include "Graphics/Vulkan/Devices.h"
-#include "Graphics/Vulkan/Utilities.h"
-#include "Utilities/Logger.h"
 
 #include <stb/stb_image.h>
 #include <stdlib.h>
+
+#include "Graphics/Vulkan/Devices.h"
+#include "Graphics/Vulkan/Utilities.h"
+#include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
@@ -44,9 +45,9 @@ namespace Yare::Graphics {
         createSampler(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE);
     }
 
-    void Image::createEmptyTexture(size_t width, size_t height, VkFormat format,
-                                       VkImageTiling tiling, VkImageUsageFlags usage,
-                                       VkMemoryPropertyFlags properties, VkImageAspectFlagBits flagBits) {
+    void Image::createEmptyTexture(size_t width, size_t height, VkFormat format, VkImageTiling tiling,
+                                   VkImageUsageFlags usage, VkMemoryPropertyFlags properties,
+                                   VkImageAspectFlagBits flagBits) {
         m_TextureWidth = width;
         m_TextureHeight = height;
         createImage(VK_IMAGE_TYPE_2D, format, tiling, usage, 0, properties);
@@ -66,9 +67,8 @@ namespace Yare::Graphics {
     }
 
     void Image::loadTextureFromFileIntoBuffer(const std::string& filePath, Buffer& buffer) {
-
-        int texWidth, texHeight, texChannels;
-        stbi_uc* pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+        int          texWidth, texHeight, texChannels;
+        stbi_uc*     pixels = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
         VkDeviceSize imageSize = texWidth * texHeight * 4;
 
         m_TextureWidth = static_cast<size_t>(texWidth);
@@ -83,17 +83,16 @@ namespace Yare::Graphics {
         stbi_image_free(pixels);
     }
 
-    void Image::loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths,
-                                                    Buffer& buffer) {
+    void Image::loadTexturesFromFilesIntoBuffer(const std::vector<std::string>& filePaths, Buffer& buffer) {
         // allocate some memory for us to store our images in sequence
         // width * height * r/g/b/a * 20 images
-        uint32_t max_size = 2048 * 2048 * 4 * 20;
+        uint32_t       max_size = 2048 * 2048 * 4 * 20;
         unsigned char* images = (unsigned char*)malloc(max_size);
-        size_t total_images_size = 0;
+        size_t         total_images_size = 0;
 
         for (const auto& filePath : filePaths) {
             // Load each image into a buffer
-            int texWidth, texHeight, texChannels;
+            int      texWidth, texHeight, texChannels;
             stbi_uc* image = stbi_load(filePath.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
             if (!image) {
                 YZ_CRITICAL("stbi_load failed to load a texture from file.");
@@ -123,29 +122,25 @@ namespace Yare::Graphics {
     }
 
     void Image::createTexture2D(const Buffer& buffer, VkFormat format) {
-        createImage(VK_IMAGE_TYPE_2D, format,
-                    VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    0,
+        createImage(VK_IMAGE_TYPE_2D, format, VK_IMAGE_TILING_OPTIMAL,
+                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 0,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, format,
-                                              1, VK_IMAGE_ASPECT_COLOR_BIT);
+        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_2D, format, 1, VK_IMAGE_ASPECT_COLOR_BIT);
 
-        transitionImageLayout(format, 1, VK_IMAGE_LAYOUT_UNDEFINED,
-                              VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+        transitionImageLayout(format, 1, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         copyBufferToImage(buffer, 1, 1);
         transitionImageLayout(format, 1, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                               VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
     void Image::createTextureCube(const Buffer& buffer) {
-        createImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB,
-                    VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-                    VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+        createImage(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+                    VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_CUBE, VK_FORMAT_R8G8B8A8_SRGB,
-                                              6, VK_IMAGE_ASPECT_COLOR_BIT);
+        m_ImageView = VkUtil::createImageView(m_Image, VK_IMAGE_VIEW_TYPE_CUBE, VK_FORMAT_R8G8B8A8_SRGB, 6,
+                                              VK_IMAGE_ASPECT_COLOR_BIT);
 
         transitionImageLayout(VK_FORMAT_R8G8B8A8_SRGB, 6, VK_IMAGE_LAYOUT_UNDEFINED,
                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -157,7 +152,7 @@ namespace Yare::Graphics {
     }
 
     void Image::transitionImageLayout(VkFormat format, uint32_t layerCount, VkImageLayout oldLayout,
-                                          VkImageLayout newLayout) {
+                                      VkImageLayout newLayout) {
         VkImageMemoryBarrier barrier = {};
         barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.oldLayout = oldLayout;
@@ -181,66 +176,51 @@ namespace Yare::Graphics {
             // I added the host bit here because it was in the imgui tutorial but I dont know its affect beware
             sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT | VK_PIPELINE_STAGE_HOST_BIT;
             destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        }
-        else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-                 newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        } else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+                   newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
             sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
             destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        }
-        else {
+        } else {
             throw std::invalid_argument("unsupported layout transition!");
         }
 
         VkCommandBuffer commandBuffer = VkUtil::beginSingleTimeCommands();
 
-        vkCmdPipelineBarrier(
-                             commandBuffer,
-                             sourceStage, destinationStage,
-                             0,
-                             0, nullptr,
-                             0, nullptr,
-                             1, &barrier
-                             );
+        vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
         VkUtil::endSingleTimeCommands(commandBuffer);
     }
 
     void Image::copyBufferToImage(const Buffer& buffer, uint32_t faces, uint32_t mipLevels) {
-
         std::vector<VkBufferImageCopy> bufferCopyRegions;
 
         for (uint32_t face = 0; face < faces; face++) {
             for (uint32_t level = 0; level < mipLevels; level++) {
                 // This assumes the buffer has only n required images and nothing more
-                uint32_t offset = (static_cast<uint32_t>(buffer.getSize()) / faces) * face;
+                uint32_t          offset = (static_cast<uint32_t>(buffer.getSize()) / faces) * face;
                 VkBufferImageCopy bufferCopyRegion = {};
                 bufferCopyRegion.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
                 bufferCopyRegion.imageSubresource.mipLevel = level;
                 bufferCopyRegion.imageSubresource.baseArrayLayer = face;
                 bufferCopyRegion.imageSubresource.layerCount = 1;
-                bufferCopyRegion.imageExtent = {
-                                      static_cast<uint32_t>(m_TextureWidth),
-                                      static_cast<uint32_t>(m_TextureHeight),
-                                      1
-                };
+                bufferCopyRegion.imageExtent = {static_cast<uint32_t>(m_TextureWidth),
+                                                static_cast<uint32_t>(m_TextureHeight), 1};
                 bufferCopyRegion.bufferOffset = offset;
                 bufferCopyRegions.push_back(bufferCopyRegion);
             }
         }
 
         VkCommandBuffer commandBuffer = VkUtil::beginSingleTimeCommands();
-        vkCmdCopyBufferToImage(commandBuffer, buffer.getBuffer(), m_Image,
-                               VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        vkCmdCopyBufferToImage(commandBuffer, buffer.getBuffer(), m_Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                static_cast<uint32_t>(bufferCopyRegions.size()), bufferCopyRegions.data());
         VkUtil::endSingleTimeCommands(commandBuffer);
     }
 
-    void Image::createImage(VkImageType type, VkFormat format, VkImageTiling tiling,
-                                VkImageUsageFlags usage, VkImageCreateFlags flags,
-                                VkMemoryPropertyFlags properties) {
+    void Image::createImage(VkImageType type, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+                            VkImageCreateFlags flags, VkMemoryPropertyFlags properties) {
         VkImageCreateInfo imageInfo = {};
         imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
         imageInfo.imageType = type;
@@ -272,7 +252,8 @@ namespace Yare::Graphics {
         VkMemoryAllocateInfo allocInfo = {};
         allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         allocInfo.allocationSize = memRequirements.size;
-        allocInfo.memoryTypeIndex = VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        allocInfo.memoryTypeIndex =
+            VkUtil::findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
         if (vkAllocateMemory(Devices::instance()->getDevice(), &allocInfo, nullptr, &m_ImageMemory) != VK_SUCCESS) {
             YZ_CRITICAL("failed to allocate image memory!");
@@ -310,8 +291,8 @@ namespace Yare::Graphics {
     Image* Image::createDepthStencilBuffer(size_t width, size_t height, VkFormat format) {
         Image* image = new Image();
         image->createEmptyTexture(width, height, format, VK_IMAGE_TILING_OPTIMAL,
-                                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-                                  VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+                                  VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+                                  VK_IMAGE_ASPECT_DEPTH_BIT);
         return image;
     }
 
@@ -339,4 +320,4 @@ namespace Yare::Graphics {
         }
         return image;
     }
-}
+}  // namespace Yare::Graphics

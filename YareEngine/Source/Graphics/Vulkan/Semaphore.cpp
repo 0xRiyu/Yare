@@ -1,12 +1,11 @@
 #include "Graphics/Vulkan/Semaphore.h"
+
 #include "Graphics/Vulkan/Devices.h"
 #include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
-    Semaphore::Semaphore() {
-        init();
-    }
+    Semaphore::Semaphore() { init(); }
 
     Semaphore::~Semaphore() {
         if (m_Semaphore) {
@@ -23,4 +22,4 @@ namespace Yare::Graphics {
             YZ_CRITICAL("Vulkan failed to create a semaphore");
         }
     }
-}
+}  // namespace Yare::Graphics

@@ -1,14 +1,14 @@
 #include "Graphics/Vulkan/Devices.h"
-#include "Application/Application.h"
-#include "Utilities/Logger.h"
-#include "Core/Glfw.h"
 
 #include <set>
 
+#include "Application/Application.h"
+#include "Core/Glfw.h"
+#include "Utilities/Logger.h"
+
 namespace Yare::Graphics {
 
-    Devices::Devices() {
-    }
+    Devices::Devices() {}
 
     Devices::~Devices() {
         if (m_Device) {
@@ -33,13 +33,11 @@ namespace Yare::Graphics {
         createLogicalDevice();
     }
 
-    void Devices::waitIdle() {
-        vkDeviceWaitIdle(m_Device);
-    }
+    void Devices::waitIdle() { vkDeviceWaitIdle(m_Device); }
 
     void Devices::createSurface() {
-
-        GLFWwindow* windowInstance = static_cast<GLFWwindow*>(Application::getAppInstance()->getWindow()->getNativeWindow());
+        GLFWwindow* windowInstance =
+            static_cast<GLFWwindow*>(Application::getAppInstance()->getWindow()->getNativeWindow());
 
         if (glfwCreateWindowSurface(m_InstanceRef, windowInstance, nullptr, &m_Surface) != VK_SUCCESS) {
             YZ_CRITICAL("Could not create a window surface.");
@@ -74,7 +72,7 @@ namespace Yare::Graphics {
         QueueFamilyIndices indices = findQueueFamilies(m_PhysicalDevice);
 
         std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-        std::set<int> uniqueQueueFamilies = { indices.graphicsFamily, indices.presentFamily };
+        std::set<int>                        uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
 
         float queuePriority = 1.0f;
         for (int queueFamily : uniqueQueueFamilies) {
@@ -98,7 +96,7 @@ namespace Yare::Graphics {
         createInfo.ppEnabledExtensionNames = m_DeviceExtensions.data();
 
         ////To support older implementations of vulkan
-        //if (enableValidationLayers) {
+        // if (enableValidationLayers) {
         //    createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
         //    createInfo.ppEnabledLayerNames = validationLayers.data();
         //} else {
@@ -147,7 +145,7 @@ namespace Yare::Graphics {
 
     QueueFamilyIndices Devices::findQueueFamilies(VkPhysicalDevice device) {
         QueueFamilyIndices indices;
-        uint32_t queueFamilyCount = 0;
+        uint32_t           queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
@@ -175,13 +173,9 @@ namespace Yare::Graphics {
         return indices;
     }
 
-    QueueFamilyIndices Devices::getQueueFamilyIndicies() {
-        return findQueueFamilies(m_PhysicalDevice);
-    }
+    QueueFamilyIndices Devices::getQueueFamilyIndicies() { return findQueueFamilies(m_PhysicalDevice); }
 
-    SwapChainSupportDetails Devices::getSwapChainSupport() {
-        return querySwapChainSupport(m_PhysicalDevice);
-    }
+    SwapChainSupportDetails Devices::getSwapChainSupport() { return querySwapChainSupport(m_PhysicalDevice); }
 
     SwapChainSupportDetails Devices::querySwapChainSupport(VkPhysicalDevice device) {
         SwapChainSupportDetails details;
@@ -201,9 +195,10 @@ namespace Yare::Graphics {
 
         if (presentModeCount != 0) {
             details.presentModes.resize(presentModeCount);
-            vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount, details.presentModes.data());
+            vkGetPhysicalDeviceSurfacePresentModesKHR(device, m_Surface, &presentModeCount,
+                                                      details.presentModes.data());
         }
         return details;
     }
 
-}
+}  // namespace Yare::Graphics

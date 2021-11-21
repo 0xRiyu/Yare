@@ -1,22 +1,22 @@
 #ifndef YARE_SCENE_H
 #define YARE_SCENE_H
 
-#include "Entity.h"
 #include <unordered_map>
 #include <vector>
 
+#include "Entity.h"
+
 namespace Yare::Graphics {
     class Scene {
-    public:
+       public:
         Scene();
-        Entity* addEntity(const std::string& entity_name);
+        Entity*                         addEntity(const std::string& entity_name);
         const std::vector<std::string>& getAllEntityNames() const { return m_EntityNames; }
-        Entity* getEntityByName(const std::string& entity_name);
+        Entity*                         getEntityByName(const std::string& entity_name);
 
-    private:
-        std::vector<std::string> m_EntityNames;
+       private:
+        std::vector<std::string>                m_EntityNames;
         std::unordered_map<std::string, Entity> m_Entities;
-
     };
-}
-#endif //YARE_SCENE_H
+}  // namespace Yare::Graphics
+#endif  // YARE_SCENE_H

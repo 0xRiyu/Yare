@@ -5,14 +5,13 @@
 
 namespace Yare {
     class GlobalSettings : public Utilities::T_Singleton<GlobalSettings> {
-
-    public:
+       public:
         GlobalSettings() {}
-        bool displayModels = true;
-        bool displayBackground = true;
-        bool logFps = false;
+        bool   displayModels = true;
+        bool   displayBackground = true;
+        bool   logFps = false;
         double fps = 0;
     };
-}
+}  // namespace Yare
 
-#endif // YARE_GLOBAL_SETTINGS_H
+#endif  // YARE_GLOBAL_SETTINGS_H

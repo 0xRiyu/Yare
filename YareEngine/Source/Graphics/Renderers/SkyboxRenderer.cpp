@@ -1,26 +1,22 @@
 #include "Graphics/Renderers/SkyboxRenderer.h"
-#include "Application/GlobalSettings.h"
+
 #include "Application/Application.h"
-#include "Utilities/Logger.h"
-#include "Graphics/Vulkan/Utilities.h"
-#include "Graphics/MeshFactory.h"
+#include "Application/GlobalSettings.h"
 #include "Core/Memory.h"
+#include "Graphics/MeshFactory.h"
+#include "Graphics/Vulkan/Utilities.h"
+#include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
     SkyboxRenderer::SkyboxRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
-        std::vector<std::string> skyboxTextures1 = {"../Res/Textures/skybox/posx.jpg",
-                                                   "../Res/Textures/skybox/negx.jpg",
-                                                   "../Res/Textures/skybox/posy.jpg",
-                                                   "../Res/Textures/skybox/negy.jpg",
-                                                   "../Res/Textures/skybox/posz.jpg",
-                                                   "../Res/Textures/skybox/negz.jpg"};
-        std::vector<std::string> skyboxTextures = {"../Res/Textures/stormy_skybox/stormydays_ft.tga",
-                                                   "../Res/Textures/stormy_skybox/stormydays_bk.tga",
-                                                   "../Res/Textures/stormy_skybox/stormydays_up.tga",
-                                                   "../Res/Textures/stormy_skybox/stormydays_dn.tga",
-                                                   "../Res/Textures/stormy_skybox/stormydays_rt.tga",
-                                                   "../Res/Textures/stormy_skybox/stormydays_lf.tga"};
+        std::vector<std::string> skyboxTextures1 = {
+            "../Res/Textures/skybox/posx.jpg", "../Res/Textures/skybox/negx.jpg", "../Res/Textures/skybox/posy.jpg",
+            "../Res/Textures/skybox/negy.jpg", "../Res/Textures/skybox/posz.jpg", "../Res/Textures/skybox/negz.jpg"};
+        std::vector<std::string> skyboxTextures = {
+            "../Res/Textures/stormy_skybox/stormydays_ft.tga", "../Res/Textures/stormy_skybox/stormydays_bk.tga",
+            "../Res/Textures/stormy_skybox/stormydays_up.tga", "../Res/Textures/stormy_skybox/stormydays_dn.tga",
+            "../Res/Textures/stormy_skybox/stormydays_rt.tga", "../Res/Textures/stormy_skybox/stormydays_lf.tga"};
         m_Material = std::make_shared<Material>(skyboxTextures, MaterialTexType::TextureCube);
         m_CubeMesh = std::make_shared<Mesh>(*createMesh(PrimativeShape::CUBE));
 
@@ -47,13 +43,12 @@ namespace Yare::Graphics {
         submit(m_SkyboxModel);
     }
 
-
     void SkyboxRenderer::present(CommandBuffer* commandBuffer) {
         if (GlobalSettings::instance()->displayBackground) {
             for (auto command : m_CommandQueue) {
-                vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
-                                        VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(),
-                                        0, 1, &m_DescriptorSet->getDescriptorSet(0), 0 , nullptr);
+                vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        m_Pipeline->getPipelineLayout(), 0, 1, &m_DescriptorSet->getDescriptorSet(0), 0,
+                                        nullptr);
                 command.entity->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
                 command.entity->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
                 m_Pipeline->setActive(*commandBuffer);
@@ -77,7 +72,7 @@ namespace Yare::Graphics {
     }
 
     void SkyboxRenderer::createGraphicsPipeline(RenderPass* renderPass, uint32_t width, uint32_t height) {
-        Shader skyboxShader("../Res/Shaders", "skybox.shader");
+        Shader       skyboxShader("../Res/Shaders", "skybox.shader");
         PipelineInfo pipelineInfo = {};
         pipelineInfo.shader = &skyboxShader;
 
@@ -89,11 +84,11 @@ namespace Yare::Graphics {
 
         // location, binding, format, offset
         VkVertexInputAttributeDescription pos = {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)};
-        pipelineInfo.vertexInputAttributes = { pos };
+        pipelineInfo.vertexInputAttributes = {pos};
 
         // binding, descriptorType, descriptorCount, stageFlags, pImmuatbleSamplers
-        VkDescriptorSetLayoutBinding viewProj = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
-                                                 VK_SHADER_STAGE_VERTEX_BIT, nullptr};
+        VkDescriptorSetLayoutBinding viewProj = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT,
+                                                 nullptr};
         VkDescriptorSetLayoutBinding sampler = {1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
                                                 VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
         pipelineInfo.layoutBindings = {viewProj, sampler};
@@ -104,10 +99,9 @@ namespace Yare::Graphics {
 
         m_Pipeline = new Pipeline();
         m_Pipeline->init(pipelineInfo);
-
     }
 
-    void SkyboxRenderer::createDescriptorSet(){
+    void SkyboxRenderer::createDescriptorSet() {
         DescriptorSetInfo descriptorSetInfo;
         descriptorSetInfo.descriptorSetCount = 1;
         descriptorSetInfo.pipeline = m_Pipeline;
@@ -115,9 +109,8 @@ namespace Yare::Graphics {
         m_DescriptorSet = new DescriptorSet();
         m_DescriptorSet->init(descriptorSetInfo);
 
-
         std::vector<BufferInfo> bufferInfos = {};
-        BufferInfo viewBufferInfo = {};
+        BufferInfo              viewBufferInfo = {};
         viewBufferInfo.buffer = m_UniformBuffer->getBuffer();
         viewBufferInfo.offset = 0;
         viewBufferInfo.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -155,4 +148,4 @@ namespace Yare::Graphics {
 
         m_UniformBuffer->setData(sizeof(skyboxVS), &skyboxVS);
     }
-}
+}  // namespace Yare::Graphics

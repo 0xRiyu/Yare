@@ -1,39 +1,37 @@
 #include "Graphics/Vulkan/Context.h"
+
 #include "Application/Application.h"
-#include "Utilities/Logger.h"
 #include "Core/Glfw.h"
+#include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
     VulkanContext* VulkanContext::s_Context = nullptr;
 
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                        VkDebugUtilsMessageTypeFlagsEXT messageType,
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
+                                                        VkDebugUtilsMessageTypeFlagsEXT             messageType,
                                                         const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-                                                        void* pUserData) {
+                                                        void*                                       pUserData) {
         YZ_INFO("validation layer: " + std::string(pCallbackData->pMessage));
         return VK_FALSE;
     }
 
-    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,
-                                          const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
+    VkResult CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,
                                           const VkAllocationCallbacks* pAllocator,
-                                          VkDebugUtilsMessengerEXT* pDebugMessenger) {
-        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
-                                                                              "vkCreateDebugUtilsMessengerEXT");
+                                          VkDebugUtilsMessengerEXT*    pDebugMessenger) {
+        auto func =
+            (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
         if (func != nullptr) {
             return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-        }
-        else {
+        } else {
             return VK_ERROR_EXTENSION_NOT_PRESENT;
         }
     }
 
-    void DestroyDebugUtilsMessengerEXT(VkInstance instance,
-                                       VkDebugUtilsMessengerEXT debugMessenger,
+    void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
                                        const VkAllocationCallbacks* pAllocator) {
-        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance,
-                                                                               "vkDestroyDebugUtilsMessengerEXT");
+        auto func =
+            (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) {
             func(instance, debugMessenger, pAllocator);
         }
@@ -92,23 +90,20 @@ namespace Yare::Graphics {
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             return false;
-        }
-        else if (result != VK_SUCCESS) {
+        } else if (result != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to aquire a swapchain image.");
         }
         return true;
     }
 
     bool VulkanContext::present(CommandBuffer* cmdBuffer) {
-
         submitGfxQueue(cmdBuffer, true);
 
         VkResult result = m_Swapchain->present(m_RenderFinishedSemaphores[m_CurrentFrame].getSemaphore());
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
             return false;
-        }
-        else if (result != VK_SUCCESS) {
+        } else if (result != VK_SUCCESS) {
             YZ_ERROR("Vulkan failed to present a swapchain image.");
         }
 
@@ -129,14 +124,13 @@ namespace Yare::Graphics {
         submitInfo.pWaitSemaphores = &currentWaitSemaphore;
         submitInfo.waitSemaphoreCount = (uint32_t)(currentWaitSemaphore ? 1 : 0);
         submitInfo.pSignalSemaphores = &currentSignalSemaphore;
-        submitInfo.signalSemaphoreCount =  (uint32_t)(currentSignalSemaphore ? 1 : 0);
+        submitInfo.signalSemaphoreCount = (uint32_t)(currentSignalSemaphore ? 1 : 0);
         submitInfo.pNext = VK_NULL_HANDLE;
 
         if (!waitFence) {
             vkQueueSubmit(m_Devices->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
             vkQueueWaitIdle(m_Devices->getGraphicsQueue());
-        }
-        else {
+        } else {
             auto fence = cmdBuffer->getFence();
             vkQueueSubmit(m_Devices->getGraphicsQueue(), 1, &submitInfo, fence);
             vkWaitForFences(m_Devices->getDevice(), 1, &fence, VK_TRUE, UINT64_MAX);
@@ -184,8 +178,7 @@ namespace Yare::Graphics {
             createInfo.ppEnabledLayerNames = validationLayers.data();
             populateDebugMessengerCreateInfo(debugCreateInfo);
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
-        }
-        else {
+        } else {
             createInfo.enabledLayerCount = 0;
             createInfo.pNext = nullptr;
         }
@@ -198,8 +191,8 @@ namespace Yare::Graphics {
     void VulkanContext::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
         createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                     VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageSeverity =
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
         createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                                  VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
@@ -207,7 +200,7 @@ namespace Yare::Graphics {
     }
 
     std::vector<const char*> VulkanContext::getRequiredExtensions() {
-        uint32_t glfwExtensionCount = 0;
+        uint32_t     glfwExtensionCount = 0;
         const char** glfwExtensions;
         glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
@@ -222,7 +215,7 @@ namespace Yare::Graphics {
 
     bool VulkanContext::checkValidationLayerSupport() {
         uint32_t layerCount;
-        bool layerFound = false;
+        bool     layerFound = false;
 
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
@@ -243,4 +236,4 @@ namespace Yare::Graphics {
         return layerFound;
     }
 
-}
+}  // namespace Yare::Graphics

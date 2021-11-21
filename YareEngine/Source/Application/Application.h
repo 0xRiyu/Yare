@@ -9,7 +9,7 @@
 namespace Yare {
 
     class Application {
-    public:
+       public:
         Application();
         virtual ~Application();
         void run();
@@ -17,12 +17,13 @@ namespace Yare {
         std::shared_ptr<Graphics::Window> getWindow() const { return m_Window; }
 
         inline static Application* getAppInstance() { return s_AppInstance; }
-    private:
+
+       private:
         std::shared_ptr<Graphics::Window> m_Window;
-        static Application* s_AppInstance;
+        static Application*               s_AppInstance;
     };
 
     Application* createApplication();
-}
+}  // namespace Yare
 
-#endif //YARE_APPLICATION_H
+#endif  // YARE_APPLICATION_H

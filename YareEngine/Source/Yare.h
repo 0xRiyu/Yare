@@ -4,4 +4,4 @@
 #include "Application/Application.h"
 #include "Application/EntryPoint.h"
 
-#endif //YARE_H
+#endif  // YARE_H

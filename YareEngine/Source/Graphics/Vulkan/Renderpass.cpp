@@ -1,4 +1,5 @@
 #include "Graphics/Vulkan/Renderpass.h"
+
 #include "Graphics/Vulkan/Devices.h"
 #include "Graphics/Vulkan/Framebuffer.h"
 #include "Graphics/Vulkan/Utilities.h"
@@ -6,10 +7,7 @@
 
 namespace Yare::Graphics {
 
-    RenderPass::RenderPass(const RenderPassInfo& info)
-        :m_Info(info) {
-        init();
-    }
+    RenderPass::RenderPass(const RenderPassInfo& info) : m_Info(info) { init(); }
 
     RenderPass::~RenderPass() {
         if (m_RenderPass) {
@@ -60,8 +58,8 @@ namespace Yare::Graphics {
         dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
         dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-        std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
-        VkRenderPassCreateInfo rpCreateInfo = {};
+        std::array<VkAttachmentDescription, 2> attachments = {colorAttachment, depthAttachment};
+        VkRenderPassCreateInfo                 rpCreateInfo = {};
         rpCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         rpCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
         rpCreateInfo.pAttachments = attachments.data();
@@ -81,11 +79,11 @@ namespace Yare::Graphics {
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_RenderPass;
         renderPassInfo.framebuffer = frameBuffer->getFramebuffer();
-        renderPassInfo.renderArea.offset = { 0, 0 };
+        renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = m_Info.extent;
         std::array<VkClearValue, 2> clearValues = {};
-        clearValues[0].color = { 0.7f, 0.8f, 0.9f, 1.0f };
-        clearValues[1].depthStencil = { 1.0f, 0 };
+        clearValues[0].color = {0.7f, 0.8f, 0.9f, 1.0f};
+        clearValues[1].depthStencil = {1.0f, 0};
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
@@ -95,4 +93,4 @@ namespace Yare::Graphics {
     void RenderPass::endRenderPass(const CommandBuffer* commandBuffer) {
         vkCmdEndRenderPass(commandBuffer->getCommandBuffer());
     }
-}
+}  // namespace Yare::Graphics

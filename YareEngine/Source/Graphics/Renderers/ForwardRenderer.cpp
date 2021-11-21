@@ -2,13 +2,11 @@
 
 #include "Application/Application.h"
 #include "Application/GlobalSettings.h"
-#include "Utilities/Logger.h"
-
-#include "Graphics/Vulkan/Utilities.h"
-#include "Graphics/Vulkan/Devices.h"
-#include "Graphics/MeshFactory.h"
-
 #include "Core/Memory.h"
+#include "Graphics/MeshFactory.h"
+#include "Graphics/Vulkan/Devices.h"
+#include "Graphics/Vulkan/Utilities.h"
+#include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
@@ -18,15 +16,14 @@ namespace Yare::Graphics {
         m_Meshes.emplace_back(createQuadPlane(15, 15));
         m_Meshes.push_back(std::make_shared<Mesh>("../Res/Models/Lowpoly_tree_sample.obj"));
 
-        m_Materials.push_back(std::make_shared<Material>()); // Default texture
+        m_Materials.push_back(std::make_shared<Material>());  // Default texture
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/viking_room.png"));
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/mossytiles.jpg"));
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/skysphere.png"));
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/sprite.jpg"));
         m_Materials.push_back(std::make_shared<Material>("../Res/Textures/tile.png"));
 
-        Transform transform{glm::vec3(3.0f, -0.42f, 0.0f),
-                            glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
+        Transform transform{glm::vec3(3.0f, -0.42f, 0.0f), glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
                             glm::vec3(1.0f, 1.0f, 1.0f)};
         m_Entities.push_back(std::make_shared<Entity>(m_Meshes[0], m_Materials[1], transform));
 
@@ -54,7 +51,6 @@ namespace Yare::Graphics {
 
         delete m_UniformBuffers.view;
         delete m_UniformBuffers.dynamic;
-
     }
 
     void ForwardRenderer::init(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
@@ -69,11 +65,10 @@ namespace Yare::Graphics {
         createDescriptorSets();
     }
 
-
     void ForwardRenderer::prepareScene() {
         resetCommandQueue();
 
-        for (const auto entity : m_Entities){
+        for (const auto entity : m_Entities) {
             submit(entity.get());
         }
     }
@@ -82,18 +77,17 @@ namespace Yare::Graphics {
         if (GlobalSettings::instance()->displayModels) {
             int index = 0;
             for (auto& command : m_CommandQueue) {
-
                 uint32_t dynamicOffset = index * static_cast<uint32_t>(m_DynamicAlignment);
                 updateUniformBuffers(index, command.entity->getTransform());
                 m_Pipeline->setActive(*commandBuffer);
 
                 int imageIdx = command.entity->getMaterial()->getImageIdx();
                 vkCmdPushConstants(commandBuffer->getCommandBuffer(), m_Pipeline->getPipelineLayout(),
-                                   VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void *)&imageIdx);
+                                   VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int), (void*)&imageIdx);
 
-                vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(),
-                                        VK_PIPELINE_BIND_POINT_GRAPHICS, m_Pipeline->getPipelineLayout(), 0u,
-                                        1u, &m_DescriptorSet->getDescriptorSet(0), 1, &dynamicOffset);
+                vkCmdBindDescriptorSets(commandBuffer->getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS,
+                                        m_Pipeline->getPipelineLayout(), 0u, 1u, &m_DescriptorSet->getDescriptorSet(0),
+                                        1, &dynamicOffset);
 
                 command.entity->getMesh()->getVertexBuffer()->bindVertex(commandBuffer, 0);
                 command.entity->getMesh()->getIndexBuffer()->bindIndex(commandBuffer, VK_INDEX_TYPE_UINT32);
@@ -116,7 +110,6 @@ namespace Yare::Graphics {
 
             delete m_UniformBuffers.view;
             delete m_UniformBuffers.dynamic;
-
         }
         createGraphicsPipeline(renderPass, newWidth, newHeight);
         prepareUniformBuffers();
@@ -136,23 +129,22 @@ namespace Yare::Graphics {
         pInfo.width = width;
         pInfo.height = height;
         pInfo.pushConstants = {VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(int)};
-        pInfo.bindingDescription =  VkVertexInputBindingDescription{0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
+        pInfo.bindingDescription = VkVertexInputBindingDescription{0, sizeof(Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
 
         // location, binding, format, offset
-        VkVertexInputAttributeDescription pos =   {0u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)};
-        VkVertexInputAttributeDescription uv =   {2u, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)};
+        VkVertexInputAttributeDescription pos = {0u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)};
+        VkVertexInputAttributeDescription uv = {2u, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)};
         VkVertexInputAttributeDescription normal = {1u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)};
-        pInfo.vertexInputAttributes = { pos, uv, normal };
-
+        pInfo.vertexInputAttributes = {pos, uv, normal};
 
         // binding, descriptorType, descriptorCount, stageFlags, pImmuatbleSamplers
-        VkDescriptorSetLayoutBinding projView = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                                                 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr};
-        VkDescriptorSetLayoutBinding model =    {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC,
-                                                 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr};
-        VkDescriptorSetLayoutBinding sampler =  {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-                                                 MAX_NUM_TEXTURES, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
-        pInfo.layoutBindings = { projView, model, sampler };
+        VkDescriptorSetLayoutBinding projView = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT,
+                                                 nullptr};
+        VkDescriptorSetLayoutBinding model = {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1,
+                                              VK_SHADER_STAGE_VERTEX_BIT, nullptr};
+        VkDescriptorSetLayoutBinding sampler = {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_NUM_TEXTURES,
+                                                VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
+        pInfo.layoutBindings = {projView, model, sampler};
 
         m_Pipeline = new Pipeline();
         m_Pipeline->init(pInfo);
@@ -167,9 +159,8 @@ namespace Yare::Graphics {
         m_DescriptorSet = new DescriptorSet();
         m_DescriptorSet->init(descriptorSetInfo);
 
-
         std::vector<BufferInfo> bufferInfos = {};
-        BufferInfo viewBufferInfo = {};
+        BufferInfo              viewBufferInfo = {};
         viewBufferInfo.buffer = m_UniformBuffers.view->getBuffer();
         viewBufferInfo.offset = 0;
         viewBufferInfo.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -245,4 +236,4 @@ namespace Yare::Graphics {
 
         m_UniformBuffers.view->setData(sizeof(uboVS), &uboVS);
     }
-}
+}  // namespace Yare::Graphics

@@ -6,7 +6,7 @@
 namespace Yare::Graphics {
 
     class Camera {
-    public:
+       public:
         virtual ~Camera() = default;
         virtual void updateDimensions(uint32_t screenWidth, uint32_t screenHeight) = 0;
 
@@ -16,6 +16,7 @@ namespace Yare::Graphics {
         virtual void setFov(const float in) = 0;
         virtual void setCameraSpeed(const float speed) = 0;
 
+        // clang-format off
         virtual Transform getTransform()         const { return m_Transform; }
         virtual glm::vec3 getLookAtVector()      const { return m_LookAt; }
         virtual glm::vec3 getUpVector()          const { return m_Up; }
@@ -23,8 +24,9 @@ namespace Yare::Graphics {
         virtual glm::mat4 getViewMatrix()        const { return m_ViewMatrix; }
         virtual float getFov()                   const { return m_Fov; }
         virtual float getCameraSpeed()           const { return m_CameraSpeed; }
+        // clang-format on
 
-    protected:
+       protected:
         Transform m_Transform;
 
         glm::vec3 m_LookAt = glm::vec3(0.0f);
@@ -38,7 +40,6 @@ namespace Yare::Graphics {
         float m_Fov = 0.0f;
         float m_CameraSpeed = 0.0f;
     };
-}
+}  // namespace Yare::Graphics
 
-
-#endif // YARE_CAMERA_H
+#endif  // YARE_CAMERA_H

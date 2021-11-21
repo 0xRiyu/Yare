@@ -1,12 +1,12 @@
 #include "Transform.h"
 
-#include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/transform.hpp>
 
 namespace Yare {
-    Transform::Transform() { }
-    Transform::Transform(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale):
-        m_Translation(translation), m_Rotation(glm::quat(rotation)), m_Scale(scale) {
+    Transform::Transform() {}
+    Transform::Transform(const glm::vec3& translation, const glm::vec3& rotation, const glm::vec3& scale)
+        : m_Translation(translation), m_Rotation(glm::quat(rotation)), m_Scale(scale) {
         updateMatrix();
     }
 
@@ -55,4 +55,4 @@ namespace Yare {
     void Transform::updateMatrix() {
         m_Matrix = glm::translate(m_Translation) * glm::mat4_cast(m_Rotation) * glm::scale(m_Scale);
     }
-}
+}  // namespace Yare

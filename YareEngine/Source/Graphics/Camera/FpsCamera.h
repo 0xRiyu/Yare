@@ -6,8 +6,7 @@
 namespace Yare::Graphics {
 
     class FpsCamera : public Camera {
-
-    public:
+       public:
         FpsCamera(uint32_t screenWidth, uint32_t screenHeight);
         // Todo
         FpsCamera(const FpsCamera& other);
@@ -22,13 +21,12 @@ namespace Yare::Graphics {
 
         virtual void updateDimensions(uint32_t screenWidth, uint32_t screenHeight) override;
 
-    private:
-
+       private:
         void recalculateViewParams();
         void updateView();
         void updateProj();
     };
 
-}
+}  // namespace Yare::Graphics
 
-#endif // YARE_FPSCAMERA_H
+#endif  // YARE_FPSCAMERA_H

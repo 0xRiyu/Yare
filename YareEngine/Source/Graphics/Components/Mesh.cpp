@@ -1,11 +1,10 @@
 #include "Mesh.h"
+
 #include "Utilities/IOHelper.h"
 
 namespace Yare::Graphics {
 
-    Mesh::Mesh(const std::string& meshFilePath) {
-        loadMeshFromFile(meshFilePath);
-    }
+    Mesh::Mesh(const std::string& meshFilePath) { loadMeshFromFile(meshFilePath); }
 
     Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         createBuffers(vertices, indices);
@@ -24,7 +23,7 @@ namespace Yare::Graphics {
         m_FilePath = meshFilePath;
 
         if (!meshFilePath.empty()) {
-            std::vector<Vertex> vertices;
+            std::vector<Vertex>   vertices;
             std::vector<uint32_t> indices;
 
             Utilities::loadMesh(meshFilePath, vertices, indices);
@@ -43,4 +42,4 @@ namespace Yare::Graphics {
 
         m_IndexBuffer = new Buffer(BufferUsage::INDEX, (size_t)bufferSize, indices.data());
     }
-}
+}  // namespace Yare::Graphics

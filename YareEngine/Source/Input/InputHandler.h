@@ -3,10 +3,10 @@
 
 namespace Yare {
     class InputHandler {
-    public:
+       public:
         virtual ~InputHandler() = default;
         virtual void handle() = 0;
     };
-}
+}  // namespace Yare
 
-#endif // YARE_INPUTHANDLER_H
+#endif  // YARE_INPUTHANDLER_H

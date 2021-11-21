@@ -6,7 +6,7 @@
 
 namespace Yare::Graphics {
     class GlfwWindow : public Window {
-    public:
+       public:
         GlfwWindow(WindowProperties& properties);
         virtual ~GlfwWindow();
 
@@ -15,14 +15,14 @@ namespace Yare::Graphics {
         virtual void close() override;
         virtual void releaseInputHandling() override;
 
-    private:
+       private:
         virtual void setIcon(const std::string& filePath);
 
         inline virtual void* getNativeWindow() const override { return m_Window; };
 
-        void init();
+        void        init();
         GLFWwindow* m_Window;
     };
-}
+}  // namespace Yare::Graphics
 
-#endif //YARE_GLFWWINDOW_H
+#endif  // YARE_GLFWWINDOW_H

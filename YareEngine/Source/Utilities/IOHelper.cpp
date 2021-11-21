@@ -1,25 +1,26 @@
 #include "Utilities/IOHelper.h"
+
 #include "Utilities/Logger.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #define GLM_ENABLE_EXPERIMENTAL
+#include <tinyobjloader/tiny_obj_loader.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtx/hash.hpp>
 #include <glm/gtx/string_cast.hpp>
-
-#include <tinyobjloader/tiny_obj_loader.h>
 #include <unordered_map>
 
 namespace std {
-    template<> struct hash<Yare::Vertex> {
+    template <>
+    struct hash<Yare::Vertex> {
         size_t operator()(Yare::Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos)
-                   ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1)
-                   ^ (hash<glm::vec2>()(vertex.uv) << 1);
+            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.normal) << 1)) >> 1) ^
+                   (hash<glm::vec2>()(vertex.uv) << 1);
         }
     };
-}
+}  // namespace std
 
 namespace Yare::Utilities {
 
@@ -33,41 +34,35 @@ namespace Yare::Utilities {
 
         // captures lines not separated by whitespace
         std::vector<std::string> myLines;
-        std::copy(std::istream_iterator<std::string>(file),
-                  std::istream_iterator<std::string>(),
+        std::copy(std::istream_iterator<std::string>(file), std::istream_iterator<std::string>(),
                   std::back_inserter(myLines));
 
         return myLines;
     }
 
     void loadMesh(const std::string& filePath, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices) {
-        tinyobj::attrib_t attrib;
-        std::vector<tinyobj::shape_t> shapes;
+        tinyobj::attrib_t                attrib;
+        std::vector<tinyobj::shape_t>    shapes;
         std::vector<tinyobj::material_t> materials;
-        std::string warn, err;
+        std::string                      warn, err;
 
         if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filePath.c_str())) {
             YZ_ERROR(warn + err);
         }
 
-       std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
+        std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
                 Vertex vertex = {};
 
-                vertex.pos = {
-                    attrib.vertices[3 * index.vertex_index + 0],
-                    attrib.vertices[3 * index.vertex_index + 1],
-                    attrib.vertices[3 * index.vertex_index + 2]
-                };
+                vertex.pos = {attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1],
+                              attrib.vertices[3 * index.vertex_index + 2]};
 
-                vertex.uv = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-                };
+                vertex.uv = {attrib.texcoords[2 * index.texcoord_index + 0],
+                             1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};
 
-                vertex.normal = { 1.0f, 1.0f, 1.0f };
+                vertex.normal = {1.0f, 1.0f, 1.0f};
 
                 if (uniqueVertices.count(vertex) == 0) {
                     uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
@@ -75,8 +70,7 @@ namespace Yare::Utilities {
                 }
 
                 indices.push_back(uniqueVertices[vertex]);
-
             }
         }
     }
-}
+}  // namespace Yare::Utilities

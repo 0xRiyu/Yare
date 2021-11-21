@@ -1,6 +1,10 @@
 #ifndef YARE_COMPONENT_H
 #define YARE_COMPONENT_H
 
-struct Component{};
+class Component {
+   public:
+    Component() {}
+    virtual ~Component() {}
+};
 
 #endif

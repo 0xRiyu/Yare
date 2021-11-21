@@ -1,13 +1,13 @@
 #include "Graphics/Window/GlfwWindow.h"
-#include "Graphics/Camera/FpsCamera.h"
-#include "Application/Application.h"
-#include "Utilities/Logger.h"
-
-#include "Input/KeyHandler.h"
-#include "Input/MouseHandler.h"
 
 #include <imgui/imgui.h>
 #include <stb/stb_image.h>
+
+#include "Application/Application.h"
+#include "Graphics/Camera/FpsCamera.h"
+#include "Input/KeyHandler.h"
+#include "Input/MouseHandler.h"
+#include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
@@ -24,22 +24,22 @@ namespace Yare::Graphics {
             }
             YZ_INFO("Application is no longer minimized.");
         }
-        YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: "
-                + std::to_string(width) + ", " + std::to_string(height));
-        auto glfwWindow  = reinterpret_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
+        YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: " + std::to_string(width) +
+                ", " + std::to_string(height));
+        auto glfwWindow = reinterpret_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
         glfwWindow->setWindowProperties(WindowProperties{(uint32_t)width, (uint32_t)height});
     }
 
     static void GLFWkeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-        auto keyHandler = std::dynamic_pointer_cast<KeyHandler>
-            (Application::getAppInstance()->getWindow()->getKeyHandler());
+        auto keyHandler =
+            std::dynamic_pointer_cast<KeyHandler>(Application::getAppInstance()->getWindow()->getKeyHandler());
 
         keyHandler->m_KeyState[key] = action;
     }
 
     static void GLFWmouseCallback(GLFWwindow* window, double mouseX, double mouseY) {
-        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>
-            (Application::getAppInstance()->getWindow()->getMouseHandler());
+        auto mouseHandler =
+            std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
 
         mouseHandler->currentMouseX = (float)mouseX;
         mouseHandler->currentMouseY = (float)mouseY;
@@ -47,8 +47,8 @@ namespace Yare::Graphics {
     }
 
     static void GLFWmouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>
-            (Application::getAppInstance()->getWindow()->getMouseHandler());
+        auto mouseHandler =
+            std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
 
         mouseHandler->mouseLeftButtonPressed = (button = GLFW_MOUSE_BUTTON_LEFT && action) ? true : false;
         mouseHandler->mouseRightButtonPressed = (button = GLFW_MOUSE_BUTTON_RIGHT && action) ? true : false;
@@ -71,8 +71,8 @@ namespace Yare::Graphics {
     }
 
     static void GLFWscrollCallback(GLFWwindow* window, double horizontalScroll, double verticalScroll) {
-        auto mouseHandler = std::dynamic_pointer_cast<MouseHandler>
-            (Application::getAppInstance()->getWindow()->getMouseHandler());
+        auto mouseHandler =
+            std::dynamic_pointer_cast<MouseHandler>(Application::getAppInstance()->getWindow()->getMouseHandler());
 
         mouseHandler->setHorizontalScroll((float)horizontalScroll);
         mouseHandler->setVerticalScroll((float)verticalScroll);
@@ -91,7 +91,6 @@ namespace Yare::Graphics {
     GlfwWindow::~GlfwWindow() {
         glfwDestroyWindow(m_Window);
         glfwTerminate();
-
     }
 
     void GlfwWindow::init() {
@@ -99,7 +98,7 @@ namespace Yare::Graphics {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         m_Window = glfwCreateWindow(m_Properties.width, m_Properties.height, "Yare!", nullptr, nullptr);
         glfwSetWindowUserPointer(m_Window, this);
-        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); // capture cursor
+        glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);  // capture cursor
         setIcon("../Resources/Textures/engineLogo.png");
 
         // Callbacks
@@ -125,14 +124,9 @@ namespace Yare::Graphics {
         windowResized = false;
     }
 
-    bool GlfwWindow::shouldClose() {
-        return glfwWindowShouldClose(m_Window);
-    }
+    bool GlfwWindow::shouldClose() { return glfwWindowShouldClose(m_Window); }
 
-    void GlfwWindow::close() {
-        glfwSetWindowShouldClose(m_Window, 1);
-    }
-
+    void GlfwWindow::close() { glfwSetWindowShouldClose(m_Window, 1); }
 
     void GlfwWindow::releaseInputHandling() {
         if (windowIsFocused) {
@@ -147,11 +141,11 @@ namespace Yare::Graphics {
 
     void GlfwWindow::setIcon(const std::string& filePath) {
         GLFWimage image;
-        int imgWidth, imgHeight, imgChannels;
-        stbi_uc* pixels = stbi_load(filePath.data(), &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);
+        int       imgWidth, imgHeight, imgChannels;
+        stbi_uc*  pixels = stbi_load(filePath.data(), &imgWidth, &imgHeight, &imgChannels, STBI_rgb_alpha);
         image.height = imgHeight;
         image.width = imgWidth;
         image.pixels = pixels;
         glfwSetWindowIcon(m_Window, 1, &image);
     }
-}
+}  // namespace Yare::Graphics

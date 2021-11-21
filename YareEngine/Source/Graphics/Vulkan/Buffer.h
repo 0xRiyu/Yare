@@ -1,24 +1,16 @@
 #ifndef YARE_BUFFER_H
 #define YARE_BUFFER_H
 
-#include "Graphics/Vulkan/Vk.h"
 #include "Graphics/Vulkan/CommandBuffer.h"
 #include "Graphics/Vulkan/Utilities.h"
+#include "Graphics/Vulkan/Vk.h"
 
 namespace Yare::Graphics {
 
-    enum class BufferUsage {
-                            UNIFORM,
-                            DYNAMIC,
-                            VERTEX,
-                            DYNAMIC_VERTEX,
-                            INDEX,
-                            DYNAMIC_INDEX,
-                            TRANSFER
-    };
+    enum class BufferUsage { UNIFORM, DYNAMIC, VERTEX, DYNAMIC_VERTEX, INDEX, DYNAMIC_INDEX, TRANSFER };
 
     class Buffer {
-    public:
+       public:
         Buffer();
         Buffer(BufferUsage usage, size_t size, const void* data);
         ~Buffer();
@@ -33,19 +25,18 @@ namespace Yare::Graphics {
         void unmapMemory();
 
         const VkBuffer& getBuffer() const { return m_Buffer; }
-        void* getMappedData() const { return m_MappedData; }
-        size_t getSize() const { return m_Size; }
+        void*           getMappedData() const { return m_MappedData; }
+        size_t          getSize() const { return m_Size; }
 
-    private:
+       private:
         void createBuffer(VkBufferUsageFlags usage, VkMemoryPropertyFlags props);
 
-        VkBuffer m_Buffer;
-        BufferUsage  m_Usage;
+        VkBuffer       m_Buffer;
+        BufferUsage    m_Usage;
         VkDeviceMemory m_BufferMemory;
-        size_t m_Size = 0;
-        void* m_MappedData = nullptr;
+        size_t         m_Size = 0;
+        void*          m_MappedData = nullptr;
     };
-}
+}  // namespace Yare::Graphics
 
-
-#endif //YARE_BUFFER_H
+#endif  // YARE_BUFFER_H

@@ -2,9 +2,7 @@
 
 namespace Yare::Graphics {
 
-    void Renderer::resetCommandQueue() {
-        m_CommandQueue.clear();
-    }
+    void Renderer::resetCommandQueue() { m_CommandQueue.clear(); }
 
     void Renderer::submit(Entity* instance) {
         RenderCommand renderCommand;
@@ -12,4 +10,4 @@ namespace Yare::Graphics {
 
         m_CommandQueue.push_back(renderCommand);
     }
-}
+}  // namespace Yare::Graphics

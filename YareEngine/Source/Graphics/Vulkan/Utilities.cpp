@@ -1,9 +1,10 @@
 #include "Graphics/Vulkan/Utilities.h"
-#include "Graphics/Vulkan/Devices.h"
-#include "Graphics/Vulkan/Context.h"
-#include "Utilities/Logger.h"
 
 #include <fstream>
+
+#include "Graphics/Vulkan/Context.h"
+#include "Graphics/Vulkan/Devices.h"
+#include "Utilities/Logger.h"
 
 namespace Yare::Graphics::VkUtil {
 
@@ -27,7 +28,7 @@ namespace Yare::Graphics::VkUtil {
             YZ_ERROR("File '" + filePath + "' was unable to open.");
         }
 
-        size_t fileSize = (size_t)file.tellg();
+        size_t            fileSize = (size_t)file.tellg();
         std::vector<char> buffer(fileSize);
 
         file.seekg(0);
@@ -35,7 +36,6 @@ namespace Yare::Graphics::VkUtil {
         file.close();
 
         return buffer;
-
     }
 
     VkCommandBuffer beginSingleTimeCommands() {
@@ -68,13 +68,12 @@ namespace Yare::Graphics::VkUtil {
         vkQueueSubmit(Devices::instance()->getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
         vkQueueWaitIdle(Devices::instance()->getGraphicsQueue());
 
-        vkFreeCommandBuffers(Devices::instance()->getDevice(),
-                             VulkanContext::getContext()->getCommandPool()->getPool(),
+        vkFreeCommandBuffers(Devices::instance()->getDevice(), VulkanContext::getContext()->getCommandPool()->getPool(),
                              1, &commandBuffer);
     }
 
-    VkImageView createImageView(VkImage image, VkImageViewType viewType, VkFormat format,
-                                uint32_t layerCount, VkImageAspectFlags aspectFlags) {
+    VkImageView createImageView(VkImage image, VkImageViewType viewType, VkFormat format, uint32_t layerCount,
+                                VkImageAspectFlags aspectFlags) {
         VkImageViewCreateInfo viewInfo = {};
         viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         viewInfo.image = image;
@@ -87,7 +86,7 @@ namespace Yare::Graphics::VkUtil {
         viewInfo.subresourceRange.layerCount = layerCount;
 
         VkImageView imageView;
-        auto res = vkCreateImageView(Devices::instance()->getDevice(), &viewInfo, nullptr, &imageView);
+        auto        res = vkCreateImageView(Devices::instance()->getDevice(), &viewInfo, nullptr, &imageView);
         if (res != VK_SUCCESS) {
             YZ_CRITICAL("failed to create an image view!");
         }
@@ -113,12 +112,11 @@ namespace Yare::Graphics::VkUtil {
     }
 
     VkFormat findDepthFormat() {
-        return findSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT },
-                                   VK_IMAGE_TILING_OPTIMAL,
-                                   VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        return findSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+                                   VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
     }
 
     bool hasStencilComponent(VkFormat format) {
         return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
     }
-}
+}  // namespace Yare::Graphics::VkUtil

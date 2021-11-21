@@ -4,13 +4,7 @@
 namespace Yare::Graphics {
     class Mesh;
 
-    enum class PrimativeShape {
-                               CUBE,
-                               QUAD,
-                               SPHERE,
-                               TORUS,
-                               RECT
-    };
+    enum class PrimativeShape { CUBE, QUAD, SPHERE, TORUS, RECT };
 
     // Create a mesh with its default parameters
     Mesh* createMesh(PrimativeShape shape);
@@ -22,6 +16,6 @@ namespace Yare::Graphics {
     // Mesh* createSphere(float diameter);
     // Mesh* createTorus();
     // Mesh* createRect(float width, float height, float depth);
-}
+}  // namespace Yare::Graphics
 
-#endif //YARE_MESH_FACTORY_H
+#endif  // YARE_MESH_FACTORY_H

@@ -1,22 +1,21 @@
 #include "Input/MouseHandler.h"
+
 #include "Utilities/Logger.h"
 
 #ifndef GLM_FORCE_RADIANS
 #define GLM_FORCE_RADIANS
 #endif
 
-#include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <glm/glm.hpp>
 
 namespace Yare {
 
-    MouseHandler::MouseHandler(const std::shared_ptr<Graphics::Camera> currentCamera)
-    :p_Camera(currentCamera) {
+    MouseHandler::MouseHandler(const std::shared_ptr<Graphics::Camera> currentCamera) : p_Camera(currentCamera) {
         YZ_INFO("Mouse Input Handler Created");
     }
 
-    MouseHandler::~MouseHandler() {
-    }
+    MouseHandler::~MouseHandler() {}
 
     void MouseHandler::handle() {
         if (mouseEvent) {
@@ -60,9 +59,8 @@ namespace Yare {
     }
 
     void MouseHandler::handleButtonEvent() {
-        if (mouseLeftButtonPressed || mouseRightButtonPressed)
-            YZ_INFO("Someone clicked a button...");
+        if (mouseLeftButtonPressed || mouseRightButtonPressed) YZ_INFO("Someone clicked a button...");
         // Do nothing for now
     }
 
-}
+}  // namespace Yare

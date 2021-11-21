@@ -1,14 +1,15 @@
 #ifndef YARE_T_SINGLETON_H
 #define YARE_T_SINGLETON_H
 
-#include "Core/Core.h"
 #include <mutex>
+
+#include "Core/Core.h"
 
 namespace Yare::Utilities {
 
     template <class T>
     class T_Singleton {
-    public:
+       public:
         // Provide global access to the only instance of this class
         static T* instance() {
             if (!m_Instance) {
@@ -33,22 +34,24 @@ namespace Yare::Utilities {
             }
         }
 
-    protected:
+       protected:
         // TSingleton should only be constructed by itself
         T_Singleton() {}
         ~T_Singleton() {}
 
-        static T* m_Instance;
+        static T*         m_Instance;
         static std::mutex m_Constructed;
 
-    private:
+       private:
         // No copying allowed
         NONCOPYABLE(T_Singleton);
     };
 
     // Ensure that the instance is initialised to NULL at the start of the program
-    template <class T> std::mutex T_Singleton<T>::m_Constructed;
-    template <class T> T* T_Singleton<T>::m_Instance = nullptr;
-}
+    template <class T>
+    std::mutex T_Singleton<T>::m_Constructed;
+    template <class T>
+    T* T_Singleton<T>::m_Instance = nullptr;
+}  // namespace Yare::Utilities
 
-#endif //YARE_T_SINGLETON_H
+#endif  // YARE_T_SINGLETON_H

@@ -1,13 +1,12 @@
 #include "Graphics/Vulkan/Swapchain.h"
+
 #include "Graphics/Vulkan/Devices.h"
 #include "Graphics/Vulkan/Utilities.h"
 #include "Utilities/Logger.h"
 
 namespace Yare::Graphics {
 
-    Swapchain::Swapchain(size_t width, size_t height) {
-        init(width, height);
-    }
+    Swapchain::Swapchain(size_t width, size_t height) { init(width, height); }
 
     Swapchain::~Swapchain() {
         for (auto& imageView : m_SwapchainImageViews) {
@@ -20,7 +19,7 @@ namespace Yare::Graphics {
     }
 
     void Swapchain::onResize(size_t width, size_t height) {
-        //Cleanup
+        // Cleanup
         {
             for (auto& imageView : m_SwapchainImageViews) {
                 vkDestroyImageView(Devices::instance()->getDevice(), imageView, nullptr);
@@ -47,13 +46,13 @@ namespace Yare::Graphics {
         presentInfo.swapchainCount = 1;
         presentInfo.pSwapchains = &m_Swapchain;
         presentInfo.pImageIndices = &m_CurrentImage;
-        presentInfo.pResults = nullptr; // Optional
+        presentInfo.pResults = nullptr;  // Optional
         return vkQueuePresentKHR(Devices::instance()->getPresentQueue(), &presentInfo);
     }
 
     VkResult Swapchain::acquireNextImage(VkSemaphore signalSemaphore) {
-        return vkAcquireNextImageKHR(Devices::instance()->getDevice(), m_Swapchain, UINT64_MAX,
-                                     signalSemaphore, VK_NULL_HANDLE, &m_CurrentImage);
+        return vkAcquireNextImageKHR(Devices::instance()->getDevice(), m_Swapchain, UINT64_MAX, signalSemaphore,
+                                     VK_NULL_HANDLE, &m_CurrentImage);
     }
 
     void Swapchain::createSwapchain(size_t width, size_t height) {
@@ -69,7 +68,7 @@ namespace Yare::Graphics {
         uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
 
         if (swapChainSupport.capabilities.maxImageCount > 0 &&
-                imageCount > swapChainSupport.capabilities.maxImageCount) {
+            imageCount > swapChainSupport.capabilities.maxImageCount) {
             imageCount = swapChainSupport.capabilities.maxImageCount;
         }
 
@@ -92,15 +91,14 @@ namespace Yare::Graphics {
         }
 
         Graphics::QueueFamilyIndices indices = YzVkDeviceinstance->getQueueFamilyIndicies();
-        uint32_t queueFamilyIndices[] = { static_cast<uint32_t>(indices.graphicsFamily),
-                                          static_cast<uint32_t>(indices.presentFamily) };
+        uint32_t                     queueFamilyIndices[] = {static_cast<uint32_t>(indices.graphicsFamily),
+                                         static_cast<uint32_t>(indices.presentFamily)};
 
         if (indices.graphicsFamily != indices.presentFamily) {
             createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
             createInfo.queueFamilyIndexCount = 2;
             createInfo.pQueueFamilyIndices = queueFamilyIndices;
-        }
-        else {
+        } else {
             createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
         }
 
@@ -152,13 +150,11 @@ namespace Yare::Graphics {
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
-    VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities,
-                                               size_t width, size_t height) {
+    VkExtent2D Swapchain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, size_t width, size_t height) {
         if (capabilities.currentExtent.width != UINT32_MAX) {
             return capabilities.currentExtent;
-        }
-        else {
-            VkExtent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
+        } else {
+            VkExtent2D actualExtent = {static_cast<uint32_t>(width), static_cast<uint32_t>(height)};
 
             actualExtent.width = std::max(capabilities.minImageExtent.width,
                                           std::min(capabilities.maxImageExtent.width, actualExtent.width));
@@ -168,4 +164,4 @@ namespace Yare::Graphics {
             return actualExtent;
         }
     }
-}
+}  // namespace Yare::Graphics

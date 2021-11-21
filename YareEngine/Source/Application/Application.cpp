@@ -1,17 +1,17 @@
 #include "Application/Application.h"
+
 #include "Application/GlobalSettings.h"
-#include "Utilities/Logger.h"
-#include "Graphics/RenderManager.h"
 #include "Core/Glfw.h"
+#include "Graphics/RenderManager.h"
+#include "Utilities/Logger.h"
 
 // Define the header once here before anywhere else
 // I dont have a better place to put this for now
 #define STB_IMAGE_IMPLEMENTATION
 #define TINYOBJLOADER_IMPLEMENTATION
+#include <imgui/imgui.h>
 #include <stb/stb_image.h>
 #include <tinyobjloader/tiny_obj_loader.h>
-
-#include <imgui/imgui.h>
 
 #include <exception>
 
@@ -36,15 +36,15 @@ namespace Yare {
         Yare::Logger::init();
         YZ_INFO("Logger Initialized");
 
-        //Create a window
-        Graphics::WindowProperties props = {1600, 1200};
+        // Create a window
+        Graphics::WindowProperties props = {1200, 800};
         m_Window = Graphics::Window::createNewWindow(props);
 
         Graphics::RenderManager renderManager{m_Window};
 
         auto previousFPSTime = glfwGetTime();
         auto previousFrameTime = glfwGetTime();
-        int frameCount = 0;
+        int  frameCount = 0;
 
         while (!m_Window->shouldClose()) {
             renderManager.renderScene();
@@ -64,7 +64,6 @@ namespace Yare {
                 previousFrameTime = currentTime;
                 frameCount++;
             }
-
         }
     }
-}
+}  // namespace Yare

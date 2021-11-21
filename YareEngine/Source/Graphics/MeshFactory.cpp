@@ -1,22 +1,22 @@
 #include "Graphics/MeshFactory.h"
-#include "Graphics/Components/Mesh.h"
+
 #include "Core/DataStructures.h"
+#include "Graphics/Components/Mesh.h"
 
 namespace Yare::Graphics {
 
     Mesh* createMesh(PrimativeShape shape) {
-        switch(shape) {
-        case PrimativeShape::CUBE:
-            return createCube(1.0f);
-        case PrimativeShape::QUAD:
-             return createQuad(1.0f, 1.0f);
-        default:
-            return nullptr;
+        switch (shape) {
+            case PrimativeShape::CUBE:
+                return createCube(1.0f);
+            case PrimativeShape::QUAD:
+                return createQuad(1.0f, 1.0f);
+            default:
+                return nullptr;
         }
     }
 
     Mesh* createCube(float size) {
-
         /* You can't have a primative creation class without ascii art, like seriously
             e--------f
            / |     / |
@@ -72,24 +72,13 @@ namespace Yare::Graphics {
             vert.normal = glm::vec3(1.0f);
         }
 
-        std::vector<uint32_t> inds = {0,   1,    2,
-                                      2,   1,    3,
-                                      4,   5,    6,
-                                      6,   5,    7,
-                                      8,   9,    10,
-                                      10,  9,    11,
-                                      12,  13,   14,
-                                      14,  13,   15,
-                                      16,  13,   17,
-                                      17,  13,   7,
-                                      12,  18,   6,
-                                      6,   18,   19};
+        std::vector<uint32_t> inds = {0,  1,  2,  2,  1,  3,  4,  5,  6,  6,  5,  7, 8,  9,  10, 10, 9,  11,
+                                      12, 13, 14, 14, 13, 15, 16, 13, 17, 17, 13, 7, 12, 18, 6,  6,  18, 19};
 
         return new Mesh(verts, inds);
     }
 
     Mesh* createQuad(float width, float height) {
-
         /*
         (-1, -1)   (1,-1)
             ----------
@@ -100,14 +89,11 @@ namespace Yare::Graphics {
          (-1, 1)   (1, 1)
         */
 
-        std::vector<Vertex> vertices =
-            {
-             { {  1.0f,  1.0f, 0.0f }, { 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f } },
-             { {  1.0f, -1.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } },
-             { { -1.0f, -1.0f, 0.0f }, { 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f } },
-             { { -1.0f,  1.0f, 0.0f }, { 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f } }
-            };
-        std::vector<uint32_t> indices = { 0,1,2, 2,3,0 };
+        std::vector<Vertex>   vertices = {{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}},
+                                        {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+                                        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
+                                        {{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}};
+        std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
         return new Mesh(vertices, indices);
     }
@@ -115,82 +101,81 @@ namespace Yare::Graphics {
     Mesh* createQuadPlane(size_t width, size_t height) {
         float positionX = 0;
         float positionZ = 0;
-        int index = 0;
+        int   index = 0;
 
-        size_t vertex_count = (width - 1) * (height - 1) * 6;
-        size_t index_count = vertex_count; // duplicating
+        size_t              vertex_count = (width - 1) * (height - 1) * 6;
+        size_t              index_count = vertex_count;  // duplicating
         std::vector<Vertex> vertices;
         vertices.resize(vertex_count);
         std::vector<uint32_t> indices;
         indices.resize(index_count);
 
-        size_t vertex_height = 0; // Todo later with a heightmap
+        size_t vertex_height = 0;  // Todo later with a heightmap
         size_t step_density = 1;
-
 
         for (size_t i = 0; i < height - 1; i++) {
             for (size_t j = 0; j < width - 1; j++) {
-            // Triangle one
-			// Upper left.
-			positionX = (float)i;
-			positionZ = (float)(j+1);
+                // Triangle one
+                // Upper left.
+                positionX = (float)i;
+                positionZ = (float)(j + 1);
 
-			vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
-			vertices[index].uv = glm::vec2(1.0f, 1.0f);
-            vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
-            indices[index] = index;
-			index++;
+                vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
+                vertices[index].uv = glm::vec2(1.0f, 1.0f);
+                vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
+                indices[index] = index;
+                index++;
 
-			// Upper right.
-			positionX = (float)(i+1);
-			positionZ = (float)(j+1);
+                // Upper right.
+                positionX = (float)(i + 1);
+                positionZ = (float)(j + 1);
 
-			vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
-			vertices[index].uv = glm::vec2(1.0f, 0.0f);
-            vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
-			indices[index] = index;
-			index++;
+                vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
+                vertices[index].uv = glm::vec2(1.0f, 0.0f);
+                vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
+                indices[index] = index;
+                index++;
 
-			// Bottom right.
-			positionX = (float)(i+1);
-			positionZ = (float)j;
+                // Bottom right.
+                positionX = (float)(i + 1);
+                positionZ = (float)j;
 
-			vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
-			vertices[index].uv = glm::vec2(0.0f, 0.0f);
-            vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
-			indices[index] = index;
-			index++;
+                vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
+                vertices[index].uv = glm::vec2(0.0f, 0.0f);
+                vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
+                indices[index] = index;
+                index++;
 
-			// Triangle two
-			// Bottom right.
-			positionX = (float)(i+1);
-			positionZ = (float)j;
+                // Triangle two
+                // Bottom right.
+                positionX = (float)(i + 1);
+                positionZ = (float)j;
 
-			vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
-			vertices[index].uv = glm::vec2(0.0f, 0.0f);
-            vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
-			indices[index] = index;
-			index++;
+                vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
+                vertices[index].uv = glm::vec2(0.0f, 0.0f);
+                vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
+                indices[index] = index;
+                index++;
 
-			// Bottom left.
-			positionX = (float)i;
-			positionZ = (float)j;
+                // Bottom left.
+                positionX = (float)i;
+                positionZ = (float)j;
 
-			vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
-			vertices[index].uv = glm::vec2(0.0f, 1.0f);
-            vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
-			indices[index] = index;
-			index++;
+                vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
+                vertices[index].uv = glm::vec2(0.0f, 1.0f);
+                vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
+                indices[index] = index;
+                index++;
 
-			// Upper left.
-			positionX = (float)i;
-			positionZ = (float)(j+1);
+                // Upper left.
+                positionX = (float)i;
+                positionZ = (float)(j + 1);
 
-			vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
-			vertices[index].uv = glm::vec2(1.0f, 1.0f);
-            vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
-			indices[index] = index;
-			index++;
+                vertices[index].pos = glm::vec3(positionX, 0.0f, positionZ);
+                vertices[index].uv = glm::vec2(1.0f, 1.0f);
+                vertices[index].normal = glm::vec3(1.0f, 1.0f, 1.0f);
+                indices[index] = index;
+                index++;
             }
         }
         return new Mesh(vertices, indices);
@@ -207,4 +192,4 @@ namespace Yare::Graphics {
     // Mesh* createRect(float width, float height, float depth) {
 
     // }
-}
+}  // namespace Yare::Graphics

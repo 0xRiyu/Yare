@@ -1,23 +1,19 @@
 #include "Graphics/RenderManager.h"
 
-#include "Graphics/Vulkan/Utilities.h"
 #include "Graphics/Renderers/ForwardRenderer.h"
 #include "Graphics/Renderers/ImGuiRenderer.h"
 #include "Graphics/Renderers/SkyboxRenderer.h"
-
+#include "Graphics/Vulkan/Utilities.h"
 #include "Graphics/Window/GlfwWindow.h"
 
 namespace Yare::Graphics {
 
-    RenderManager::RenderManager(const std::shared_ptr<Window> window):
-        m_WindowRef(window) {
-        init();
-    }
+    RenderManager::RenderManager(const std::shared_ptr<Window> window) : m_WindowRef(window) { init(); }
 
     RenderManager::~RenderManager() {
         Devices::instance()->waitIdle();
 
-        for (auto renderer : m_Renderers){
+        for (auto renderer : m_Renderers) {
             delete renderer;
         }
 
@@ -48,7 +44,6 @@ namespace Yare::Graphics {
     }
 
     void RenderManager::begin() {
-
         // Renderer will ask the swapchain to get the next image (frame)
         // for us to work with, if the result is OUT_OF_DATA_KHR or SUBOPTIMAL_KHR
         // we need to re-create our pipeline
@@ -75,7 +70,7 @@ namespace Yare::Graphics {
 
     void RenderManager::init() {
         auto props = m_WindowRef->getWindowProperties();
-        m_WindowWidth =  props.width;
+        m_WindowWidth = props.width;
         m_WindowHeight = props.height;
         m_VulkanContext = new VulkanContext(m_WindowWidth, m_WindowHeight);
         createRenderPass();
@@ -105,8 +100,8 @@ namespace Yare::Graphics {
         framebufferInfo.layers = 1;
 
         for (uint32_t i = 0; i < m_VulkanContext->getSwapchain()->getImageViewSize(); i++) {
-            framebufferInfo.attachments = { m_VulkanContext->getSwapchain()->getImageView(i),
-                                            m_DepthBuffer->getImageView() };
+            framebufferInfo.attachments = {m_VulkanContext->getSwapchain()->getImageView(i),
+                                           m_DepthBuffer->getImageView()};
             m_FrameBuffers.push_back(new Framebuffer(framebufferInfo));
         }
     }
@@ -137,7 +132,7 @@ namespace Yare::Graphics {
             delete m_DepthBuffer;
             delete m_RenderPass;
         }
-        m_WindowWidth =  m_WindowRef->getWindowProperties().width;
+        m_WindowWidth = m_WindowRef->getWindowProperties().width;
         m_WindowHeight = m_WindowRef->getWindowProperties().height;
         m_VulkanContext->onResize(m_WindowWidth, m_WindowHeight);
         createRenderPass();
@@ -148,4 +143,4 @@ namespace Yare::Graphics {
             renderer->onResize(m_RenderPass, m_WindowWidth, m_WindowHeight);
         }
     }
-}
+}  // namespace Yare::Graphics
