@@ -165,20 +165,34 @@ target_link_libraries(${PROJECT_NAME}
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE [["Utilities/Logger.h"]] <memory> <string> <vector>)
 
+INCLUDE (CheckIncludeFiles)
+CHECK_INCLUDE_FILES (malloc.h HAVE_MALLOC_H)
+
 if (WIN32)
     if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
           target_link_libraries(${PROJECT_NAME}
-                PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Windows/lib-vc2019/glfw3.lib
+            PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Windows/lib-vc2019/glfw3.lib
             PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/spdlog/msvc/x64-Release/lib/spdlog.lib)
 
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_link_libraries(${PROJECT_NAME}
-        PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Windows/lib-mingw-w64/libglfw3.a
+            PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Windows/lib-mingw-w64/libglfw3.a
             PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/spdlog/mingw/libspdlog.a)
     endif()
-endif()
 
-if (UNIX)
+elseif (APPLE)
+    message("HIT APPLE")
+    find_library(COCOA_LIBRARY Cocoa)
+    find_library(OPENGL_LIBRARY OpenGL)
+    find_library(IOKIT_LIBRARY IOKit)
+    target_link_libraries(${PROJECT_NAME}
+    PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/MacOs/glfw-3.3.6.bin.MACOS/lib-arm64/libglfw3.a
+    PUBLIC ${COCOA_LIBRARY}
+    PUBLIC ${OPENGL_LIBRARY}
+    PUBLIC ${IOKIT_LIBRARY})
+
+    elseif (UNIX)
+    message("HIT UNIX")
     target_link_libraries(${PROJECT_NAME}
         PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Unix/lib-gcc/libglfw3.a dl -lpthread -lm
         PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/spdlog/Unix/gcc/libspdlog.a)

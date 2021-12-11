@@ -27,7 +27,8 @@ namespace Yare::Graphics {
         YZ_INFO("The application window has been re-sized, the new dimensions [W,H]  are: "
                 + std::to_string(width) + ", " + std::to_string(height));
         auto glfwWindow  = reinterpret_cast<GlfwWindow*>(glfwGetWindowUserPointer(window));
-        glfwWindow->setWindowProperties(WindowProperties{(uint32_t)width, (uint32_t)height});
+        WindowProperties props{(uint32_t)width, (uint32_t)height};
+        glfwWindow->setWindowProperties(props);
     }
 
     static void GLFWkeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {

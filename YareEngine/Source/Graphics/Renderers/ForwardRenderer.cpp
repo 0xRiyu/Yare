@@ -205,6 +205,7 @@ namespace Yare::Graphics {
             material->setImageIdx(imageIdx++);
         }
 
+        // Load default texture
         for (size_t i = m_Materials.size(); i < MAX_NUM_TEXTURES; i++) {
             imageBufferInfo.imageSampler = m_Materials[0]->getTextureImage()->getSampler();
             imageBufferInfo.imageView = m_Materials[0]->getTextureImage()->getImageView();

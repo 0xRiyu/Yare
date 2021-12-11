@@ -37,7 +37,7 @@ namespace Yare {
         YZ_INFO("Logger Initialized");
 
         //Create a window
-        Graphics::WindowProperties props = {1600, 1200};
+        Graphics::WindowProperties props = {800, 600};
         m_Window = Graphics::Window::createNewWindow(props);
 
         Graphics::RenderManager renderManager{m_Window};

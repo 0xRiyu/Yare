@@ -8,7 +8,7 @@
 #include "Graphics/Vulkan/Shader.h"
 #include "Core/DataStructures.h"
 
-#define MAX_NUM_TEXTURES 256
+#define MAX_NUM_TEXTURES 16
 
 namespace Yare::Graphics {
 
