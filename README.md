@@ -3,7 +3,7 @@
 # YareZo [![Build status](https://ci.appveyor.com/api/projects/status/ibi6um09v5j03068?svg=true)](https://ci.appveyor.com/project/Resoona/yarezo)
 A Vulkan Rendering Engine
 
-Cross platform support for Linux/Windows (sometimes)
+Cross platform support for Linux/Windows/MacOs (soontm)
 
 ### Dependencies
 - Vulkan SDK - https://www.lunarg.com/vulkan-sdk/
