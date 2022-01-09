@@ -190,16 +190,18 @@ namespace Yare::Graphics {
         }
 
         if (m_IndexBuffer == nullptr || m_IndexBuffer->getSize() != indexBufferSize) {
+            if (m_IndexBuffer) m_IndexBuffer->unmapMemory();
             delete m_IndexBuffer;
             m_IndexBuffer = new Buffer();
             m_IndexBuffer->init(BufferUsage::DYNAMIC_INDEX, indexBufferSize, nullptr);
-            m_IndexBuffer->mapMemory(indexBufferSize, 0);
+            m_IndexBuffer->mapMemory();
         }
         if (m_VertexBuffer == nullptr || m_VertexBuffer->getSize() != vertexBufferSize) {
+            if (m_VertexBuffer) m_VertexBuffer->unmapMemory();
             delete m_VertexBuffer;
             m_VertexBuffer = new Buffer();
             m_VertexBuffer->init(BufferUsage::DYNAMIC_VERTEX, vertexBufferSize, nullptr);
-            m_VertexBuffer->mapMemory(vertexBufferSize, 0);
+            m_VertexBuffer->mapMemory();
         }
 
         ImDrawVert* vtx_dst = reinterpret_cast<ImDrawVert*>(m_VertexBuffer->getMappedData());

@@ -21,7 +21,7 @@ namespace Yare::Graphics {
         void bindIndex(CommandBuffer* commandBuffer, VkIndexType type);
         void bindVertex(CommandBuffer* commandBuffer, VkDeviceSize offset);
         void flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
-        bool mapMemory(VkDeviceSize size, VkDeviceSize offset);
+        bool mapMemory(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
         void unmapMemory();
 
         const VkBuffer& getBuffer() const { return m_Buffer; }
@@ -33,7 +33,7 @@ namespace Yare::Graphics {
 
         VkBuffer       m_Buffer;
         BufferUsage    m_Usage;
-        VkDeviceMemory m_BufferMemory;
+        VkDeviceMemory m_BufferMemory = VK_NULL_HANDLE;
         size_t         m_Size = 0;
         void*          m_MappedData = nullptr;
     };

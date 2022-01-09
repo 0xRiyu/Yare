@@ -11,9 +11,9 @@ namespace Yare::Graphics {
     Buffer::~Buffer() {
         if (m_Buffer) {
             vkDestroyBuffer(Devices::instance()->getDevice(), m_Buffer, nullptr);
-            if (m_BufferMemory) {
-                vkFreeMemory(Devices::instance()->getDevice(), m_BufferMemory, nullptr);
-            }
+        }
+        if (m_BufferMemory) {
+            vkFreeMemory(Devices::instance()->getDevice(), m_BufferMemory, nullptr);
         }
     }
 
@@ -110,7 +110,11 @@ namespace Yare::Graphics {
         return true;
     }
 
-    void Buffer::unmapMemory() { vkUnmapMemory(Devices::instance()->getDevice(), m_BufferMemory); }
+    void Buffer::unmapMemory() {
+        if (m_BufferMemory) {
+            vkUnmapMemory(Devices::instance()->getDevice(), m_BufferMemory);
+        }
+    }
 
     void Buffer::flush(VkDeviceSize size, VkDeviceSize offset) {
         VkMappedMemoryRange mappedRange = {};
