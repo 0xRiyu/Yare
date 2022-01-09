@@ -9,13 +9,14 @@ REM default build in debug
 set RELEASE_MODE=FALSE
 set REGEN=FALSE
 set RUN=FALSE
+set root=%~dp0
 
 if "%1"=="regen" set REGEN=TRUE
 if "%2"=="regen" set REGEN=TRUE
 if "%3"=="regen" set REGEN=TRUE
 
-if "%1"=="release" set RELEASE_MODE=TRUE
-if "%2"=="release" set RELEASE_MODE=TRUE
+if "%1"=="release" set RELEASE=TRUE
+if "%2"=="release" set RELEASE=TRUE
 if "%3"=="release" set RELEASE_MODE=TRUE
 
 if "%1"=="run" set RUN=TRUE
@@ -24,37 +25,32 @@ if "%3"=="run" set RUN=TRUE
 
 if %REGEN%==TRUE (
     rm -rf build
-    mkdir build
 )
 
+mkdir build 2>NUL
 cd build
 
 if not defined DevEnvDir (
    call vcvarsall.bat x64
 )
 
-if %RELEASE_MODE%==FALSE goto :Debug
-if %RELEASE_MODE%==TRUE goto :Release
-
-:Release
+if %RELEASE_MODE%==TRUE (
 echo Building in Release Mode...
 cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
-IF %ERRORLEVEL% NEQ 0 EXIT 1
-goto :ninja
-
-:Debug
+)
+if %RELEASE_MODE%==FALSE (
 echo Building in Debug Mode...
 cmake -DCMAKE_BUILD_TYPE=Debug -GNinja ..
-IF %ERRORLEVEL% NEQ 0 EXIT 1
-goto :ninja
+)
+IF %ERRORLEVEL% NEQ 0 goto :exit
 
-:ninja
 ninja
-cd ..
-IF %ERRORLEVEL% NEQ 0 EXIT 1
-if %RUN%==FALSE goto :eof
-echo.
+IF %ERRORLEVEL% NEQ 0 goto :exit
+if %RUN%==FALSE goto :exit
 echo Starting Sandbox.exe...
-cd build\Sandbox
+cd %root%\build\Sandbox
 Sandbox.exe
-cd ..\..
+echo Process exited with Error Level: %ERRORLEVEL%
+
+:exit
+cd %root%
