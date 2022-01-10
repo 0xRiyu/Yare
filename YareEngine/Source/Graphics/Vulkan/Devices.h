@@ -58,7 +58,7 @@ namespace Yare::Graphics {
 
         VkInstance m_InstanceRef = VK_NULL_HANDLE;
 
-        const std::vector<const char*> m_DeviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME, "VK_KHR_portability_subset"};
+        const std::vector<const char*> m_DeviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     };
 }  // namespace Yare::Graphics
 

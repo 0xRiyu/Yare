@@ -27,13 +27,11 @@ namespace Yare::Graphics {
         std::vector<VkWriteDescriptorSet> descriptorWrites = {};
 
         // Texture array reference; http://kylehalladay.com/blog/tutorial/vulkan/2018/01/28/Textue-Arrays-Vulkan.html
-
         // 32 is a magic number that we use for the max number of buffer infos
         std::vector<VkDescriptorBufferInfo> bInfo;
         std::vector<VkDescriptorImageInfo>  imageInfo;
         bInfo.resize(32);
-
-        imageInfo.resize(Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers);
+        imageInfo.resize((std::min)(256u, Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers));
 
         uint32_t bufferIndex = 0;
         uint32_t imageIndex = 0;
