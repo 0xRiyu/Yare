@@ -1,15 +1,12 @@
-[submodule "YareEngine\\Libs\\glfw-df8d7bc"]
-	path = YareEngine\\Libs\\glfw-df8d7bc
-	url = https://github.com/glfw/glfw.git
 [submodule "YareEngine\\Lib\\glfw"]
-	path = YareEngine\\Lib\\glfw
+	path = YareEngine/Lib/glfw
 	url = https://github.com/glfw/glfw.git
 [submodule "YareEngine\\Lib\\glm"]
-	path = YareEngine\\Lib\\glm
+	path = YareEngine/Lib/glm
 	url = https://github.com/g-truc/glm.git
 [submodule "YareEngine\\Lib\\spdlog"]
-	path = YareEngine\\Lib\\spdlog
+	path = YareEngine/Lib/spdlog
 	url = https://github.com/gabime/spdlog.git
 [submodule "YareEngine\\Lib\\imgui"]
-	path = YareEngine\\Lib\\imgui
+	path = YareEngine/Lib/imgui
 	url = https://github.com/ocornut/imgui.git
