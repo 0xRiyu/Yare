@@ -142,7 +142,7 @@ namespace Yare::Graphics {
                                                  nullptr};
         VkDescriptorSetLayoutBinding model = {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1,
                                               VK_SHADER_STAGE_VERTEX_BIT, nullptr};
-        VkDescriptorSetLayoutBinding sampler = {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_NUM_TEXTURES,
+        VkDescriptorSetLayoutBinding sampler = {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers,
                                                 VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
         pInfo.layoutBindings = {projView, model, sampler};
 
@@ -186,7 +186,7 @@ namespace Yare::Graphics {
         BufferInfo imageBufferInfo = {};
         imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         imageBufferInfo.binding = 2;
-        imageBufferInfo.descriptorCount = MAX_NUM_TEXTURES;
+        imageBufferInfo.descriptorCount = Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers;
 
         int imageIdx = 0;
         for (auto material : m_Materials) {
@@ -196,7 +196,7 @@ namespace Yare::Graphics {
             material->setImageIdx(imageIdx++);
         }
 
-        for (size_t i = m_Materials.size(); i < MAX_NUM_TEXTURES; i++) {
+        for (size_t i = m_Materials.size(); i < Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers; i++) {
             imageBufferInfo.imageSampler = m_Materials[0]->getTextureImage()->getSampler();
             imageBufferInfo.imageView = m_Materials[0]->getTextureImage()->getImageView();
             bufferInfos.push_back(imageBufferInfo);
