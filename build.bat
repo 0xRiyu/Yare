@@ -31,7 +31,7 @@ mkdir build 2>NUL
 cd build
 
 if not defined DevEnvDir (
-   call vcvarsall.bat x64
+   call "%ProgramFiles(x86)%/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvarsall.bat" x64
 )
 
 if %RELEASE_MODE%==TRUE (
