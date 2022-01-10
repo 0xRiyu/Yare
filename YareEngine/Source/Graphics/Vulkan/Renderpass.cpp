@@ -4,6 +4,7 @@
 #include "Graphics/Vulkan/Framebuffer.h"
 #include "Graphics/Vulkan/Utilities.h"
 #include "Utilities/Logger.h"
+#include <array>
 
 namespace Yare::Graphics {
 

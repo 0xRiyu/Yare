@@ -5,8 +5,10 @@
 #include "Core/Glfw.h"
 #include "Graphics/Vulkan/Devices.h"
 #include "Utilities/Logger.h"
-#include "imgui/imgui_impl_glfw.h"
-#include "imgui/imgui_impl_vulkan.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_vulkan.h"
+
+#include <algorithm>
 
 namespace Yare::Graphics {
     ImGuiRenderer::ImGuiRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
@@ -147,8 +149,8 @@ namespace Yare::Graphics {
                 for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++) {
                     const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
                     VkRect2D         scissorRect;
-                    scissorRect.offset.x = std::max((int32_t)(pcmd->ClipRect.x), 0);
-                    scissorRect.offset.y = std::max((int32_t)(pcmd->ClipRect.y), 0);
+                    scissorRect.offset.x = (std::max)((uint32_t)pcmd->ClipRect.x, 0u);
+                    scissorRect.offset.y = (std::max)((uint32_t)pcmd->ClipRect.y, 0u);
                     scissorRect.extent.width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
                     scissorRect.extent.height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
                     vkCmdSetScissor(commandBuffer->getCommandBuffer(), 0, 1, &scissorRect);

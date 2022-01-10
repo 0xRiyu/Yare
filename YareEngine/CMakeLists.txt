@@ -3,20 +3,21 @@
 #--------------------------------------------------------------------
 set (LIB_SOURCES
     # imgui
-    Libs/imgui/imgui/imgui.cpp
-    Libs/imgui/imgui/imgui_draw.cpp
-    Libs/imgui/imgui/imgui_demo.cpp
-    Libs/imgui/imgui/imgui_widgets.cpp
-    Libs/imgui/imgui/imgui_impl_glfw.cpp
-    Libs/imgui/imgui/imgui_impl_vulkan.cpp
+    Lib/imgui/imgui.cpp
+    Lib/imgui/imgui_draw.cpp
+    Lib/imgui/imgui_demo.cpp
+    Lib/imgui/imgui_widgets.cpp
+    Lib/imgui/imgui_tables.cpp
+    Lib/imgui/backends/imgui_impl_glfw.cpp
+    Lib/imgui/backends/imgui_impl_vulkan.cpp
 )
 
 #--------------------------------------------------------------------
 # Set Lib Header Files
 #--------------------------------------------------------------------
 set (LIB_HEADERS
-    Libs/stb/stb/stb_image.h
-    Libs/tinyobjloader/tinyobjloader/tiny_obj_loader.h
+    Lib/stb/stb_image.h
+    Lib/tinyobjloader/tiny_obj_loader.h
 )
 
 #--------------------------------------------------------------------
@@ -144,42 +145,29 @@ add_library(YareEngine::Source ALIAS ${PROJECT_NAME})
 #--------------------------------------------------------------------
 target_include_directories(${PROJECT_NAME}
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/Source
-    PUBLIC Libs/glm
-    PUBLIC Libs/imgui
-    PUBLIC Libs/stb
-    PUBLIC Libs/tinyobjloader
-    PUBLIC Libs/spdlog/include
-    PUBLIC Libs/glfw/include)
+    PUBLIC Lib/
+    PUBLIC Lib/glm
+    PUBLIC Lib/imgui
+    PUBLIC Lib/spdlog/include
+    PUBLIC Lib/glfw/include)
 
 #--------------------------------------------------------------------
-# Find static libraries that are required
-# These must not be relative paths since they are linked from the CMAKE_CURRENT_BINARY_DIR
+# Find/Build libraries that are required
 #--------------------------------------------------------------------
 find_package(Vulkan REQUIRED)
+
+add_subdirectory(Lib/glfw)
+add_subdirectory(Lib/glm)
+add_subdirectory(Lib/spdlog)
 
 #--------------------------------------------------------------------
 # Link the libraries
 #--------------------------------------------------------------------
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC Vulkan::Vulkan)
+    PUBLIC Vulkan::Vulkan
+    PUBLIC glfw
+    PUBLIC glm
+    PUBLIC spdlog
+    )
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE [["Utilities/Logger.h"]] <memory> <string> <vector>)
-
-if (WIN32)
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-          target_link_libraries(${PROJECT_NAME}
-                PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Windows/lib-vc2019/glfw3.lib
-            PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/spdlog/msvc/x64-Release/lib/spdlog.lib)
-
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_link_libraries(${PROJECT_NAME}
-        PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Windows/lib-mingw-w64/libglfw3.a
-            PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/spdlog/mingw/libspdlog.a)
-    endif()
-endif()
-
-if (UNIX)
-    target_link_libraries(${PROJECT_NAME}
-        PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/glfw/Unix/lib-gcc/libglfw3.a dl -lpthread -lm
-        PUBLIC ${CMAKE_SOURCE_DIR}/YareEngine/Libs/spdlog/Unix/gcc/libspdlog.a)
-endif()
