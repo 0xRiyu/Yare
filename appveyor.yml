@@ -8,13 +8,6 @@ configuration: Release
 platform:
   - x64
 
-init:
-  - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
-on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-
-
 environment:
   VULKAN_SDK: C:/VulkanSDK/1.2.198.1
 
@@ -23,7 +16,7 @@ cache:
 
 install:
   - if not exist VulkanSDK.exe curl -L --silent --show-error --output VulkanSDK.exe https://sdk.lunarg.com/sdk/download/1.2.198.1/windows/VulkanSDK-1.2.198.1-Installer.exe?Human=true
-  - VulkanSDK.exe /S
+  - VulkanSDK.exe in --al --im -c
 
 build_script:
   - mkdir build && cd build
