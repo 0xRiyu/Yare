@@ -7,7 +7,7 @@
 namespace Yare::Graphics {
     class GlfwWindow : public Window {
        public:
-        GlfwWindow(WindowProperties& properties);
+        GlfwWindow(const WindowProperties& properties);
         virtual ~GlfwWindow();
 
         virtual void onUpdate() override;

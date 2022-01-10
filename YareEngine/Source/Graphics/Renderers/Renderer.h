@@ -3,7 +3,7 @@
 
 #include "Graphics/Scene/Entity.h"
 #include "Graphics/Vulkan/CommandBuffer.h"
-#include "Graphics/Vulkan/RenderPass.h"
+#include "Graphics/Vulkan/Renderpass.h"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE

@@ -9,6 +9,7 @@ add_compile_definitions(YZ_PLATFORM_WINDOWS
                         YZ_BUILD_DLL
                         )
 
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 
 add_subdirectory(YareEngine)
 add_subdirectory(Sandbox)

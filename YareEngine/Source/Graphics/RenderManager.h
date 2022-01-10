@@ -6,7 +6,7 @@
 #include "Graphics/Vulkan/Context.h"
 #include "Graphics/Vulkan/Framebuffer.h"
 #include "Graphics/Vulkan/Image.h"
-#include "Graphics/Vulkan/RenderPass.h"
+#include "Graphics/Vulkan/Renderpass.h"
 #include "Graphics/Window/Window.h"
 
 namespace Yare::Graphics {

@@ -22,13 +22,13 @@ namespace Yare::Graphics {
         virtual bool                          shouldClose() = 0;
         virtual void                          close() = 0;
         virtual void                          releaseInputHandling() = 0;
-        virtual void                          setWindowProperties(WindowProperties& props) { m_Properties = props; }
+        virtual void                          setWindowProperties(const WindowProperties& props) { m_Properties = props; }
         virtual WindowProperties              getWindowProperties() const { return m_Properties; }
         virtual std::shared_ptr<InputHandler> getKeyHandler() const { return m_KeyHandler; }
         virtual std::shared_ptr<InputHandler> getMouseHandler() const { return m_MouseHandler; }
         virtual std::shared_ptr<Camera>       getCamera() const { return m_Camera; }
 
-        static std::shared_ptr<Window> createNewWindow(WindowProperties& properties);
+        static std::shared_ptr<Window> createNewWindow(const WindowProperties& properties);
         virtual void*                  getNativeWindow() const = 0;
 
         bool windowResized = false;

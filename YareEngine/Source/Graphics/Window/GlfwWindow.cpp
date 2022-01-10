@@ -11,7 +11,7 @@
 
 namespace Yare::Graphics {
 
-    std::shared_ptr<Window> Window::createNewWindow(WindowProperties& properties) {
+    std::shared_ptr<Window> Window::createNewWindow(const WindowProperties& properties) {
         return std::make_shared<GlfwWindow>(properties);
     }
 
@@ -79,7 +79,7 @@ namespace Yare::Graphics {
         mouseHandler->scrollEvent = true;
     }
 
-    GlfwWindow::GlfwWindow(WindowProperties& properties) {
+    GlfwWindow::GlfwWindow(const WindowProperties& properties) {
         m_Properties = properties;
         // TODO: A scene should be the camera's over, we just dont have scenes yet
         m_Camera = std::make_shared<FpsCamera>(m_Properties.width, m_Properties.height);

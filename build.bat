@@ -1,6 +1,5 @@
 @echo off
-REM This script will build Yare using the MSVC and ninja, it requires vcvarsall.bat/ninja to be in the path
-REM Example location to find vcvarsall - Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build
+REM This script will build Yare using the MSVC and ninja. It requires ninja to be in the path and a msvc compiler installed via MVS.
 
 if not exist build (
     mkdir build
