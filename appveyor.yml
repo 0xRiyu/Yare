@@ -21,5 +21,7 @@ install:
 build_script:
   - mkdir build && cd build
   - cmd /C "%ProgramFiles(x86)%/Microsoft Visual Studio/2019/Community/VC/Auxiliary/Build/vcvarsall.bat" x64
+  - set CC=cl
+  - set CXX=cl
   - cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja
   - ninja
