@@ -26,56 +26,55 @@ namespace Yare::Graphics {
           c-------d
         */
 
-        std::vector<Vertex> verts{20};
-        verts[0].pos = glm::vec3(-size / 2, -size / 2, size / 2);
-        verts[0].uv = glm::vec2(0.0, 1.0);
-        verts[1].pos = glm::vec3(size / 2, -size / 2, size / 2);
-        verts[1].uv = glm::vec2(1.0, 1.0);
-        verts[2].pos = glm::vec3(-size / 2, size / 2, size / 2);
-        verts[2].uv = glm::vec2(0.0, 0.0);
-        verts[3].pos = glm::vec3(size / 2, size / 2, size / 2);
-        verts[3].uv = glm::vec2(1.0, 0.0);
-        verts[4].pos = glm::vec3(-size / 2, size / 2, size / 2);
-        verts[4].uv = glm::vec2(0.0, 1.0);
-        verts[5].pos = glm::vec3(size / 2, size / 2, size / 2);
-        verts[5].uv = glm::vec2(1.0, 1.0);
-        verts[6].pos = glm::vec3(-size / 2, size / 2, -size / 2);
-        verts[6].uv = glm::vec2(0.0, 0.0);
-        verts[7].pos = glm::vec3(size / 2, size / 2, -size / 2);
-        verts[7].uv = glm::vec2(1.0, 0.0);
-        verts[8].pos = glm::vec3(-size / 2, size / 2, -size / 2);
-        verts[8].uv = glm::vec2(1.0, 0.0);
-        verts[9].pos = glm::vec3(size / 2, size / 2, -size / 2);
-        verts[9].uv = glm::vec2(0.0, 0.0);
-        verts[10].pos = glm::vec3(-size / 2, -size / 2, -size / 2);
-        verts[10].uv = glm::vec2(1.0, 1.0);
-        verts[11].pos = glm::vec3(size / 2, -size / 2, -size / 2);
-        verts[11].uv = glm::vec2(0.0, 1.0);
-        verts[12].pos = glm::vec3(-size / 2, -size / 2, -size / 2);
-        verts[12].uv = glm::vec2(0.0, 1.0);
-        verts[13].pos = glm::vec3(size / 2, -size / 2, -size / 2);
-        verts[13].uv = glm::vec2(1.0, 1.0);
-        verts[14].pos = glm::vec3(-size / 2, -size / 2, size / 2);
-        verts[14].uv = glm::vec2(0.0, 0.0);
-        verts[15].pos = glm::vec3(size / 2, -size / 2, size / 2);
-        verts[15].uv = glm::vec2(1.0, 0.0);
-        verts[16].pos = glm::vec3(size / 2, -size / 2, size / 2);
-        verts[16].uv = glm::vec2(0.0, 1.0);
-        verts[17].pos = glm::vec3(size / 2, size / 2, size / 2);
-        verts[17].uv = glm::vec2(0.0, 0.0);
-        verts[18].pos = glm::vec3(-size / 2, -size / 2, size / 2);
-        verts[18].uv = glm::vec2(1.0, 1.0);
-        verts[19].pos = glm::vec3(-size / 2, size / 2, size / 2);
-        verts[19].uv = glm::vec2(1.0, 0.0);
+        std::vector<Vertex> verticies;
 
-        for (auto vert : verts) {
-            vert.normal = glm::vec3(1.0f);
+        glm::f32 x = size / 2.0f;
+        glm::f32 y = size / 2.0f;
+        glm::f32 z = size / 2.0f;
+
+        glm::vec3 a0 = glm::vec3(+x, +y, +z);
+        glm::vec3 a1 = glm::vec3(-x, +y, +z);
+        glm::vec3 a2 = glm::vec3(-x, -y, +z);
+        glm::vec3 a3 = glm::vec3(+x, -y, +z);
+        glm::vec3 a4 = glm::vec3(+x, +y, -z);
+        glm::vec3 a5 = glm::vec3(-x, +y, -z);
+        glm::vec3 a6 = glm::vec3(-x, -y, -z);
+        glm::vec3 a7 = glm::vec3(+x, -y, -z);
+
+        glm::vec3 verts[] = {a1, a2, a3, a3, a0, a1, a2, a6, a7, a7, a3, a2, a6, a5, a4, a4, a7, a6,
+                             a5, a1, a0, a0, a4, a5, a0, a3, a7, a7, a4, a0, a5, a6, a2, a2, a1, a5};
+
+        glm::vec2 texc[] = {
+            glm::vec2(0, 1), glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 0), glm::vec2(1, 1), glm::vec2(0, 1),
+            glm::vec2(0, 1), glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 0), glm::vec2(1, 1), glm::vec2(0, 1),
+            glm::vec2(1, 0), glm::vec2(1, 1), glm::vec2(0, 1), glm::vec2(0, 1), glm::vec2(0, 0), glm::vec2(1, 0),
+            glm::vec2(0, 1), glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 0), glm::vec2(1, 1), glm::vec2(0, 1),
+            glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1), glm::vec2(1, 1), glm::vec2(0, 1), glm::vec2(0, 0),
+            glm::vec2(1, 1), glm::vec2(0, 1), glm::vec2(0, 0), glm::vec2(0, 0), glm::vec2(1, 0), glm::vec2(1, 1),
+        };
+
+        glm::vec3 norm[36];
+
+        for (int i = 0; i < 36; i += 3) {
+            glm::vec3 normal = glm::normalize(glm::cross(glm::vec3(verts[i + 1]) - glm::vec3(verts[i]),
+                                                         glm::vec3(verts[i + 2]) - glm::vec3(verts[i])));
+
+            norm[i] = normal;
+            norm[i + 1] = normal;
+            norm[i + 2] = normal;
+        }
+        std::vector<uint32_t> inds;
+
+        for (int i = 0; i < 36; i++) {
+            Vertex new_vert;
+            new_vert.pos = verts[i];
+            new_vert.uv = texc[i];
+            new_vert.normal = norm[i];
+            verticies.push_back(new_vert);
+            inds.push_back(i);
         }
 
-        std::vector<uint32_t> inds = {0,  1,  2,  2,  1,  3,  4,  5,  6,  6,  5,  7, 8,  9,  10, 10, 9,  11,
-                                      12, 13, 14, 14, 13, 15, 16, 13, 17, 17, 13, 7, 12, 18, 6,  6,  18, 19};
-
-        return new Mesh(verts, inds);
+        return new Mesh(verticies, inds);
     }
 
     Mesh* createQuad(float width, float height) {
@@ -89,10 +88,10 @@ namespace Yare::Graphics {
          (-1, 1)   (1, 1)
         */
 
-        std::vector<Vertex>   vertices = {{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}},
-                                        {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
-                                        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, {1.0f, 1.0f, 1.0f}},
-                                        {{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}};
+        std::vector<Vertex>   vertices = {{{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}},
+                                        {{1.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 0.0f}},
+                                        {{-1.0f, -1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f}},
+                                        {{-1.0f, 1.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}};
         std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
         return new Mesh(vertices, indices);

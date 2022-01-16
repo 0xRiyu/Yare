@@ -52,24 +52,54 @@ namespace Yare::Utilities {
 
         std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
 
-        for (const auto& shape : shapes) {
-            for (const auto& index : shape.mesh.indices) {
-                Vertex vertex = {};
+        for (size_t s = 0; s < shapes.size(); s++) {
+            // Loop over faces(polygon)
+            size_t index_offset = 0;
+            for (size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
+                // hardcode loading to triangles
+                int fv = 3;
 
-                vertex.pos = {attrib.vertices[3 * index.vertex_index + 0], attrib.vertices[3 * index.vertex_index + 1],
-                              attrib.vertices[3 * index.vertex_index + 2]};
+                // Loop over vertices in the face.
+                for (size_t v = 0; v < fv; v++) {
+                    // access to vertex
+                    tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 
-                vertex.uv = {attrib.texcoords[2 * index.texcoord_index + 0],
-                             1.0f - attrib.texcoords[2 * index.texcoord_index + 1]};
+                    // vertex position
+                    tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
+                    tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
+                    tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
+                    // vertex normal
+                    tinyobj::real_t nx = attrib.normals[3 * idx.normal_index + 0];
+                    tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
+                    tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
 
-                vertex.normal = {1.0f, 1.0f, 1.0f};
+                    tinyobj::real_t ux = attrib.texcoords[2 * idx.texcoord_index + 0];
+                    tinyobj::real_t uy = attrib.texcoords[2 * idx.texcoord_index + 1];
 
-                if (uniqueVertices.count(vertex) == 0) {
-                    uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());
-                    vertices.push_back(vertex);
+                    // copy it into our vertex
+                    Vertex new_vert;
+                    new_vert.pos.x = vx;
+                    new_vert.pos.y = vy;
+                    new_vert.pos.z = vz;
+
+                    new_vert.normal.x = nx;
+                    new_vert.normal.y = ny;
+                    new_vert.normal.z = nz;
+
+                    new_vert.uv.x = ux;
+                    new_vert.uv.y = uy;
+
+                    // we are setting the vertex color as the vertex normal. This is just for display purposes
+                    new_vert.color = new_vert.normal;
+
+                    if (uniqueVertices.count(new_vert) == 0) {
+                        uniqueVertices[new_vert] = static_cast<uint32_t>(vertices.size());
+                        vertices.push_back(new_vert);
+                    }
+
+                    indices.push_back(uniqueVertices[new_vert]);
                 }
-
-                indices.push_back(uniqueVertices[vertex]);
+                index_offset += fv;
             }
         }
     }

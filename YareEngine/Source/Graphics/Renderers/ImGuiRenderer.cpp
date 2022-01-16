@@ -1,5 +1,7 @@
 #include "Graphics/Renderers/ImGuiRenderer.h"
 
+#include <algorithm>
+
 #include "Application/Application.h"
 #include "Application/GlobalSettings.h"
 #include "Core/Glfw.h"
@@ -8,7 +10,6 @@
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_vulkan.h"
 
-#include <algorithm>
 
 namespace Yare::Graphics {
     ImGuiRenderer::ImGuiRenderer(RenderPass* renderPass, uint32_t windowWidth, uint32_t windowHeight) {
@@ -42,7 +43,7 @@ namespace Yare::Graphics {
     }
 
     void ImGuiRenderer::createGraphicsPipeline(RenderPass* renderPass) {
-        Shader shader("../Res/Shaders", "gui.shader");
+        Shader shader("../Res/Shaders/GUI", "gui.shader");
 
         PipelineInfo pInfo = {};
         pInfo.shader = &shader;

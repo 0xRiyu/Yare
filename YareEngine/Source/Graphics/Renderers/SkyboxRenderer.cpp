@@ -72,7 +72,7 @@ namespace Yare::Graphics {
     }
 
     void SkyboxRenderer::createGraphicsPipeline(RenderPass* renderPass, uint32_t width, uint32_t height) {
-        Shader       skyboxShader("../Res/Shaders", "skybox.shader");
+        Shader       skyboxShader("../Res/Shaders/Skybox", "skybox.shader");
         PipelineInfo pipelineInfo = {};
         pipelineInfo.shader = &skyboxShader;
 

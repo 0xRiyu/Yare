@@ -117,7 +117,7 @@ namespace Yare::Graphics {
     }
 
     void ForwardRenderer::createGraphicsPipeline(RenderPass* renderPass, uint32_t width, uint32_t height) {
-        Shader shader("../Res/Shaders", "texture_array.shader");
+        Shader shader("../Res/Shaders/TextureArrayDiffuse", "texture_array_diffuse.shader");
 
         PipelineInfo pInfo = {};
         pInfo.shader = &shader;
@@ -133,9 +133,10 @@ namespace Yare::Graphics {
 
         // location, binding, format, offset
         VkVertexInputAttributeDescription pos = {0u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, pos)};
-        VkVertexInputAttributeDescription uv = {2u, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)};
-        VkVertexInputAttributeDescription normal = {1u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)};
-        pInfo.vertexInputAttributes = {pos, uv, normal};
+        VkVertexInputAttributeDescription color = {1u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)};
+        VkVertexInputAttributeDescription normal = {2u, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)};
+        VkVertexInputAttributeDescription uv = {3u, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)};
+        pInfo.vertexInputAttributes = {pos, color, normal, uv};
 
         // binding, descriptorType, descriptorCount, stageFlags, pImmuatbleSamplers
         VkDescriptorSetLayoutBinding projView = {0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT,

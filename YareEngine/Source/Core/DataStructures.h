@@ -6,11 +6,12 @@
 namespace Yare {
     struct Vertex {
         glm::vec3 pos;
-        glm::vec2 uv;
+        glm::vec3 color;
         glm::vec3 normal;
+        glm::vec2 uv;
 
         bool operator==(const Vertex& other) const {
-            return pos == other.pos && uv == other.uv && normal == other.normal;
+            return pos == other.pos && uv == other.uv && normal == other.normal && color == other.normal;
         }
     };
 
