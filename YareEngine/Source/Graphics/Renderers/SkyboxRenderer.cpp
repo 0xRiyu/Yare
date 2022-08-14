@@ -116,8 +116,6 @@ namespace Yare::Graphics {
         viewBufferInfo.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         viewBufferInfo.size = sizeof(UniformVS);
         viewBufferInfo.binding = 0;
-        viewBufferInfo.imageSampler = nullptr;
-        viewBufferInfo.imageView = nullptr;
         viewBufferInfo.descriptorCount = 1;
         bufferInfos.push_back(viewBufferInfo);
 
@@ -125,8 +123,8 @@ namespace Yare::Graphics {
         imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         imageBufferInfo.binding = 1;
         imageBufferInfo.descriptorCount = 1;
-        imageBufferInfo.imageSampler = m_SkyboxModel->getMaterial()->getTextureImage()->getSampler();
-        imageBufferInfo.imageView = m_SkyboxModel->getMaterial()->getTextureImage()->getImageView();
+        imageBufferInfo.imageSamplers.push_back(m_SkyboxModel->getMaterial()->getTextureImage()->getSampler());
+        imageBufferInfo.imageViews.push_back(m_SkyboxModel->getMaterial()->getTextureImage()->getImageView());
         bufferInfos.push_back(imageBufferInfo);
 
         m_DescriptorSet->update(bufferInfos);

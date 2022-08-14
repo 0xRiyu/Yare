@@ -36,14 +36,14 @@ namespace Yare::Graphics {
         imageInfo.resize(Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers);
 
         uint32_t bufferIndex = 0;
-        uint32_t imageIndex = 0;
 
         for (const auto& bufferInfo : newBufferInfo) {
             if (bufferInfo.type == VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) {
-                imageInfo[imageIndex].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo[imageIndex].imageView = bufferInfo.imageView;
-                imageInfo[imageIndex].sampler = bufferInfo.imageSampler;
-
+                for (int i = 0; i < bufferInfo.imageViews.size(); ++i) {
+                    imageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo[i].imageView = bufferInfo.imageViews[i];
+                    imageInfo[i].sampler = bufferInfo.imageSamplers[i];
+                }
                 VkWriteDescriptorSet descriptorWrite = {};
                 descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 descriptorWrite.dstSet = m_DescriptorSets;
@@ -54,7 +54,6 @@ namespace Yare::Graphics {
                 descriptorWrite.pImageInfo = imageInfo.data();
 
                 descriptorWrites.push_back(descriptorWrite);
-                imageIndex++;
             } else {
                 bInfo[bufferIndex].buffer = bufferInfo.buffer;
                 bInfo[bufferIndex].offset = bufferInfo.offset;
