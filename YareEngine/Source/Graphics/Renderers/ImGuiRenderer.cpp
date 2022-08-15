@@ -91,8 +91,8 @@ namespace Yare::Graphics {
         bInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         bInfo.binding = 2;
         bInfo.descriptorCount = 1;
-        bInfo.imageSampler = m_Font->getSampler();
-        bInfo.imageView = m_Font->getImageView();
+        bInfo.imageSamplers.push_back(m_Font->getSampler());
+        bInfo.imageViews.push_back(m_Font->getImageView());
         bufferInfos.push_back(bInfo);
 
         m_DescriptorSet->update(bufferInfos);

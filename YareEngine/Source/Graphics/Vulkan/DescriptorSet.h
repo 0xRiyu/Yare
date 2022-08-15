@@ -17,8 +17,8 @@ namespace Yare {
         struct BufferInfo {
             VkBuffer         buffer;
             VkDescriptorType type;
-            VkImageView      imageView;
-            VkSampler        imageSampler;
+            std::vector<VkImageView>      imageViews;
+            std::vector<VkSampler>    imageSamplers;
             uint32_t         offset;
             uint32_t         size;
             int              binding;
