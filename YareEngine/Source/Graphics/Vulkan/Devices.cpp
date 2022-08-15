@@ -86,6 +86,12 @@ namespace Yare::Graphics {
 
         VkPhysicalDeviceFeatures deviceFeatures = {};
         deviceFeatures.samplerAnisotropy = VK_TRUE;
+
+        // Required for MacOS
+        auto availableExtensions = getAvailableDeviceExtensions(m_PhysicalDevice);
+        for (auto extension : availableExtensions) {
+            if (strcmp(extension.extensionName, "VK_KHR_portability_subset") == 0) m_DeviceExtensions.push_back("VK_KHR_portability_subset");
+        }
         VkDeviceCreateInfo createInfo = {};
 
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -127,12 +133,19 @@ namespace Yare::Graphics {
         return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
     }
 
-    bool Devices::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    std::vector<VkExtensionProperties> Devices::getAvailableDeviceExtensions(VkPhysicalDevice device) {
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+        return availableExtensions;
+    }
+
+    bool Devices::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+
+        auto availableExtensions = getAvailableDeviceExtensions(device);
 
         std::set<std::string> requiredExtensions(m_DeviceExtensions.begin(), m_DeviceExtensions.end());
 

@@ -8,8 +8,6 @@
 #include "Graphics/Vulkan/Swapchain.h"
 #include "Graphics/Vulkan/Vk.h"
 
-#define MAX_NUM_TEXTURES 256
-
 namespace Yare::Graphics {
 
     struct PipelineInfo {

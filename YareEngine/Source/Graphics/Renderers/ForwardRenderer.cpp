@@ -16,28 +16,26 @@ namespace Yare::Graphics {
         m_Meshes.emplace_back(createQuadPlane(15, 15));
         m_Meshes.push_back(std::make_shared<Mesh>("../Res/Models/Lowpoly_tree_sample.obj"));
 
-        m_Materials.push_back(std::make_shared<Material>());  // Default texture
-        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/viking_room.png"));
-        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/mossytiles.jpg"));
-        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/skysphere.png"));
-        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/sprite.jpg"));
-        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/tile.png"));
+        m_Materials.push_back(std::make_shared<Material>());  // Default texture 0
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/viking_room.png")); //1
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/mossytiles.jpg")); // 2
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/skysphere.png")); // 3
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/sprite.jpg")); // 4
+        m_Materials.push_back(std::make_shared<Material>("../Res/Textures/tile.png")); // 5
 
-        Transform transform{glm::vec3(3.0f, -0.42f, 0.0f), glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)),
-                            glm::vec3(1.0f, 1.0f, 1.0f)};
+        Transform transform{glm::vec3(3.0f, -0.42f, 0.0f), glm::radians(glm::vec3(90.0f, 90.0f, -180.0f)), glm::vec3(1.0f, 1.0f, 1.0f)};
         m_Entities.push_back(std::make_shared<Entity>(m_Meshes[0], m_Materials[1], transform));
-
         Transform transform2;
         Transform transform3;
         transform3.setScale(glm::vec3(0.05, 0.05, 0.05));
         transform3.setTranslation(1.5f, -0.5f, 0.0f);
-        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[3], m_Materials[0], transform3));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[3], m_Materials[0], transform3)); // Tree
         transform2.setTranslation(-7.5f, -0.5f, -7.5f);
-        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[2], m_Materials[2], transform2));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[2], m_Materials[5], transform2)); // Plane
         transform2.setTranslation(0.0f, 0.0f, 0.0f);
-        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[4], transform2));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[4], transform2)); // cube
         transform2.setTranslation(-1.5f, 0.0f, 0.0f);
-        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[3], transform2));
+        m_Entities.push_back(std::make_shared<Entity>(m_Meshes[1], m_Materials[3], transform2)); // cube
 
         init(renderPass, windowWidth, windowHeight);
     }
@@ -143,7 +141,7 @@ namespace Yare::Graphics {
                                                  nullptr};
         VkDescriptorSetLayoutBinding model = {1, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1,
                                               VK_SHADER_STAGE_VERTEX_BIT, nullptr};
-        VkDescriptorSetLayoutBinding sampler = {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_NUM_TEXTURES,
+        VkDescriptorSetLayoutBinding sampler = {2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (std::min)(256u, Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers),
                                                 VK_SHADER_STAGE_FRAGMENT_BIT, nullptr};
         pInfo.layoutBindings = {projView, model, sampler};
 
@@ -167,8 +165,6 @@ namespace Yare::Graphics {
         viewBufferInfo.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         viewBufferInfo.size = sizeof(UniformVS);
         viewBufferInfo.binding = 0;
-        viewBufferInfo.imageSampler = nullptr;
-        viewBufferInfo.imageView = nullptr;
         viewBufferInfo.descriptorCount = 1;
 
         BufferInfo dynamicBufferInfo = {};
@@ -177,8 +173,6 @@ namespace Yare::Graphics {
         dynamicBufferInfo.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
         dynamicBufferInfo.size = sizeof(glm::mat4);
         dynamicBufferInfo.binding = 1;
-        dynamicBufferInfo.imageSampler = nullptr;
-        dynamicBufferInfo.imageView = nullptr;
         dynamicBufferInfo.descriptorCount = 1;
 
         bufferInfos.push_back(viewBufferInfo);
@@ -187,21 +181,21 @@ namespace Yare::Graphics {
         BufferInfo imageBufferInfo = {};
         imageBufferInfo.type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         imageBufferInfo.binding = 2;
-        imageBufferInfo.descriptorCount = MAX_NUM_TEXTURES;
+        imageBufferInfo.descriptorCount = (std::min)(256u, Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers);
 
         int imageIdx = 0;
         for (auto material : m_Materials) {
-            imageBufferInfo.imageSampler = material->getTextureImage()->getSampler();
-            imageBufferInfo.imageView = material->getTextureImage()->getImageView();
-            bufferInfos.push_back(imageBufferInfo);
+            imageBufferInfo.imageSamplers.push_back(material->getTextureImage()->getSampler());
+            imageBufferInfo.imageViews.push_back(material->getTextureImage()->getImageView());
             material->setImageIdx(imageIdx++);
         }
 
-        for (size_t i = m_Materials.size(); i < MAX_NUM_TEXTURES; i++) {
-            imageBufferInfo.imageSampler = m_Materials[0]->getTextureImage()->getSampler();
-            imageBufferInfo.imageView = m_Materials[0]->getTextureImage()->getImageView();
-            bufferInfos.push_back(imageBufferInfo);
+        for (size_t i = m_Materials.size(); i < std::min(256u, Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers); i++) {
+            imageBufferInfo.imageSamplers.push_back(m_Materials[0]->getTextureImage()->getSampler());
+            imageBufferInfo.imageViews.push_back(m_Materials[0]->getTextureImage()->getImageView());
         }
+
+        bufferInfos.push_back(imageBufferInfo);
 
         m_DescriptorSet->update(bufferInfos);
     }

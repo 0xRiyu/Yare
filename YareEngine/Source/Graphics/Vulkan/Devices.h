@@ -47,6 +47,7 @@ namespace Yare::Graphics {
         bool                    checkDeviceExtensionSupport(VkPhysicalDevice device);
         QueueFamilyIndices      findQueueFamilies(VkPhysicalDevice device);
         SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+        std::vector<VkExtensionProperties> getAvailableDeviceExtensions(VkPhysicalDevice device);
 
        private:
         VkSurfaceKHR               m_Surface = VK_NULL_HANDLE;
@@ -58,7 +59,7 @@ namespace Yare::Graphics {
 
         VkInstance m_InstanceRef = VK_NULL_HANDLE;
 
-        const std::vector<const char*> m_DeviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        std::vector<const char*> m_DeviceExtensions{VK_KHR_SWAPCHAIN_EXTENSION_NAME};
     };
 }  // namespace Yare::Graphics
 

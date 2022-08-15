@@ -1,6 +1,11 @@
 #include "Core/Memory.h"
 
+#ifdef HAVE_MALLOC_H
 #include <malloc.h>
+#else
+#include <stdlib.h>
+#endif
+
 
 namespace Yare {
     void* alignedAlloc(size_t size, size_t alignment) {
