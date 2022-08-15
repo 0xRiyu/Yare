@@ -31,7 +31,7 @@ namespace Yare::Graphics {
         std::vector<VkDescriptorBufferInfo> bInfo;
         std::vector<VkDescriptorImageInfo>  imageInfo;
         bInfo.resize(32);
-        imageInfo.resize((std::min)(256u, Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers));
+        imageInfo.resize(std::min(256u, Devices::instance()->getGPUProperties().limits.maxPerStageDescriptorSamplers));
 
         uint32_t bufferIndex = 0;
 
